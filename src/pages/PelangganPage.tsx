@@ -1,74 +1,111 @@
 import React, { useEffect, useState } from 'react';
-import api from '../services/api';
-import { Search, Check, X, Store, MapPin, Phone } from 'lucide-react';
+import { Search, Store, Plus } from 'lucide-react';
+import toast from 'react-hot-toast';
+import { usePelanggan } from '../features/pelanggan/hooks/usePelanggan';
+import CustomerTable from '../features/pelanggan/components/CustomerTable';
+import CustomerForm from '../features/pelanggan/components/CustomerForm';
+import { ConfirmModal, Modal } from '../components/ui/Modal';
 import { cn } from '@/lib/utils';
-
-interface Pelanggan {
-    id: number;
-    nama_toko: string;
-    nama_pemilik: string;
-    alamat_toko: string;
-    no_hp_pemilik: string;
-    status: string;
-    foto_toko?: string;
-}
+import { PelangganStatus, PelangganFormData, Pelanggan } from '../features/pelanggan/types';
 
 const PelangganPage: React.FC = () => {
-    const [pelanggans, setPelanggans] = useState<Pelanggan[]>([]);
-    const [loading, setLoading] = useState(true);
+    const { pelanggans, loading: loadingData, error, fetchPelanggans, updateStatus, createPelanggan, updatePelanggan } = usePelanggan();
+    
     const [search, setSearch] = useState('');
-    const [filterStatus, setFilterStatus] = useState<string>('pending'); // pending, active, rejected
-
-    const fetchPelanggan = React.useCallback(async () => {
-        setLoading(true);
-        try {
-            // We can filter by status if the API supports it, assuming it does or we filter client side
-            // Ideally backend supports ?status=...
-            const response = await api.get('/pelanggan', { params: { search, status: filterStatus } });
-            setPelanggans(response.data.data);
-        } catch (error) {
-            console.error("Failed to fetch customers", error);
-        } finally {
-            setLoading(false);
-        }
-    }, [search, filterStatus]);
+    const [filterStatus, setFilterStatus] = useState<PelangganStatus | 'all'>('all');
+    const [isAddModalOpen, setIsAddModalOpen] = useState(false);
+    const [editingPelanggan, setEditingPelanggan] = useState<Pelanggan | null>(null);
+    const [isSubmitting, setIsSubmitting] = useState(false);
+    
+    // Confirmation State
+    const [confirmAction, setConfirmAction] = useState<{ id: number, type: 'approve' | 'reject' } | null>(null);
 
     useEffect(() => {
-        fetchPelanggan();
-    }, [fetchPelanggan]);
+        const timer = setTimeout(() => {
+            fetchPelanggans({ search, status: filterStatus });
+        }, 300); // Debounce search
+        return () => clearTimeout(timer);
+    }, [search, filterStatus, fetchPelanggans]);
 
-    const handleAction = async (id: number, action: 'approve' | 'reject') => {
-        if (!confirm(`Apakah anda yakin ingin ${action} pelanggan ini?`)) return;
+
+    const handleAction = async () => {
+        if (!confirmAction) return;
         
-        try {
-            await api.post(`/pelanggan/${id}/${action}`);
-            fetchPelanggan();
-        } catch (error) {
-            console.error(`Failed to ${action} customer`, error);
-            alert(`Gagal memproses pelanggan.`);
+        const result = await updateStatus(confirmAction.id, confirmAction.type);
+        if (result.success) {
+            toast.success(`Pelanggan berhasil ${confirmAction.type === 'approve' ? 'disetujui' : 'ditolak'}`);
+            fetchPelanggans({ search, status: filterStatus }); // Refresh list
+            setConfirmAction(null);
+        } else {
+            toast.error(result.message || 'Gagal memproses pelanggan');
+        }
+    };
+
+    const handleCreatePelanggan = async (data: PelangganFormData) => {
+        setIsSubmitting(true);
+        const result = await createPelanggan(data);
+        setIsSubmitting(false);
+        if (result.success) {
+            toast.success('Pelanggan berhasil ditambahkan');
+            setIsAddModalOpen(false);
+            fetchPelanggans({ search, status: filterStatus });
+        } else {
+            toast.error(result.message || 'Gagal menambahkan pelanggan');
+        }
+    };
+
+    const handleUpdatePelanggan = async (data: PelangganFormData) => {
+        if (!editingPelanggan) return;
+        setIsSubmitting(true);
+        const result = await updatePelanggan(editingPelanggan.id, data);
+        setIsSubmitting(false);
+        if (result.success) {
+            toast.success('Data pelanggan berhasil diperbarui');
+            setEditingPelanggan(null);
+            fetchPelanggans({ search, status: filterStatus });
+        } else {
+            toast.error(result.message || 'Gagal memperbarui pelanggan');
         }
     };
 
     return (
         <div className="space-y-6">
-            <div className="flex items-center justify-between">
-                <h1 className="text-2xl font-bold text-gray-800">Verifikasi Pelanggan</h1>
-                {/* Tabs */}
-                <div className="flex space-x-2 rounded-lg bg-gray-100 p-1">
-                    {['pending', 'active', 'rejected'].map(status => (
-                         <button
-                            key={status}
-                            onClick={() => setFilterStatus(status)}
-                            className={cn(
-                                "capitalize rounded-md px-3 py-1.5 text-sm font-medium transition-colors",
-                                filterStatus === status 
-                                    ? "bg-white text-gray-900 shadow" 
-                                    : "text-gray-500 hover:text-gray-900"
-                            )}
-                         >
-                            {status}
-                         </button>
-                    ))}
+            <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between space-y-4 sm:space-y-0">
+                <div className="flex items-center space-x-3">
+                    <div className="p-2 bg-indigo-600 rounded-lg shadow-lg shadow-indigo-200">
+                        <Store className="h-6 w-6 text-white" />
+                    </div>
+                    <div>
+                        <h1 className="text-2xl font-bold text-gray-900">Pelanggan</h1>
+                        <p className="text-sm text-gray-500">Kelola dan verifikasi data pelanggan toko.</p>
+                    </div>
+                </div>
+
+                <div className="flex items-center space-x-3">
+                    <button
+                        onClick={() => setIsAddModalOpen(true)}
+                        className="inline-flex items-center rounded-lg bg-indigo-600 px-4 py-2 text-sm font-bold text-white shadow-md hover:bg-indigo-700 transition-all active:scale-95"
+                    >
+                        <Plus className="mr-2 h-4 w-4" /> Tambah Pelanggan
+                    </button>
+                    
+                    {/* Status Tabs */}
+                    <div className="flex space-x-1 rounded-xl bg-gray-100 p-1 border border-gray-200">
+                        {(['all', 'pending', 'active', 'rejected', 'prospect'] as const).map(status => (
+                            <button
+                                key={status}
+                                onClick={() => setFilterStatus(status)}
+                                className={cn(
+                                    "capitalize rounded-lg px-4 py-2 text-xs font-bold transition-all duration-200",
+                                    filterStatus === status 
+                                        ? "bg-indigo-600 text-white shadow-md" 
+                                        : "text-gray-500 hover:text-gray-900 hover:bg-gray-200"
+                                )}
+                            >
+                                {status === 'all' ? 'Semua' : status}
+                            </button>
+                        ))}
+                    </div>
                 </div>
             </div>
 
@@ -79,71 +116,72 @@ const PelangganPage: React.FC = () => {
                 </div>
                 <input
                     type="text"
-                    className="block w-full rounded-md border border-gray-300 bg-white py-2 pl-10 pr-3 leading-5 placeholder-gray-500 focus:border-indigo-500 focus:placeholder-gray-400 focus:outline-none focus:ring-1 focus:ring-indigo-500 sm:text-sm"
-                    placeholder="Cari toko / pemilik..."
+                    className="block w-full rounded-lg border border-gray-300 bg-white py-2.5 pl-10 pr-3 leading-5 placeholder-gray-400 focus:border-indigo-500 focus:placeholder-gray-300 focus:outline-none focus:ring-1 focus:ring-indigo-500 sm:text-sm shadow-sm transition-all"
+                    placeholder="Cari toko, pemilik, atau nomor HP..."
                     value={search}
                     onChange={(e) => setSearch(e.target.value)}
                 />
             </div>
 
-            {/* Grid List */}
-            <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
-                 {loading ? (
-                    <div className="col-span-full py-10 text-center text-gray-500">Loading customers...</div>
-                ) : pelanggans.length === 0 ? (
-                    <div className="col-span-full py-10 text-center text-gray-500">Tidak ada data pelanggan dengan status {filterStatus}.</div>
-                ) : (
-                    pelanggans.map((p) => (
-                        <div key={p.id} className="overflow-hidden rounded-lg bg-white shadow">
-                            <div className="h-32 bg-gray-200">
-                                {/* Placeholder for Shop Photo */}
-                                {p.foto_toko ? (
-                                    <img src={p.foto_toko} alt={p.nama_toko} className="h-full w-full object-cover" />
-                                ) : (
-                                    <div className="flex h-full w-full items-center justify-center text-gray-400">
-                                        <Store className="h-12 w-12" />
-                                    </div>
-                                )}
-                            </div>
-                            <div className="p-5">
-                                <h3 className="text-lg font-bold text-gray-900">{p.nama_toko}</h3>
-                                <p className="text-sm text-gray-500">{p.nama_pemilik}</p>
-                                
-                                <div className="mt-4 space-y-2">
-                                    <div className="flex items-start text-sm text-gray-600">
-                                        <MapPin className="mr-2 h-4 w-4 mt-0.5" />
-                                        <span>{p.alamat_toko}</span>
-                                    </div>
-                                    <div className="flex items-center text-sm text-gray-600">
-                                        <Phone className="mr-2 h-4 w-4" />
-                                        <span>{p.no_hp_pemilik}</span>
-                                    </div>
-                                </div>
+            {/* Error Message */}
+            {error && (
+                <div className="rounded-xl bg-red-50 p-4 border border-red-200 shadow-sm animate-in fade-in slide-in-from-top-2">
+                    <div className="text-sm text-red-700 font-medium">{error}</div>
+                </div>
+            )}
 
-                                {/* Actions for Pending */}
-                                {filterStatus === 'pending' && (
-                                    <div className="mt-5 flex space-x-2 border-t pt-4">
-                                        <button 
-                                            onClick={() => handleAction(p.id, 'approve')}
-                                            className="flex flex-1 items-center justify-center rounded-md bg-green-600 px-3 py-2 text-sm font-medium text-white hover:bg-green-700"
-                                        >
-                                            <Check className="mr-2 h-4 w-4" /> Approve
-                                        </button>
-                                        <button 
-                                            onClick={() => handleAction(p.id, 'reject')}
-                                            className="flex flex-1 items-center justify-center rounded-md bg-red-600 px-3 py-2 text-sm font-medium text-white hover:bg-red-700"
-                                        >
-                                            <X className="mr-2 h-4 w-4" /> Reject
-                                        </button>
-                                    </div>
-                                )}
-                            </div>
-                        </div>
-                    ))
-                )}
-            </div>
+            {/* Table Component */}
+            <CustomerTable 
+                data={pelanggans}
+                loading={loadingData}
+                onApprove={(id) => setConfirmAction({ id, type: 'approve' })}
+                onReject={(id) => setConfirmAction({ id, type: 'reject' })}
+                onEdit={(p) => setEditingPelanggan(p)}
+            />
+
+            {/* Add Pelanggan Modal */}
+            <Modal
+                isOpen={isAddModalOpen}
+                onClose={() => setIsAddModalOpen(false)}
+                title="Tambah Pelanggan Baru"
+                size="3xl"
+                noPadding
+            >
+                <CustomerForm 
+                    onSubmit={handleCreatePelanggan}
+                    onCancel={() => setIsAddModalOpen(false)}
+                    loading={isSubmitting}
+                />
+            </Modal>
+
+            {/* Edit Pelanggan Modal */}
+            <Modal
+                isOpen={!!editingPelanggan}
+                onClose={() => setEditingPelanggan(null)}
+                title={`Edit Pelanggan: ${editingPelanggan?.nama_toko}`}
+                size="3xl"
+                noPadding
+            >
+                <CustomerForm 
+                    initialData={editingPelanggan}
+                    onSubmit={handleUpdatePelanggan}
+                    onCancel={() => setEditingPelanggan(null)}
+                    loading={isSubmitting}
+                />
+            </Modal>
+
+            {/* Confirmation Modal */}
+            <ConfirmModal
+                isOpen={!!confirmAction}
+                onClose={() => setConfirmAction(null)}
+                onConfirm={handleAction}
+                title={confirmAction?.type === 'approve' ? 'Setujui Pelanggan' : 'Tolak Pelanggan'}
+                message={`Apakah Anda yakin ingin ${confirmAction?.type === 'approve' ? 'menyetujui' : 'menolak'} pendaftaran pelanggan ini?`}
+                type={confirmAction?.type === 'approve' ? 'warning' : 'danger'}
+                confirmText={confirmAction?.type === 'approve' ? 'Approve' : 'Reject'}
+            />
         </div>
     );
-}
+};
 
 export default PelangganPage;

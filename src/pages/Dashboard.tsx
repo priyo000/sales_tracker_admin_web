@@ -10,6 +10,16 @@ import {
     CheckCircle 
 } from 'lucide-react';
 
+import toast from 'react-hot-toast';
+
+interface RecentOrder {
+    id: number;
+    no_pesanan: string;
+    status: string;
+    nama_toko: string;
+    tanggal: string;
+}
+
 interface DashboardStats {
     total_pesanan: number;
     pesanan_hari_ini: number;
@@ -18,7 +28,7 @@ interface DashboardStats {
     total_produk: number;
     total_sales: number;
     total_rute: number;
-    recent_orders: any[];
+    recent_orders: RecentOrder[];
 }
 
 const Dashboard: React.FC = () => {
@@ -32,6 +42,7 @@ const Dashboard: React.FC = () => {
                 setStats(response.data.data);
             } catch (error) {
                 console.error("Failed to fetch dashboard stats", error);
+                toast.error("Gagal memuat data dashboard.");
             } finally {
                 setLoading(false);
             }

@@ -1,5 +1,8 @@
+import React from 'react';
 import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom';
-import { AuthProvider, useAuth } from './context/AuthContext';
+import { Toaster } from 'react-hot-toast';
+import { AuthProvider } from './context/AuthContext';
+import { useAuth } from './hooks/useAuth';
 import LoginPage from './pages/LoginPage';
 import MainLayout from './components/layout/MainLayout';
 import Dashboard from './pages/Dashboard';
@@ -9,8 +12,11 @@ import ProdukPage from './pages/ProdukPage';
 import PelangganPage from './pages/PelangganPage';
 import PesananPage from './pages/PesananPage';
 import KaryawanPage from './pages/KaryawanPage';
+import DivisiPage from './pages/DivisiPage';
+import PerusahaanPage from './pages/PerusahaanPage';
+import UserPage from './pages/UserPage';
 
-const ProtectedRoute = ({ children }: { children: JSX.Element }) => {
+const ProtectedRoute = ({ children }: { children: React.ReactNode }) => {
     const { token, isLoading } = useAuth();
     
     if (isLoading) {
@@ -28,6 +34,7 @@ function App() {
   return (
     <Router>
         <AuthProvider>
+            <Toaster position="top-right" />
             <Routes>
                 <Route path="/login" element={<LoginPage />} />
                 <Route 
@@ -43,6 +50,9 @@ function App() {
                                     <Route path="/produk" element={<ProdukPage />} />
                                     <Route path="/pesanan" element={<PesananPage />} />
                                     <Route path="/karyawan" element={<KaryawanPage />} />
+                                    <Route path="/divisi" element={<DivisiPage />} />
+                                    <Route path="/perusahaan" element={<PerusahaanPage />} />
+                                    <Route path="/users" element={<UserPage />} />
                                 </Routes>
                             </MainLayout>
                         </ProtectedRoute>

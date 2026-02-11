@@ -1,10 +1,10 @@
 import React, { useState } from 'react';
-import { useAuth } from '../context/AuthContext';
+import { useAuth } from '../hooks/useAuth';
 import { useNavigate } from 'react-router-dom';
-import axios from 'axios';
+import axios, { AxiosError } from 'axios';
 
 const LoginPage: React.FC = () => {
-    const [email, setEmail] = useState('');
+    const [username, setUsername] = useState('');
     const [password, setPassword] = useState('');
     const [error, setError] = useState('');
     const { login } = useAuth();
@@ -17,7 +17,7 @@ const LoginPage: React.FC = () => {
             // Use axios directly or the api instance (api.post)
             // Using full URL for clarity here, but api.post('/login') is better
             const response = await axios.post('http://localhost:8000/api/login', {
-                email,
+                username,
                 password,
                 device_name: 'Admin Panel',
             });
@@ -25,9 +25,10 @@ const LoginPage: React.FC = () => {
             const { access_token, user } = response.data;
             login(access_token, user);
             navigate('/');
-        } catch (err: any) {
-             if (err.response && err.response.data && err.response.data.message) {
-                 setError(err.response.data.message);
+        } catch (err) {
+             const error = err as AxiosError<{ message: string }>;
+             if (error.response?.data?.message) {
+                 setError(error.response.data.message);
              } else {
                  setError('Login failed. Please check your connection.');
              }
@@ -44,17 +45,17 @@ const LoginPage: React.FC = () => {
                 <form className="mt-8 space-y-6" onSubmit={handleSubmit}>
                     <div className="-space-y-px rounded-md shadow-sm">
                         <div>
-                            <label htmlFor="email-address" className="sr-only">Email address</label>
+                            <label htmlFor="username" className="sr-only">Username</label>
                             <input
-                                id="email-address"
-                                name="email"
-                                type="email"
-                                autoComplete="email"
+                                id="username"
+                                name="username"
+                                type="text"
+                                autoComplete="username"
                                 required
                                 className="relative block w-full appearance-none rounded-none rounded-t-md border border-gray-300 px-3 py-2 text-gray-900 placeholder-gray-500 focus:z-10 focus:border-indigo-500 focus:outline-none focus:ring-indigo-500 sm:text-sm"
-                                placeholder="Email address"
-                                value={email}
-                                onChange={(e) => setEmail(e.target.value)}
+                                placeholder="Username"
+                                value={username}
+                                onChange={(e) => setUsername(e.target.value)}
                             />
                         </div>
                         <div>

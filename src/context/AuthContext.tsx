@@ -1,22 +1,6 @@
-import React, { createContext, useState, useContext, useEffect } from 'react';
+import React, { useState, useEffect } from 'react';
 import api from '../services/api';
-
-interface User {
-    id: number;
-    email: string;
-    peran: string;
-    // Add other user fields as needed
-}
-
-interface AuthContextType {
-    user: User | null;
-    token: string | null;
-    login: (token: string, user: User) => void;
-    logout: () => void;
-    isLoading: boolean;
-}
-
-const AuthContext = createContext<AuthContextType | undefined>(undefined);
+import { AuthContext, User } from './AuthContextData';
 
 export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
     const [user, setUser] = useState<User | null>(null);
@@ -35,6 +19,19 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
         setUser(null);
         localStorage.removeItem('token');
         delete api.defaults.headers.common['Authorization'];
+    };
+
+    const switchCompany = async (id_perusahaan: number) => {
+        try {
+            const response = await api.post('/switch-company', { id_perusahaan });
+            setUser(response.data.user);
+            // After switching, we might want to refresh the entire page to reset queries
+            window.location.reload(); 
+            return true;
+        } catch (error) {
+            console.error("Switch company failed:", error);
+            return false;
+        }
     };
 
     useEffect(() => {
@@ -56,16 +53,8 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     }, []);
 
     return (
-        <AuthContext.Provider value={{ user, token, login, logout, isLoading }}>
+        <AuthContext.Provider value={{ user, token, login, logout, switchCompany, isLoading }}>
             {children}
         </AuthContext.Provider>
     );
-};
-
-export const useAuth = () => {
-    const context = useContext(AuthContext);
-    if (context === undefined) {
-        throw new Error('useAuth must be used within an AuthProvider');
-    }
-    return context;
 };

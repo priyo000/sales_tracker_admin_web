@@ -1,201 +1,135 @@
 import React, { useEffect, useState } from 'react';
-import api from '../services/api';
-import { Plus, Calendar as CalendarIcon, User } from 'lucide-react';
-
-interface Jadwal {
-    id: number;
-    tanggal: string;
-    karyawan: { nama_lengkap: string; jabatan: string };
-    rute: { nama_rute: string; details_count: number };
-    status: string;
-}
-
-interface RuteOption { id: number; nama_rute: string; }
-interface KaryawanOption { id: number; nama_lengkap: string; }
+import { Plus, Calendar as CalendarIcon } from 'lucide-react';
+import toast from 'react-hot-toast';
+import { useJadwal } from '../features/jadwal/hooks/useJadwal';
+import JadwalCard from '../features/jadwal/components/JadwalCard';
+import JadwalForm from '../features/jadwal/components/JadwalForm';
+import { Modal } from '../components/ui/Modal';
+import { JadwalFormData } from '../features/jadwal/types';
 
 const JadwalPage: React.FC = () => {
-    const [jadwals, setJadwals] = useState<Jadwal[]>([]);
-    const [loading, setLoading] = useState(true);
+    const { 
+        jadwals, 
+        loading, 
+        error: hookError, 
+        karyawanOptions, 
+        ruteOptions, 
+        fetchJadwals, 
+        fetchOptions, 
+        createJadwal 
+    } = useJadwal();
+
     const [date, setDate] = useState(new Date().toISOString().slice(0, 10)); // YYYY-MM-DD
     const [isModalOpen, setIsModalOpen] = useState(false);
-    
-    // Form Data
-    const [formData, setFormData] = useState({ id_karyawan: '', id_rute: '', tanggal: '' });
-    const [ruteOptions, setRuteOptions] = useState<RuteOption[]>([]);
-    const [karyawanOptions, setKaryawanOptions] = useState<KaryawanOption[]>([]); // Should fetch from API
 
-    const fetchJadwals = React.useCallback(async () => {
-        setLoading(true);
-        try {
-            const response = await api.get('/jadwal-sales', { params: { date } });
-            setJadwals(response.data.data);
-        } catch (error) {
-            console.error("Failed to fetch schedules", error);
-        } finally {
-            setLoading(false);
-        }
-    }, [date]);
-
+    // Initial Load & Date Change
     useEffect(() => {
-        fetchJadwals();
-    }, [fetchJadwals]);
+        fetchJadwals(date);
+    }, [date, fetchJadwals]);
 
-    // Fetch Options when modal opens
-    useEffect(() => {
-        if (isModalOpen) {
-            // Load Rutes
-            api.get('/rute').then(res => setRuteOptions(res.data.data));
-            // Load Karyawan
-            api.get('/karyawan', { params: { role: 'Sales' } })
-               .then(res => setKaryawanOptions(res.data.data))
-               .catch(err => console.error("Failed fetching sales", err));
-        }
-    }, [isModalOpen]);
+    // Handle Open Modal
+    const handleOpenModal = () => {
+        fetchOptions(); // Refresh options when opening
+        setIsModalOpen(true);
+    };
 
-    const handleSubmit = async (e: React.FormEvent) => {
-        e.preventDefault();
-        try {
-            await api.post('/jadwal-sales', formData);
+    const handleCreateJadwal = async (data: JadwalFormData) => {
+        const result = await createJadwal(data);
+        if (result.success) {
+            toast.success('Jadwal berhasil dibuat');
             setIsModalOpen(false);
-            setFormData({ id_karyawan: '', id_rute: '', tanggal: '' });
-            fetchJadwals();
-        } catch (error) {
-            console.error("Failed to create schedule", error);
-            alert("Gagal membuat jadwal.");
+            if (data.tanggal === date) {
+                fetchJadwals(date); // Refresh list if same date
+            }
+        } else {
+            toast.error(result.message || 'Gagal membuat jadwal');
         }
     };
+
+    const combinedError = hookError;
 
     return (
         <div className="space-y-6">
             <div className="flex items-center justify-between">
                 <h1 className="text-2xl font-bold text-gray-800">Jadwal Kunjungan Sales</h1>
                 <button 
-                    onClick={() => {
-                        setFormData({ ...formData, tanggal: date });
-                        setIsModalOpen(true);
-                    }}
-                    className="flex items-center rounded-md bg-indigo-600 px-4 py-2 text-white hover:bg-indigo-700"
+                    onClick={handleOpenModal}
+                    className="flex items-center rounded-md bg-indigo-600 px-4 py-2 text-white hover:bg-indigo-700 shadow-sm transition-colors"
                 >
                     <Plus className="mr-2 h-4 w-4" /> Buat Jadwal
                 </button>
             </div>
 
             {/* Date Filter */}
-            <div className="flex items-center space-x-2">
+            <div className="flex items-center space-x-3 bg-white p-3 rounded-lg shadow-sm border border-gray-100 max-w-xs">
                 <CalendarIcon className="h-5 w-5 text-gray-500" />
                 <input 
                     type="date" 
-                    className="rounded-md border border-gray-300 p-2 text-sm focus:border-indigo-500 focus:ring-indigo-500"
+                    className="block w-full rounded-md border-0 py-1.5 text-gray-900 ring-1 ring-inset ring-gray-300 placeholder:text-gray-400 focus:ring-2 focus:ring-inset focus:ring-indigo-600 sm:text-sm sm:leading-6"
                     value={date}
                     onChange={(e) => setDate(e.target.value)}
                 />
             </div>
 
-            {/* Grid/List */}
-            <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
-                {loading ? (
-                    <div className="col-span-full py-10 text-center text-gray-500">Loading schedules...</div>
+            {/* Error Message */}
+            {combinedError && (
+                <div className="rounded-md bg-red-50 p-4 border border-red-200">
+                    <div className="text-sm text-red-700">{combinedError}</div>
+                </div>
+            )}
+
+            {/* Content */}
+            <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
+                {loading && jadwals.length === 0 ? (
+                    // Skeleton Loading
+                    Array.from({ length: 4 }).map((_, i) => (
+                        <div key={i} className="animate-pulse rounded-lg bg-gray-100 h-40"></div>
+                    ))
                 ) : jadwals.length === 0 ? (
-                    <div className="col-span-full py-10 text-center text-gray-500">Tidak ada jadwal untuk tanggal ini.</div>
+                    <div className="col-span-full py-16 text-center bg-white rounded-lg border border-dashed border-gray-300">
+                        <CalendarIcon className="mx-auto h-12 w-12 text-gray-300" />
+                        <h3 className="mt-2 text-sm font-semibold text-gray-900">Tidak ada jadwal</h3>
+                        <p className="mt-1 text-sm text-gray-500">Belum ada kunjungan dijadwalkan untuk tanggal ini.</p>
+                        <div className="mt-6">
+                            <button
+                                onClick={handleOpenModal}
+                                className="inline-flex items-center rounded-md bg-indigo-600 px-3 py-2 text-sm font-semibold text-white shadow-sm hover:bg-indigo-500 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-indigo-600"
+                            >
+                                <Plus className="-ml-0.5 mr-1.5 h-5 w-5" aria-hidden="true" />
+                                Buat Jadwal Sekarang
+                            </button>
+                        </div>
+                    </div>
                 ) : (
                     jadwals.map((jadwal) => (
-                        <div key={jadwal.id} className="overflow-hidden rounded-lg bg-white shadow hover:shadow-md">
-                            <div className="border-b border-gray-200 bg-gray-50 px-4 py-3">
-                                <div className="flex items-center">
-                                    <User className="mr-2 h-5 w-5 text-indigo-500" />
-                                    <h3 className="font-medium text-gray-900">{jadwal.karyawan?.nama_lengkap || 'Unknown Sales'}</h3>
-                                </div>
-                                <p className="ml-7 text-xs text-gray-500">{jadwal.karyawan?.jabatan}</p>
-                            </div>
-                            <div className="p-4">
-                                <div className="mb-2 flex justify-between">
-                                    <span className="text-sm font-medium text-gray-500">Rute:</span>
-                                    <span className="text-sm font-semibold text-gray-900">{jadwal.rute?.nama_rute}</span>
-                                </div>
-                                <div className="mb-4 flex justify-between">
-                                    <span className="text-sm font-medium text-gray-500">Status:</span>
-                                    <span className={`inline-flex rounded-full px-2 text-xs font-semibold leading-5 ${
-                                        jadwal.status === 'selesai' ? 'bg-green-100 text-green-800' : 'bg-yellow-100 text-yellow-800'
-                                    }`}>
-                                        {jadwal.status || 'Belum Mulai'}
-                                    </span>
-                                </div>
-                                <button className="w-full rounded border border-indigo-600 px-3 py-1 text-sm text-indigo-600 hover:bg-indigo-50">
-                                    Lihat Detail
-                                </button>
-                            </div>
-                        </div>
+                        <JadwalCard key={jadwal.id} jadwal={jadwal} />
                     ))
                 )}
             </div>
 
-            {/* Modal */}
-            {isModalOpen && (
-                <div className="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-50">
-                    <div className="w-full max-w-md rounded-lg bg-white p-6 shadow-lg">
-                        <h2 className="mb-4 text-lg font-bold">Assign Jadwal</h2>
-                        <form onSubmit={handleSubmit}>
-                            <div className="mb-4">
-                                <label className="block text-sm font-medium text-gray-700">Tanggal</label>
-                                <input
-                                    type="date"
-                                    required
-                                    className="mt-1 block w-full rounded-md border border-gray-300 p-2 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm"
-                                    value={formData.tanggal}
-                                    onChange={(e) => setFormData({ ...formData, tanggal: e.target.value })}
-                                />
-                            </div>
-                            
-                            {/* NOTE: Need Karyawan List here. Using text input ID for now as placeholder if list empty */}
-                            <div className="mb-4">
-                                <label className="block text-sm font-medium text-gray-700">Pilih Sales</label>
-                                <select
-                                    required
-                                    className="mt-1 block w-full rounded-md border border-gray-300 p-2 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm"
-                                    value={formData.id_karyawan}
-                                    onChange={(e) => setFormData({ ...formData, id_karyawan: e.target.value })}
-                                >
-                                    <option value="">-- Pilih Sales --</option>
-                                    {karyawanOptions.map(k => (
-                                        <option key={k.id} value={k.id}>{k.nama_lengkap}</option>
-                                    ))}
-                                </select>
-                            </div>
-
-                            <div className="mb-4">
-                                <label className="block text-sm font-medium text-gray-700">Pilih Rute</label>
-                                <select
-                                    required
-                                    className="mt-1 block w-full rounded-md border border-gray-300 p-2 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm"
-                                    value={formData.id_rute}
-                                    onChange={(e) => setFormData({ ...formData, id_rute: e.target.value })}
-                                >
-                                    <option value="">-- Pilih Rute --</option>
-                                    {ruteOptions.map(r => (
-                                        <option key={r.id} value={r.id}>{r.nama_rute}</option>
-                                    ))}
-                                </select>
-                            </div>
-
-                            <div className="flex justify-end space-x-2">
-                                <button
-                                    type="button"
-                                    onClick={() => setIsModalOpen(false)}
-                                    className="rounded-md border border-gray-300 bg-white px-4 py-2 text-sm font-medium text-gray-700 hover:bg-gray-50"
-                                >
-                                    Batal
-                                </button>
-                                <button
-                                    type="submit"
-                                    className="rounded-md bg-indigo-600 px-4 py-2 text-sm font-medium text-white hover:bg-indigo-700"
-                                >
-                                    Simpan
-                                </button>
-                            </div>
-                        </form>
+            {/* Create Schedule Modal */}
+            <Modal
+                isOpen={isModalOpen}
+                onClose={() => setIsModalOpen(false)}
+                title="Buat Jadwal Kunjungan"
+                size="md"
+            >
+               {/* Pass form props */}
+               <JadwalForm 
+                    onSubmit={handleCreateJadwal}
+                    onCancel={() => setIsModalOpen(false)}
+                    karyawanOptions={karyawanOptions}
+                    ruteOptions={ruteOptions}
+                    initialDate={date} // Pre-fill with selected filter date
+                    loading={loading} // Use hook loading state
+               />
+                {/* Error inside modal if any specific to creating */}
+                {hookError && (
+                    <div className="mt-4 p-2 bg-red-50 text-red-600 text-sm rounded">
+                        {hookError}
                     </div>
-                </div>
-            )}
+                )}
+            </Modal>
         </div>
     );
 };

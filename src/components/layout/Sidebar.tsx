@@ -1,17 +1,20 @@
-import { Home, Calendar, Map, Users, Package, FileText, Settings, LogOut } from 'lucide-react';
+import { Home, Calendar, Map, Users, Package, FileText, Settings, LogOut, Layout, Building2, UserPlus } from 'lucide-react';
 import { NavLink } from 'react-router-dom';
-import { useAuth } from '@/context/AuthContext';
+import { useAuth } from '@/hooks/useAuth';
 import { cn } from '@/lib/utils';
 
 const Sidebar = () => {
-    const { logout } = useAuth();
+    const { logout, user } = useAuth();
 
     const navItems = [
         { icon: Home, label: 'Dashboard', to: '/' },
+        ...(user?.peran === 'super_admin' ? [{ icon: Building2, label: 'Perusahaan', to: '/perusahaan' }] : []),
         { icon: Calendar, label: 'Jadwal & Kunjungan', to: '/jadwal' },
         { icon: Map, label: 'Rute', to: '/rute' },
         { icon: Users, label: 'Pelanggan', to: '/pelanggan' },
         { icon: Users, label: 'Karyawan', to: '/karyawan' },
+        { icon: Layout, label: 'Divisi', to: '/divisi' },
+        { icon: UserPlus, label: 'Pengguna', to: '/users' },
         { icon: Package, label: 'Produk', to: '/produk' },
         { icon: FileText, label: 'Pesanan', to: '/pesanan' },
         { icon: Settings, label: 'Pengaturan', to: '/pengaturan' },

@@ -1,78 +1,89 @@
 import React, { useEffect, useState } from 'react';
-import api from '../services/api';
-import { Plus, Search, Package, Edit, Trash } from 'lucide-react';
-
-interface Produk {
-    id: number;
-    kode_barang: string;
-    sku: string;
-    nama_barang: string;
-    harga_jual: string;
-    stok: number;
-    satuan: string;
-}
+import { Plus, Search } from 'lucide-react';
+import toast from 'react-hot-toast';
+import { useProduk } from '../features/produk/hooks/useProduk';
+import ProductTable from '../features/produk/components/ProductTable';
+import ProductForm from '../features/produk/components/ProductForm';
+import { Modal, ConfirmModal } from '../components/ui/Modal';
+import { Produk } from '../features/produk/types';
 
 const ProdukPage: React.FC = () => {
-    const [produks, setProduks] = useState<Produk[]>([]);
-    const [loading, setLoading] = useState(true);
+    const { 
+        produks, loading, error, 
+        fetchProduks, createProduk, updateProduk, deleteProduk 
+    } = useProduk();
+
     const [search, setSearch] = useState('');
-    const [isModalOpen, setIsModalOpen] = useState(false);
-    const [formData, setFormData] = useState({
-        kode_barang: '',
-        sku: '',
-        nama_barang: '',
-        harga_jual: '',
-        stok: '0',
-        satuan: 'pcs'
-    });
+    const [isFormOpen, setIsFormOpen] = useState(false);
+    const [editingProduct, setEditingProduct] = useState<Produk | null>(null);
+    const [deletingId, setDeletingId] = useState<number | null>(null);
 
-    const fetchProduk = React.useCallback(async () => {
-        setLoading(true);
-        try {
-            const response = await api.get('/produk', { params: { search } });
-            setProduks(response.data.data);
-        } catch (error) {
-            console.error("Failed to fetch products", error);
-        } finally {
-            setLoading(false);
-        }
-    }, [search]);
-
+    // Initial Fetch & Search Debounce
     useEffect(() => {
-        fetchProduk();
-    }, [fetchProduk]);
+        const timer = setTimeout(() => {
+            fetchProduks({ search });
+        }, 300);
+        return () => clearTimeout(timer);
+    }, [search, fetchProduks]);
 
-    const handleSubmit = async (e: React.FormEvent) => {
-        e.preventDefault();
-        try {
-            await api.post('/produk', formData);
-            setIsModalOpen(false);
-            setFormData({
-                kode_barang: '',
-                sku: '',
-                nama_barang: '',
-                harga_jual: '',
-                stok: '0',
-                satuan: 'pcs'
-            });
-            fetchProduk();
-        } catch (error) {
-            console.error("Failed to create product", error);
-            alert("Gagal menambah produk.");
+    const handleCreate = () => {
+        setEditingProduct(null);
+        setIsFormOpen(true);
+    };
+
+    const handleEdit = (produk: Produk) => {
+        setEditingProduct(produk);
+        setIsFormOpen(true);
+    };
+
+    const handleDeleteClick = (id: number) => {
+        setDeletingId(id);
+    };
+
+    const confirmDelete = async () => {
+        if (deletingId) {
+            const result = await deleteProduk(deletingId);
+            if (result && result.success) {
+                 toast.success('Produk berhasil dihapus');
+                 setDeletingId(null);
+            } else {
+                 toast.error(result?.message || 'Gagal menghapus produk');
+            }
+        }
+    };
+
+    const handleFormSubmit = async (data: FormData) => {
+        let result;
+        if (editingProduct) {
+            result = await updateProduk(editingProduct.id, data);
+        } else {
+            result = await createProduk(data);
+        }
+
+        if (result.success) {
+            toast.success(editingProduct ? 'Produk berhasil diperbarui' : 'Produk berhasil ditambahkan');
+            setIsFormOpen(false);
+        } else {
+            toast.error(result.message || 'Gagal menyimpan produk');
         }
     };
 
     return (
         <div className="space-y-6">
-            <div className="flex items-center justify-between">
+            <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between space-y-4 sm:space-y-0">
                 <h1 className="text-2xl font-bold text-gray-800">Master Produk</h1>
                 <button 
-                    onClick={() => setIsModalOpen(true)}
-                    className="flex items-center rounded-md bg-indigo-600 px-4 py-2 text-white hover:bg-indigo-700"
+                    onClick={handleCreate}
+                    className="flex items-center justify-center rounded-md bg-indigo-600 px-4 py-2 text-white hover:bg-indigo-700 shadow-sm transition-transform active:scale-95"
                 >
                     <Plus className="mr-2 h-4 w-4" /> Tambah Produk
                 </button>
             </div>
+
+            {/* Helper Text */}
+            <p className="text-sm text-gray-500">
+                Kelola data produk yang akan dijual oleh sales.
+            </p>
 
             {/* Search Bar */}
             <div className="relative max-w-md">
@@ -81,167 +92,64 @@ const ProdukPage: React.FC = () => {
                 </div>
                 <input
                     type="text"
-                    className="block w-full rounded-md border border-gray-300 bg-white py-2 pl-10 pr-3 leading-5 placeholder-gray-500 focus:border-indigo-500 focus:placeholder-gray-400 focus:outline-none focus:ring-1 focus:ring-indigo-500 sm:text-sm"
+                    className="block w-full rounded-md border border-gray-300 bg-white py-2 pl-10 pr-3 leading-5 placeholder-gray-500 focus:border-indigo-500 focus:placeholder-gray-400 focus:outline-none focus:ring-1 focus:ring-indigo-500 sm:text-sm shadow-sm transition-shadow"
                     placeholder="Cari produk (Nama, Kode, SKU)..."
                     value={search}
                     onChange={(e) => setSearch(e.target.value)}
                 />
             </div>
 
-            {/* Table */}
-            <div className="overflow-hidden rounded-lg bg-white shadow">
-                <table className="min-w-full divide-y divide-gray-200">
-                    <thead className="bg-gray-50">
-                        <tr>
-                            <th className="px-6 py-3 text-left text-xs font-medium uppercase tracking-wider text-gray-500">Info Barang</th>
-                            <th className="px-6 py-3 text-left text-xs font-medium uppercase tracking-wider text-gray-500">Kode / SKU</th>
-                            <th className="px-6 py-3 text-right text-xs font-medium uppercase tracking-wider text-gray-500">Harga</th>
-                            <th className="px-6 py-3 text-center text-xs font-medium uppercase tracking-wider text-gray-500">Stok</th>
-                            <th className="px-6 py-3 text-right text-xs font-medium uppercase tracking-wider text-gray-500">Aksi</th>
-                        </tr>
-                    </thead>
-                    <tbody className="divide-y divide-gray-200 bg-white">
-                        {loading ? (
-                            <tr>
-                                <td colSpan={5} className="px-6 py-4 text-center text-sm text-gray-500">Loading...</td>
-                            </tr>
-                        ) : produks.length === 0 ? (
-                            <tr>
-                                <td colSpan={5} className="px-6 py-4 text-center text-sm text-gray-500">Belum ada data produk.</td>
-                            </tr>
-                        ) : (
-                            produks.map((produk) => (
-                                <tr key={produk.id}>
-                                    <td className="px-6 py-4">
-                                        <div className="flex items-center">
-                                            <div className="h-10 w-10 flex-shrink-0 rounded bg-indigo-100 flex items-center justify-center text-indigo-500">
-                                                <Package className="h-6 w-6" />
-                                            </div>
-                                            <div className="ml-4">
-                                                <div className="text-sm font-medium text-gray-900">{produk.nama_barang}</div>
-                                                <div className="text-sm text-gray-500">{produk.satuan}</div>
-                                            </div>
-                                        </div>
-                                    </td>
-                                    <td className="px-6 py-4">
-                                        <div className="text-sm text-gray-900">{produk.kode_barang}</div>
-                                        <div className="text-xs text-gray-500">{produk.sku}</div>
-                                    </td>
-                                    <td className="whitespace-nowrap px-6 py-4 text-right text-sm text-gray-500">
-                                        Rp {parseFloat(produk.harga_jual).toLocaleString('id-ID')}
-                                    </td>
-                                    <td className="whitespace-nowrap px-6 py-4 text-center text-sm text-gray-900">
-                                        {produk.stok}
-                                    </td>
-                                    <td className="whitespace-nowrap px-6 py-4 text-right text-sm font-medium">
-                                        <button className="mr-3 text-indigo-600 hover:text-indigo-900">
-                                            <Edit className="h-4 w-4" />
-                                        </button>
-                                        <button className="text-red-600 hover:text-red-900">
-                                            <Trash className="h-4 w-4" />
-                                        </button>
-                                    </td>
-                                </tr>
-                            ))
-                        )}
-                    </tbody>
-                </table>
-            </div>
-
-            {/* Modal */}
-            {isModalOpen && (
-                <div className="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-50">
-                    <div className="w-full max-w-md rounded-lg bg-white p-6 shadow-lg">
-                        <h2 className="mb-4 text-lg font-bold">Tambah Produk Baru</h2>
-                        <form onSubmit={handleSubmit}>
-                            <div className="grid grid-cols-2 gap-4">
-                                <div className="mb-4">
-                                    <label className="block text-sm font-medium text-gray-700">Kode Barang</label>
-                                    <input
-                                        type="text"
-                                        required
-                                        className="mt-1 block w-full rounded-md border border-gray-300 p-2 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm"
-                                        value={formData.kode_barang}
-                                        onChange={(e) => setFormData({ ...formData, kode_barang: e.target.value })}
-                                    />
-                                </div>
-                                <div className="mb-4">
-                                    <label className="block text-sm font-medium text-gray-700">SKU (Opsional)</label>
-                                    <input
-                                        type="text"
-                                        className="mt-1 block w-full rounded-md border border-gray-300 p-2 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm"
-                                        value={formData.sku}
-                                        onChange={(e) => setFormData({ ...formData, sku: e.target.value })}
-                                    />
-                                </div>
+            {/* Error Message */}
+            {error && (
+                <div className="rounded-md bg-red-50 p-4 border border-red-200">
+                    <div className="flex">
+                        <div className="ml-3">
+                            <h3 className="text-sm font-medium text-red-800">Error</h3>
+                            <div className="mt-2 text-sm text-red-700">
+                                <p>{error}</p>
                             </div>
-                            
-                            <div className="mb-4">
-                                <label className="block text-sm font-medium text-gray-700">Nama Barang</label>
-                                <input
-                                    type="text"
-                                    required
-                                    className="mt-1 block w-full rounded-md border border-gray-300 p-2 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm"
-                                    value={formData.nama_barang}
-                                    onChange={(e) => setFormData({ ...formData, nama_barang: e.target.value })}
-                                />
-                            </div>
-
-                            <div className="grid grid-cols-2 gap-4">
-                                <div className="mb-4">
-                                    <label className="block text-sm font-medium text-gray-700">Harga Jual</label>
-                                    <input
-                                        type="number"
-                                        required
-                                        className="mt-1 block w-full rounded-md border border-gray-300 p-2 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm"
-                                        value={formData.harga_jual}
-                                        onChange={(e) => setFormData({ ...formData, harga_jual: e.target.value })}
-                                    />
-                                </div>
-                                <div className="mb-4">
-                                    <label className="block text-sm font-medium text-gray-700">Stok Awal</label>
-                                    <input
-                                        type="number"
-                                        required
-                                        className="mt-1 block w-full rounded-md border border-gray-300 p-2 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm"
-                                        value={formData.stok}
-                                        onChange={(e) => setFormData({ ...formData, stok: e.target.value })}
-                                    />
-                                </div>
-                            </div>
-
-                             <div className="mb-4">
-                                <label className="block text-sm font-medium text-gray-700">Satuan</label>
-                                <input
-                                    type="text"
-                                    required
-                                    className="mt-1 block w-full rounded-md border border-gray-300 p-2 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm"
-                                    value={formData.satuan}
-                                    onChange={(e) => setFormData({ ...formData, satuan: e.target.value })}
-                                />
-                            </div>
-
-                            <div className="flex justify-end space-x-2">
-                                <button
-                                    type="button"
-                                    onClick={() => setIsModalOpen(false)}
-                                    className="rounded-md border border-gray-300 bg-white px-4 py-2 text-sm font-medium text-gray-700 hover:bg-gray-50"
-                                >
-                                    Batal
-                                </button>
-                                <button
-                                    type="submit"
-                                    className="rounded-md bg-indigo-600 px-4 py-2 text-sm font-medium text-white hover:bg-indigo-700"
-                                >
-                                    Simpan
-                                </button>
-                            </div>
-                        </form>
+                        </div>
                     </div>
                 </div>
             )}
+
+            {/* Table Component */}
+            <ProductTable 
+                produks={produks} 
+                loading={loading} 
+                onEdit={handleEdit} 
+                onDelete={handleDeleteClick} 
+            />
+
+            {/* Form Modal */}
+            <Modal
+                isOpen={isFormOpen}
+                onClose={() => setIsFormOpen(false)}
+                title={editingProduct ? 'Edit Produk' : 'Tambah Produk Baru'}
+                size="lg"
+            >
+                <ProductForm
+                    key={editingProduct ? editingProduct.id : 'create'}
+                    initialData={editingProduct}
+                    onSubmit={handleFormSubmit}
+                    onCancel={() => setIsFormOpen(false)}
+                    isLoading={loading}
+                />
+            </Modal>
+
+            {/* Delete Confirmation Modal */}
+            <ConfirmModal
+                isOpen={!!deletingId}
+                onClose={() => setDeletingId(null)}
+                onConfirm={confirmDelete}
+                title="Hapus Produk"
+                message="Apakah Anda yakin ingin menghapus produk ini? Data yang dihapus tidak dapat dikembalikan."
+                confirmText="Hapus"
+                type="danger"
+            />
         </div>
     );
 };
 
 export default ProdukPage;
+
