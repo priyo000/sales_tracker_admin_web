@@ -3,6 +3,7 @@ export interface Rute {
     nama_rute: string;
     deskripsi: string;
     details_count: number;
+    details?: { id: number; id_pelanggan: number; pelanggan?: { id: number } }[];
     created_at?: string;
     updated_at?: string;
 }
@@ -10,4 +11,5 @@ export interface Rute {
 export interface RuteFormData {
     nama_rute: string;
     deskripsi: string;
+    customer_ids: number[];
 }

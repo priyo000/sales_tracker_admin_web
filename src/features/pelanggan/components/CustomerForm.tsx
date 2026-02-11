@@ -1,8 +1,9 @@
 import React, { useState } from 'react';
-import { Store, MapPin, User, CreditCard, Landmark, Phone, LucideIcon, Upload, Image, X } from 'lucide-react';
+import { Store, MapPin, User, CreditCard, Landmark, Phone, LucideIcon, Upload, Image, X, Shield, Briefcase } from 'lucide-react';
 import { Pelanggan, PelangganFormData } from '../types';
 import MapPicker from './MapPicker';
 import { cn } from '@/lib/utils';
+import { useUser } from '../../users/hooks/useUser';
 
 interface CustomerFormProps {
     initialData?: Pelanggan | null;
@@ -39,6 +40,7 @@ const CustomerForm: React.FC<CustomerFormProps> = ({ initialData, onSubmit, onCa
     
     const [formData, setFormData] = useState<PelangganFormData>({
         nama_toko: initialData?.nama_toko || '',
+        kode_pelanggan: initialData?.kode_pelanggan || '',
         nama_pemilik: initialData?.nama_pemilik || '',
         no_hp_pribadi: initialData?.no_hp_pribadi || '',
         alamat_usaha: initialData?.alamat_usaha || '',
@@ -99,6 +101,24 @@ const CustomerForm: React.FC<CustomerFormProps> = ({ initialData, onSubmit, onCa
         }
     };
 
+    const { users, fetchUsers } = useUser();
+
+    React.useEffect(() => {
+        fetchUsers({ peran: 'sales' });
+    }, [fetchUsers]);
+
+    const handleSalesChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
+        const userId = Number(e.target.value);
+        const selectedUser = users.find(u => u.id === userId);
+        
+        setFormData(prev => ({
+            ...prev,
+            id_sales_pembuat: userId,
+            // Auto-fill Division if employee has one
+            id_divisi: selectedUser?.karyawan?.divisi?.id || prev.id_divisi
+        }));
+    };
+
     const handleLocationChange = (lat: number, lng: number, address?: string, city?: string, district?: string) => {
         setFormData(prev => ({
             ...prev,
@@ -151,6 +171,7 @@ const CustomerForm: React.FC<CustomerFormProps> = ({ initialData, onSubmit, onCa
                 {activeTab === 'pemilik' && (
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-8 animate-in fade-in duration-300">
                         <div className="space-y-6">
+
                             <div>
                                 <SectionHeader icon={User} title="Data Pemilik" />
                                 <div className="space-y-4">
@@ -231,9 +252,20 @@ const CustomerForm: React.FC<CustomerFormProps> = ({ initialData, onSubmit, onCa
                                 </div>
                                 
                                 <div className="space-y-4">
-                                    <FormField label="Nama Toko" required>
-                                        <input name="nama_toko" required value={formData.nama_toko} onChange={handleChange} className={inputClasses} placeholder="Contoh: Toko Berkah Jaya" />
-                                    </FormField>
+                                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                                        <FormField label="Nama Toko" required>
+                                            <input name="nama_toko" required value={formData.nama_toko} onChange={handleChange} className={inputClasses} placeholder="Toko Berkah Jaya" />
+                                        </FormField>
+                                        <FormField label="Kode Pelanggan">
+                                            <input 
+                                                name="kode_pelanggan" 
+                                                value={formData.kode_pelanggan} 
+                                                onChange={handleChange} 
+                                                className={cn(inputClasses, "bg-gray-50 font-mono")} 
+                                                placeholder="Auto-generated if empty" 
+                                            />
+                                        </FormField>
+                                    </div>
 
                                     <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                                         <FormField label="NPWP Usaha">
@@ -351,11 +383,11 @@ const CustomerForm: React.FC<CustomerFormProps> = ({ initialData, onSubmit, onCa
                                         </FormField>
                                         
                                         <div className="grid grid-cols-2 gap-4">
-                                            <FormField label="Kota">
-                                                <input name="kota_usaha" value={formData.kota_usaha} onChange={handleChange} className={inputClasses} placeholder="Surabaya" />
-                                            </FormField>
                                             <FormField label="Kecamatan">
                                                 <input name="kecamatan_usaha" value={formData.kecamatan_usaha} onChange={handleChange} className={inputClasses} placeholder="Tegalsari" />
+                                            </FormField>
+                                            <FormField label="Kota">
+                                                <input name="kota_usaha" value={formData.kota_usaha} onChange={handleChange} className={inputClasses} placeholder="Surabaya" />
                                             </FormField>
                                         </div>
                                     </div>
@@ -389,59 +421,179 @@ const CustomerForm: React.FC<CustomerFormProps> = ({ initialData, onSubmit, onCa
                 )}
 
                 {activeTab === 'pembayaran' && (
-                    <div className="grid grid-cols-1 md:grid-cols-2 gap-8 animate-in fade-in duration-300">
+                    <div className="space-y-8 animate-in fade-in duration-300">
+                        <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+
+                        {/* Left Column: Payment Config */}
                         <div className="space-y-6">
-                            <SectionHeader icon={Landmark} title="Rekening Bank" />
-                            <div className="space-y-4">
-                                <FormField label="Nama Bank">
-                                    <input name="nama_bank" value={formData.nama_bank} onChange={handleChange} className={inputClasses} placeholder="Cth: BCA" />
-                                </FormField>
-                                <FormField label="Cabang Bank">
-                                    <input name="cabang_bank" value={formData.cabang_bank} onChange={handleChange} className={inputClasses} placeholder="Cth: KCP Surabaya" />
-                                </FormField>
-                                <div className="grid grid-cols-2 gap-4">
-                                    <FormField label="No Rekening">
-                                        <input name="no_rekening" value={formData.no_rekening} onChange={handleChange} className={inputClasses} placeholder="000-000..." />
-                                    </FormField>
-                                    <FormField label="Atas Nama">
-                                        <input name="atas_nama_rekening" value={formData.atas_nama_rekening} onChange={handleChange} className={inputClasses} placeholder="Nama Pemilik" />
+
+                            <SectionHeader icon={Landmark} title="Metode Pembayaran" />
+                            <div className="space-y-5">
+                                {/* Payment Methods Section */}
+                                <div className="p-4 bg-gray-50 rounded-xl border border-gray-200 space-y-4">
+                                    <FormField label="Metode Pembayaran">
+                                        <select 
+                                            name="cara_pembayaran" 
+                                            value={formData.cara_pembayaran} 
+                                            onChange={handleChange} 
+                                            className={inputClasses}
+                                        >
+                                            <option value="Tunai">Tunai</option>
+                                            <option value="Transfer">Transfer</option>
+                                            <option value="Giro">Giro</option>
+                                        </select>
                                     </FormField>
                                 </div>
-                                <FormField label="Metode Pembayaran">
-                                    <select name="cara_pembayaran" value={formData.cara_pembayaran} onChange={handleChange} className={inputClasses}>
-                                        <option value="Tunai">Tunai</option>
-                                        <option value="Transfer">Transfer</option>
-                                        <option value="Giro">Giro</option>
-                                    </select>
-                                </FormField>
-                                <FormField label="Sistem Pembayaran">
-                                    <input name="sistem_pembayaran" value={formData.sistem_pembayaran} onChange={handleChange} className={inputClasses} placeholder="COD/Tempo" />
-                                </FormField>
+
+                                {/* Conditional Bank Details */}
+                                {(formData.cara_pembayaran === 'Transfer' || formData.cara_pembayaran === 'Giro') && (
+                                    <div className="bg-blue-50 p-5 rounded-xl border border-blue-100 animate-in slide-in-from-top-2 fade-in duration-300">
+                                        <h4 className="text-sm font-semibold text-blue-900 mb-4 flex items-center gap-2">
+                                            <Landmark className="h-4 w-4" />
+                                            Detail Rekening Bank
+                                        </h4>
+                                        <div className="space-y-4">
+                                            <div className="grid grid-cols-2 gap-4">
+                                                <FormField label="Nama Bank">
+                                                    <input name="nama_bank" value={formData.nama_bank} onChange={handleChange} className={inputClasses} placeholder="Cth: BCA" />
+                                                </FormField>
+                                                <FormField label="Cabang Bank">
+                                                    <input name="cabang_bank" value={formData.cabang_bank} onChange={handleChange} className={inputClasses} placeholder="Cth: KCP Surabaya" />
+                                                </FormField>
+                                            </div>
+                                            <div className="grid grid-cols-2 gap-4">
+                                                <FormField label="No Rekening">
+                                                    <input name="no_rekening" value={formData.no_rekening} onChange={handleChange} className={inputClasses} placeholder="000-000..." />
+                                                </FormField>
+                                                <FormField label="Atas Nama">
+                                                    <input name="atas_nama_rekening" value={formData.atas_nama_rekening} onChange={handleChange} className={inputClasses} placeholder="Nama Pemilik" />
+                                                </FormField>
+                                            </div>
+                                        </div>
+                                    </div>
+                                )}
                             </div>
                         </div>
 
+                        {/* Right Column: Credit & Notes */}
                         <div className="space-y-6">
-                            <SectionHeader icon={CreditCard} title="Kredit & TOP" />
-                            <div className="space-y-4">
-                                <div className="grid grid-cols-2 gap-4">
-                                    <FormField label="Limit Kredit Awal">
-                                        <input type="number" name="limit_kredit_awal" value={formData.limit_kredit_awal} onChange={handleChange} className={inputClasses} placeholder="0" />
-                                    </FormField>
-                                    <FormField label="Term of Payment (Hari)">
-                                        <input type="number" name="top_hari" value={formData.top_hari} onChange={handleChange} className={inputClasses} placeholder="0" />
+                            <SectionHeader icon={CreditCard} title="Sistem & Kredit" />
+                            <div className="space-y-5">
+                                <div className="p-4 bg-gray-50 rounded-xl border border-gray-200">
+                                    <FormField label="Sistem Pembayaran">
+                                        <select 
+                                            name="sistem_pembayaran" 
+                                            value={formData.sistem_pembayaran} 
+                                            onChange={handleChange} 
+                                            className={inputClasses}
+                                        >
+                                            <option value="">Pilih Sistem...</option>
+                                            <option value="Cash">Cash (Tunai)</option>
+                                            <option value="Kredit">Kredit (Tempo)</option>
+                                        </select>
                                     </FormField>
                                 </div>
-                                <FormField label="Catatan Tambahan">
-                                    <textarea name="catatan_lain" rows={4} value={formData.catatan_lain} onChange={handleChange} className={inputClasses} placeholder="Catatan khusus untuk pelanggan ini..." />
-                                </FormField>
-                                <div className="p-4 bg-gray-50 rounded-md border border-gray-200">
-                                    <p className="text-xs text-gray-500 leading-relaxed">
-                                        Pengaturan limit kredit dan TOP ini bersifat awal. Dapat diubah sewaktu-waktu oleh Admin Keuangan setelah evaluasi performa pelanggan.
-                                    </p>
+
+                                {/* Conditional Credit Settings */}
+                                {formData.sistem_pembayaran === 'Kredit' ? (
+                                    <div className="bg-yellow-50 p-5 rounded-xl border border-yellow-200 animate-in slide-in-from-top-2 fade-in duration-300">
+                                        <h4 className="text-sm font-semibold text-yellow-800 mb-4 flex items-center gap-2">
+                                            <CreditCard className="h-4 w-4" />
+                                            Limit Kredit & Term of Payment
+                                        </h4>
+                                        <div className="grid grid-cols-2 gap-4">
+                                            <FormField label="Limit Kredit Awal">
+                                                <div className="relative">
+                                                    <span className="absolute inset-y-0 left-0 pl-3 flex items-center text-gray-500 sm:text-sm font-medium">Rp</span>
+                                                    <input 
+                                                        type="number" 
+                                                        name="limit_kredit_awal" 
+                                                        value={formData.limit_kredit_awal} 
+                                                        onChange={handleChange} 
+                                                        className={`${inputClasses} pl-10`} 
+                                                        placeholder="0" 
+                                                    />
+                                                </div>
+                                            </FormField>
+                                            <FormField label="Term (TOP)">
+                                                <div className="relative">
+                                                    <input 
+                                                        type="number" 
+                                                        name="top_hari" 
+                                                        value={formData.top_hari} 
+                                                        onChange={handleChange} 
+                                                        className={`${inputClasses} pr-12`} 
+                                                        placeholder="0" 
+                                                    />
+                                                    <span className="absolute inset-y-0 right-0 pr-3 flex items-center text-gray-500 sm:text-sm font-medium">Hari</span>
+                                                </div>
+                                            </FormField>
+                                        </div>
+                                        <p className="text-xs text-yellow-700 mt-3 leading-relaxed bg-yellow-100/50 p-2 rounded">
+                                            <span className="font-semibold">Note:</span> Limit dan TOP ini adalah pengajuan awal. Approval final dilakukan oleh Admin Keuangan.
+                                        </p>
+                                    </div>
+                                ) : (
+                                    <div className="bg-green-50 p-5 rounded-xl border border-green-100">
+                                        <div className="flex items-start gap-3">
+                                            <div className="p-2 bg-green-100 rounded-lg shrink-0">
+                                                <Shield className="h-5 w-5 text-green-600" />
+                                            </div>
+                                            <div>
+                                                <h4 className="text-sm font-semibold text-green-900">Pembayaran Cash / Tunai</h4>
+                                                <p className="text-xs text-green-700 mt-1">
+                                                    Pelanggan dengan sistem pembayaran Cash tidak memerlukan pengaturan Limit Kredit dan Term of Payment (TOP).
+                                                </p>
+                                            </div>
+                                        </div>
+                                    </div>
+                                )}
+
+                                <div className="pt-2">
+                                    <FormField label="Catatan Tambahan">
+                                        <textarea 
+                                            name="catatan_lain" 
+                                            rows={4} 
+                                            value={formData.catatan_lain} 
+                                            onChange={handleChange} 
+                                            className={inputClasses} 
+                                            placeholder="Catatan khusus untuk pelanggan ini (misal: jam pengiriman khusus, preferensi kontak, dll)..." 
+                                        />
+                                    </FormField>
                                 </div>
                             </div>
                         </div>
                     </div>
+
+                    {/* Sales Section Full Width at Bottom */}
+                    <div className="border-t border-gray-200 pt-8">
+                        <SectionHeader icon={Briefcase} title="Data Sales & Penugasan" />
+                        <div className="grid grid-cols-1 md:grid-cols-2 gap-8 bg-indigo-50 p-6 rounded-xl border border-indigo-100">
+                            <FormField label="Sales / Penanggung Jawab">
+                                <select 
+                                    name="id_sales_pembuat" 
+                                    value={formData.id_sales_pembuat || ''} 
+                                    onChange={handleSalesChange} 
+                                    className={inputClasses}
+                                >
+                                    <option value="">-- Pilih Sales Representative --</option>
+                                    {users.map((user) => (
+                                        <option key={user.id} value={user.id}>
+                                            {user.karyawan?.nama_lengkap || user.username} 
+                                            {user.karyawan?.divisi ? ` - ${user.karyawan.divisi.nama_divisi}` : ''}
+                                        </option>
+                                    ))}
+                                </select>
+                            </FormField>
+
+                            <FormField label="Divisi (Otomatis)">
+                                <div className="mt-1 px-4 py-2 bg-white/60 border border-indigo-200 rounded-md text-indigo-700 font-medium">
+                                    {users.find(u => u.id === formData.id_sales_pembuat)?.karyawan?.divisi?.nama_divisi || 'Belum ada divisi terpilih'}
+                                </div>
+                            </FormField>
+                        </div>
+                    </div>
+                </div>
                 )}
             </div>
 

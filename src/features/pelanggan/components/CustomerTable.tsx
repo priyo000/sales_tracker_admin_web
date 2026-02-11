@@ -73,7 +73,14 @@ const CustomerTable: React.FC<CustomerTableProps> = ({ data, loading, onApprove,
                                                 )}
                                             </div>
                                             <div className="ml-4">
-                                                <div className="text-sm font-semibold text-gray-900">{p.nama_toko}</div>
+                                                <div className="flex items-center gap-2">
+                                                    <div className="text-sm font-semibold text-gray-900">{p.nama_toko}</div>
+                                                    {p.kode_pelanggan && (
+                                                        <span className="px-1.5 py-0.5 rounded bg-gray-100 text-gray-600 text-[10px] font-mono font-bold border border-gray-200">
+                                                            {p.kode_pelanggan}
+                                                        </span>
+                                                    )}
+                                                </div>
                                                 <div className="text-xs text-gray-500 flex items-center mt-0.5">
                                                     <User className="h-3 w-3 mr-1" />
                                                     {p.nama_pemilik}

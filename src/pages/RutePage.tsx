@@ -124,7 +124,8 @@ const RutePage: React.FC = () => {
                 isOpen={isFormOpen}
                 onClose={() => setIsFormOpen(false)}
                 title={editingRoute ? 'Edit Data Rute' : 'Buat Rute Baru'}
-                size="md"
+                size="7xl"
+                noPadding
             >
                 <RouteForm 
                     key={editingRoute ? editingRoute.id : 'create'}

@@ -73,6 +73,27 @@ export const usePelanggan = () => {
         }
     };
 
+    const importPelanggan = async (file: File) => {
+        setLoading(true);
+        setError(null);
+        const formData = new FormData();
+        formData.append('file', file);
+        try {
+            await api.post('/pelanggan/import', formData, {
+                headers: { 'Content-Type': 'multipart/form-data' }
+            });
+            await fetchPelanggans();
+            return { success: true };
+        } catch (err) {
+            const error = err as AxiosError<{ message: string }>;
+            const msg = error.response?.data?.message || 'Gagal mengimport pelanggan';
+            setError(msg);
+            return { success: false, message: msg };
+        } finally {
+            setLoading(false);
+        }
+    };
+
     return {
         pelanggans,
         loading,
@@ -80,6 +101,7 @@ export const usePelanggan = () => {
         fetchPelanggans,
         updateStatus,
         createPelanggan,
-        updatePelanggan
+        updatePelanggan,
+        importPelanggan
     };
 };

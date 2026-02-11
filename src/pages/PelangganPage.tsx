@@ -1,21 +1,23 @@
 import React, { useEffect, useState } from 'react';
-import { Search, Store, Plus } from 'lucide-react';
+import { Search, Store, Plus, Upload } from 'lucide-react';
 import toast from 'react-hot-toast';
 import { usePelanggan } from '../features/pelanggan/hooks/usePelanggan';
 import CustomerTable from '../features/pelanggan/components/CustomerTable';
 import CustomerForm from '../features/pelanggan/components/CustomerForm';
+import ImportCustomerModal from '../features/pelanggan/components/ImportCustomerModal';
 import { ConfirmModal, Modal } from '../components/ui/Modal';
 import { cn } from '@/lib/utils';
 import { PelangganStatus, PelangganFormData, Pelanggan } from '../features/pelanggan/types';
 
 const PelangganPage: React.FC = () => {
-    const { pelanggans, loading: loadingData, error, fetchPelanggans, updateStatus, createPelanggan, updatePelanggan } = usePelanggan();
+    const { pelanggans, loading: loadingData, error, fetchPelanggans, updateStatus, createPelanggan, updatePelanggan, importPelanggan } = usePelanggan();
     
     const [search, setSearch] = useState('');
     const [filterStatus, setFilterStatus] = useState<PelangganStatus | 'all'>('all');
     const [isAddModalOpen, setIsAddModalOpen] = useState(false);
     const [editingPelanggan, setEditingPelanggan] = useState<Pelanggan | null>(null);
     const [isSubmitting, setIsSubmitting] = useState(false);
+    const [isImportModalOpen, setIsImportModalOpen] = useState(false);
     
     // Confirmation State
     const [confirmAction, setConfirmAction] = useState<{ id: number, type: 'approve' | 'reject' } | null>(null);
@@ -67,6 +69,8 @@ const PelangganPage: React.FC = () => {
             toast.error(result.message || 'Gagal memperbarui pelanggan');
         }
     };
+    
+    
 
     return (
         <div className="space-y-6">
@@ -83,8 +87,15 @@ const PelangganPage: React.FC = () => {
 
                 <div className="flex items-center space-x-3">
                     <button
+                        onClick={() => setIsImportModalOpen(true)}
+                        className="flex items-center justify-center rounded-lg bg-green-600 px-4 py-2.5 text-sm font-semibold text-white hover:bg-green-700 shadow-sm transition-all active:scale-95"
+                    >
+                        <Upload className="mr-2 h-4 w-4" /> Import Excel
+                    </button>
+
+                    <button
                         onClick={() => setIsAddModalOpen(true)}
-                        className="inline-flex items-center rounded-lg bg-indigo-600 px-4 py-2 text-sm font-bold text-white shadow-md hover:bg-indigo-700 transition-all active:scale-95"
+                        className="flex items-center justify-center rounded-lg bg-indigo-600 px-4 py-2.5 text-sm font-semibold text-white hover:bg-indigo-700 shadow-sm transition-all active:scale-95"
                     >
                         <Plus className="mr-2 h-4 w-4" /> Tambah Pelanggan
                     </button>
@@ -179,6 +190,13 @@ const PelangganPage: React.FC = () => {
                 message={`Apakah Anda yakin ingin ${confirmAction?.type === 'approve' ? 'menyetujui' : 'menolak'} pendaftaran pelanggan ini?`}
                 type={confirmAction?.type === 'approve' ? 'warning' : 'danger'}
                 confirmText={confirmAction?.type === 'approve' ? 'Approve' : 'Reject'}
+            />
+
+            {/* Import Modal */}
+            <ImportCustomerModal 
+                isOpen={isImportModalOpen}
+                onClose={() => setIsImportModalOpen(false)}
+                onImport={importPelanggan}
             />
         </div>
     );
