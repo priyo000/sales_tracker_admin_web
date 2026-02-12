@@ -1,4 +1,4 @@
-export type PelangganStatus = 'prospect' | 'pending' | 'active' | 'rejected' | 'declined';
+export type PelangganStatus = 'prospect' | 'pending' | 'active' | 'rejected' | 'nonactive';
 
 export interface Pelanggan {
     id: number;
@@ -55,11 +55,18 @@ export interface Pelanggan {
     };
     creator?: {
         id: number;
-        karyawan?: {
-            nama_lengkap: string;
-        }
+        nama_lengkap: string;
+        kode_karyawan?: string;
     };
     created_at?: string;
+    details_rute?: {
+        id: number;
+        id_rute: number;
+        rute?: {
+            id: number;
+            nama_rute: string;
+        }
+    }[];
 }
 
 export interface PelangganFormData {

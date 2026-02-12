@@ -1,27 +1,30 @@
 import React, { useEffect, useState } from 'react';
-import { Plus, Search } from 'lucide-react';
+import { Plus, Search, FileUp } from 'lucide-react';
 import toast from 'react-hot-toast';
 import { useRute } from '../features/rute/hooks/useRute';
 import RouteTable from '../features/rute/components/RouteTable';
 import RouteForm from '../features/rute/components/RouteForm';
+import ImportRouteModal from '../features/rute/components/ImportRouteModal';
 import { Modal, ConfirmModal } from '../components/ui/Modal';
 import { Rute, RuteFormData } from '../features/rute/types';
 
 const RutePage: React.FC = () => {
     const { 
-        rutes, 
-        loading, 
-        error, 
-        fetchRutes, 
+        rutes,
+        loading,
+        error,
+        fetchRutes,
         createRute, 
         updateRute, 
-        deleteRute 
+        deleteRute,
+        importRute
     } = useRute();
 
     const [search, setSearch] = useState('');
     const [isFormOpen, setIsFormOpen] = useState(false);
     const [editingRoute, setEditingRoute] = useState<Rute | null>(null);
     const [deletingId, setDeletingId] = useState<number | null>(null);
+    const [isImportModalOpen, setIsImportModalOpen] = useState(false);
 
     // Initial Fetch & Search Debounce
     useEffect(() => {
@@ -77,12 +80,20 @@ const RutePage: React.FC = () => {
         <div className="space-y-6">
             <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between space-y-4 sm:space-y-0">
                 <h1 className="text-2xl font-bold text-gray-800">Manajemen Rute</h1>
-                <button 
-                    onClick={handleCreate}
-                    className="flex items-center justify-center rounded-md bg-indigo-600 px-4 py-2 text-white hover:bg-indigo-700 shadow-sm transition-transform active:scale-95"
-                >
-                    <Plus className="mr-2 h-4 w-4" /> Tambah Rute
-                </button>
+                <div className="flex gap-2">
+                    <button 
+                        onClick={() => setIsImportModalOpen(true)}
+                        className="flex items-center justify-center rounded-md bg-emerald-600 px-4 py-2 text-white hover:bg-emerald-700 shadow-sm transition-transform active:scale-95"
+                    >
+                        <FileUp className="mr-2 h-4 w-4" /> Import Excel
+                    </button>
+                    <button 
+                        onClick={handleCreate}
+                        className="flex items-center justify-center rounded-md bg-indigo-600 px-4 py-2 text-white hover:bg-indigo-700 shadow-sm transition-transform active:scale-95"
+                    >
+                        <Plus className="mr-2 h-4 w-4" /> Tambah Rute
+                    </button>
+                </div>
             </div>
 
             {/* Helper Text */}
@@ -126,6 +137,7 @@ const RutePage: React.FC = () => {
                 title={editingRoute ? 'Edit Data Rute' : 'Buat Rute Baru'}
                 size="7xl"
                 noPadding
+                closeOnOutsideClick={false}
             >
                 <RouteForm 
                     key={editingRoute ? editingRoute.id : 'create'}
@@ -145,6 +157,13 @@ const RutePage: React.FC = () => {
                 message="Apakah Anda yakin ingin menghapus rute ini? Data pelanggan yang terhubung mungkin akan kehilangan referensi rute."
                 type="danger"
                 confirmText="Hapus"
+            />
+
+            {/* Import Modal */}
+            <ImportRouteModal 
+                isOpen={isImportModalOpen}
+                onClose={() => setIsImportModalOpen(false)}
+                onImport={importRute}
             />
         </div>
     );

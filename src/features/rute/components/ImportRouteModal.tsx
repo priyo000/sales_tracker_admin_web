@@ -2,7 +2,7 @@ import React, { useState, useRef } from 'react';
 import { Upload, FileSpreadsheet, X, CheckCircle, AlertCircle, ChevronDown, ChevronUp } from 'lucide-react';
 import { Modal } from '../../../components/ui/Modal';
 
-interface ImportCustomerModalProps {
+interface ImportRouteModalProps {
     isOpen: boolean;
     onClose: () => void;
     onImport: (file: File) => Promise<{ 
@@ -11,19 +11,19 @@ interface ImportCustomerModalProps {
         data?: {
             message: string;
             summary: { success: number; failed: number; total: number };
-            failures: Array<{ row: number; nama_toko: string; error: string }>;
+            failures: Array<{ row: number; nama_rute: string; error: string }>;
         } 
     }>;
 }
 
-const ImportCustomerModal: React.FC<ImportCustomerModalProps> = ({ isOpen, onClose, onImport }) => {
+const ImportRouteModal: React.FC<ImportRouteModalProps> = ({ isOpen, onClose, onImport }) => {
     const [file, setFile] = useState<File | null>(null);
     const [loading, setLoading] = useState(false);
     const [error, setError] = useState<string | null>(null);
     const [result, setResult] = useState<{
         message: string;
         summary: { success: number; failed: number; total: number };
-        failures: Array<{ row: number; nama_toko: string; error: string }>;
+        failures: Array<{ row: number; nama_rute: string; error: string }>;
     } | null>(null);
     const [showFailures, setShowFailures] = useState(false);
     const fileInputRef = useRef<HTMLInputElement>(null);
@@ -36,22 +36,16 @@ const ImportCustomerModal: React.FC<ImportCustomerModalProps> = ({ isOpen, onClo
     };
 
     const validateAndSetFile = (file: File) => {
-        const validTypes = [
-            'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet', // .xlsx
-            'application/vnd.ms-excel', // .xls
-            'text/csv' // .csv
-        ];
-
-        const validExtensions = ['.xlsx', '.xls', '.csv'];
+        const validExtensions = ['.xlsx', '.xls'];
         const fileExtension = '.' + file.name.split('.').pop()?.toLowerCase();
 
-        if (validTypes.includes(file.type) || validExtensions.includes(fileExtension)) {
+        if (validExtensions.includes(fileExtension)) {
             setFile(file);
             setError(null);
             setResult(null);
         } else {
             setFile(null);
-            setError('Format file tidak didukung. Harap gunakan format .xlsx, .xls, atau .csv');
+            setError('Format file tidak didukung. Harap gunakan format .xlsx atau .xls');
         }
     };
 
@@ -81,9 +75,8 @@ const ImportCustomerModal: React.FC<ImportCustomerModalProps> = ({ isOpen, onClo
             if (res.success && res.data) {
                 setResult(res.data);
                 if (res.data.summary.failed === 0) {
-                   // Auto close if everything perfect after delay
                    setTimeout(() => {
-                        if (res.data?.summary.failed === 0) handleClose();
+                        handleClose();
                    }, 3000);
                 }
             } else {
@@ -110,24 +103,22 @@ const ImportCustomerModal: React.FC<ImportCustomerModalProps> = ({ isOpen, onClo
         <Modal
             isOpen={isOpen}
             onClose={handleClose}
-            title="Import Data Pelanggan"
+            title="Import Data Rute"
             size="lg"
         >
             <div className="space-y-6">
-                {/* Instructions */}
                 {!result && (
                     <div className="bg-blue-50 border border-blue-100 rounded-lg p-4">
                         <h3 className="text-sm font-semibold text-blue-800 mb-2">Panduan Import:</h3>
                         <ul className="text-sm text-blue-700 list-disc list-inside space-y-1">
                             <li>Gunakan format excel (.xlsx / .xls).</li>
-                            <li>Pastikan kolom header sesuai dengan template.</li>
-                            <li>Kolom wajib: <strong>nama_toko</strong>.</li>
-                            <li>Sistem akan melakukan <strong>Update</strong> jika kode_pelanggan sudah ada.</li>
+                            <li>Kolom wajib: <strong>nama_rute</strong>, <strong>kode_pelanggan</strong>.</li>
+                            <li>Sistem akan mencari <strong>kode_pelanggan</strong> dan menghubungkannya ke rute.</li>
+                            <li>Jika <strong>nama_rute</strong> belum ada, rute baru akan dibuat.</li>
                         </ul>
                     </div>
                 )}
 
-                {/* Dropzone */}
                 {!file && !result ? (
                     <div 
                         className="border-2 border-dashed border-gray-300 rounded-xl p-8 flex flex-col items-center justify-center cursor-pointer hover:border-indigo-500 hover:bg-indigo-50 transition-all group"
@@ -143,13 +134,12 @@ const ImportCustomerModal: React.FC<ImportCustomerModalProps> = ({ isOpen, onClo
                             type="file" 
                             className="hidden" 
                             ref={fileInputRef} 
-                            accept=".xlsx, .xls, .csv" 
+                            accept=".xlsx, .xls" 
                             onChange={handleFileChange}
                         />
                     </div>
                 ) : null}
 
-                {/* Selected File State */}
                 {file && !result && (
                     <div className="bg-white border rounded-lg p-4 flex items-center justify-between shadow-sm">
                         <div className="flex items-center space-x-4">
@@ -171,7 +161,6 @@ const ImportCustomerModal: React.FC<ImportCustomerModalProps> = ({ isOpen, onClo
                     </div>
                 )}
 
-                {/* Result State */}
                 {result && (
                     <div className="space-y-4 animate-in fade-in zoom-in-95">
                         <div className={`rounded-xl p-6 border flex flex-col items-center text-center ${result.summary.failed > 0 ? 'bg-amber-50 border-amber-200' : 'bg-green-50 border-green-200'}`}>
@@ -198,7 +187,6 @@ const ImportCustomerModal: React.FC<ImportCustomerModalProps> = ({ isOpen, onClo
                             </div>
                         </div>
 
-                        {/* Failures List */}
                         {result.failures.length > 0 && (
                             <div className="border rounded-xl overflow-hidden bg-white">
                                 <button 
@@ -217,7 +205,7 @@ const ImportCustomerModal: React.FC<ImportCustomerModalProps> = ({ isOpen, onClo
                                         {result.failures.map((fail, idx) => (
                                             <div key={idx} className="p-3 text-xs">
                                                 <div className="flex items-center justify-between mb-1">
-                                                    <span className="font-bold text-gray-900">Baris {fail.row}: {fail.nama_toko}</span>
+                                                    <span className="font-bold text-gray-900">Baris {fail.row}: {fail.nama_rute}</span>
                                                 </div>
                                                 <p className="text-red-600 font-medium">{fail.error}</p>
                                             </div>
@@ -238,7 +226,6 @@ const ImportCustomerModal: React.FC<ImportCustomerModalProps> = ({ isOpen, onClo
                     </div>
                 )}
 
-                {/* Error Message */}
                 {error && (
                     <div className="bg-red-50 border border-red-200 rounded-lg p-4 flex items-start space-x-3 animate-in slide-in-from-top-2">
                         <AlertCircle className="w-5 h-5 text-red-600 mt-0.5 shrink-0" />
@@ -246,7 +233,6 @@ const ImportCustomerModal: React.FC<ImportCustomerModalProps> = ({ isOpen, onClo
                     </div>
                 )}
 
-                {/* Action Buttons */}
                 {!result && (
                     <div className="flex justify-end space-x-3 pt-4 border-t border-gray-100">
                         <button
@@ -270,4 +256,4 @@ const ImportCustomerModal: React.FC<ImportCustomerModalProps> = ({ isOpen, onClo
     );
 };
 
-export default ImportCustomerModal;
+export default ImportRouteModal;

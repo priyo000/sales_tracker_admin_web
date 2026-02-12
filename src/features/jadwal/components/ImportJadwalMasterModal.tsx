@@ -2,7 +2,7 @@ import React, { useState, useRef } from 'react';
 import { Upload, FileSpreadsheet, X, CheckCircle, AlertCircle, ChevronDown, ChevronUp } from 'lucide-react';
 import { Modal } from '../../../components/ui/Modal';
 
-interface ImportCustomerModalProps {
+interface ImportJadwalMasterModalProps {
     isOpen: boolean;
     onClose: () => void;
     onImport: (file: File) => Promise<{ 
@@ -10,20 +10,28 @@ interface ImportCustomerModalProps {
         message?: string; 
         data?: {
             message: string;
-            summary: { success: number; failed: number; total: number };
-            failures: Array<{ row: number; nama_toko: string; error: string }>;
+            summary: { 
+                success: number; 
+                failed: number; 
+                total: number;
+                failures: Array<{ sheet: string; row: number; name: string; error: string }>;
+            };
         } 
     }>;
 }
 
-const ImportCustomerModal: React.FC<ImportCustomerModalProps> = ({ isOpen, onClose, onImport }) => {
+const ImportJadwalMasterModal: React.FC<ImportJadwalMasterModalProps> = ({ isOpen, onClose, onImport }) => {
     const [file, setFile] = useState<File | null>(null);
     const [loading, setLoading] = useState(false);
     const [error, setError] = useState<string | null>(null);
     const [result, setResult] = useState<{
         message: string;
-        summary: { success: number; failed: number; total: number };
-        failures: Array<{ row: number; nama_toko: string; error: string }>;
+        summary: { 
+            success: number; 
+            failed: number; 
+            total: number;
+            failures: Array<{ sheet: string; row: number; name: string; error: string }>;
+        };
     } | null>(null);
     const [showFailures, setShowFailures] = useState(false);
     const fileInputRef = useRef<HTMLInputElement>(null);
@@ -36,22 +44,16 @@ const ImportCustomerModal: React.FC<ImportCustomerModalProps> = ({ isOpen, onClo
     };
 
     const validateAndSetFile = (file: File) => {
-        const validTypes = [
-            'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet', // .xlsx
-            'application/vnd.ms-excel', // .xls
-            'text/csv' // .csv
-        ];
-
-        const validExtensions = ['.xlsx', '.xls', '.csv'];
+        const validExtensions = ['.xlsx', '.xls'];
         const fileExtension = '.' + file.name.split('.').pop()?.toLowerCase();
 
-        if (validTypes.includes(file.type) || validExtensions.includes(fileExtension)) {
+        if (validExtensions.includes(fileExtension)) {
             setFile(file);
             setError(null);
             setResult(null);
         } else {
             setFile(null);
-            setError('Format file tidak didukung. Harap gunakan format .xlsx, .xls, atau .csv');
+            setError('Format file tidak didukung. Harap gunakan format .xlsx atau .xls');
         }
     };
 
@@ -81,9 +83,8 @@ const ImportCustomerModal: React.FC<ImportCustomerModalProps> = ({ isOpen, onClo
             if (res.success && res.data) {
                 setResult(res.data);
                 if (res.data.summary.failed === 0) {
-                   // Auto close if everything perfect after delay
                    setTimeout(() => {
-                        if (res.data?.summary.failed === 0) handleClose();
+                        handleClose();
                    }, 3000);
                 }
             } else {
@@ -110,24 +111,36 @@ const ImportCustomerModal: React.FC<ImportCustomerModalProps> = ({ isOpen, onClo
         <Modal
             isOpen={isOpen}
             onClose={handleClose}
-            title="Import Data Pelanggan"
+            title="Import Master Jadwal"
             size="lg"
         >
             <div className="space-y-6">
-                {/* Instructions */}
                 {!result && (
                     <div className="bg-blue-50 border border-blue-100 rounded-lg p-4">
-                        <h3 className="text-sm font-semibold text-blue-800 mb-2">Panduan Import:</h3>
-                        <ul className="text-sm text-blue-700 list-disc list-inside space-y-1">
-                            <li>Gunakan format excel (.xlsx / .xls).</li>
-                            <li>Pastikan kolom header sesuai dengan template.</li>
-                            <li>Kolom wajib: <strong>nama_toko</strong>.</li>
-                            <li>Sistem akan melakukan <strong>Update</strong> jika kode_pelanggan sudah ada.</li>
-                        </ul>
+                        <h3 className="text-sm font-semibold text-blue-800 mb-2">Panduan Import Master Jadwal:</h3>
+                        <div className="text-sm text-blue-700 space-y-3">
+                            <div>
+                                <p className="font-bold underline">Sheet 1: RuteMingguan</p>
+                                <p className="mb-1 italic text-xs">Mendukung format Horizontal (Hari 1-7 sebagai kolom) atau Vertikal.</p>
+                                <ul className="list-disc list-inside ml-2">
+                                    <li>Kolom Wajib: <strong>nama_per_minggu</strong>.</li>
+                                    <li>Format Horizontal: Kolom <strong>1, 2, 3, 4, 5, 6, 7</strong> (isi dengan nama rute).</li>
+                                    <li>Format Vertikal: Kolom <strong>hari_ke</strong> dan <strong>nama_rute</strong>.</li>
+                                </ul>
+                            </div>
+                            <div>
+                                <p className="font-bold underline">Sheet 2: MingguanKaryawan</p>
+                                <p className="mb-1 italic text-xs">Mendukung format Horizontal (Minggu 1-4 sebagai kolom) atau Vertikal.</p>
+                                <ul className="list-disc list-inside ml-2">
+                                    <li>Kolom Wajib: <strong>kode_karyawan</strong>.</li>
+                                    <li>Format Horizontal: Kolom <strong>Minggu 1, Minggu 2, Minggu 3, Minggu 4</strong>.</li>
+                                    <li>Format Vertikal: Kolom <strong>minggu_ke</strong> dan <strong>WeeklyRouteName</strong>.</li>
+                                </ul>
+                            </div>
+                        </div>
                     </div>
                 )}
 
-                {/* Dropzone */}
                 {!file && !result ? (
                     <div 
                         className="border-2 border-dashed border-gray-300 rounded-xl p-8 flex flex-col items-center justify-center cursor-pointer hover:border-indigo-500 hover:bg-indigo-50 transition-all group"
@@ -143,13 +156,12 @@ const ImportCustomerModal: React.FC<ImportCustomerModalProps> = ({ isOpen, onClo
                             type="file" 
                             className="hidden" 
                             ref={fileInputRef} 
-                            accept=".xlsx, .xls, .csv" 
+                            accept=".xlsx, .xls" 
                             onChange={handleFileChange}
                         />
                     </div>
                 ) : null}
 
-                {/* Selected File State */}
                 {file && !result && (
                     <div className="bg-white border rounded-lg p-4 flex items-center justify-between shadow-sm">
                         <div className="flex items-center space-x-4">
@@ -171,7 +183,6 @@ const ImportCustomerModal: React.FC<ImportCustomerModalProps> = ({ isOpen, onClo
                     </div>
                 )}
 
-                {/* Result State */}
                 {result && (
                     <div className="space-y-4 animate-in fade-in zoom-in-95">
                         <div className={`rounded-xl p-6 border flex flex-col items-center text-center ${result.summary.failed > 0 ? 'bg-amber-50 border-amber-200' : 'bg-green-50 border-green-200'}`}>
@@ -184,7 +195,7 @@ const ImportCustomerModal: React.FC<ImportCustomerModalProps> = ({ isOpen, onClo
                             
                             <div className="grid grid-cols-3 gap-4 mt-6 w-full max-w-sm">
                                 <div className="bg-white p-3 rounded-lg border border-gray-100 shadow-sm">
-                                    <p className="text-xs text-gray-500 font-bold uppercase tracking-tight">Total</p>
+                                    <p className="text-xs text-gray-500 font-bold uppercase tracking-tight">Total Rows</p>
                                     <p className="text-xl font-black text-gray-800">{result.summary.total}</p>
                                 </div>
                                 <div className="bg-white p-3 rounded-lg border border-gray-100 shadow-sm">
@@ -198,8 +209,7 @@ const ImportCustomerModal: React.FC<ImportCustomerModalProps> = ({ isOpen, onClo
                             </div>
                         </div>
 
-                        {/* Failures List */}
-                        {result.failures.length > 0 && (
+                        {result.summary.failures.length > 0 && (
                             <div className="border rounded-xl overflow-hidden bg-white">
                                 <button 
                                     onClick={() => setShowFailures(!showFailures)}
@@ -207,17 +217,19 @@ const ImportCustomerModal: React.FC<ImportCustomerModalProps> = ({ isOpen, onClo
                                 >
                                     <div className="flex items-center">
                                         <AlertCircle className="w-4 h-4 mr-2 text-red-500" />
-                                        Lihat Detail Kegagalan ({result.failures.length})
+                                        Lihat Detail Kegagalan ({result.summary.failures.length})
                                     </div>
                                     {showFailures ? <ChevronUp className="w-4 h-4" /> : <ChevronDown className="w-4 h-4" />}
                                 </button>
                                 
                                 {showFailures && (
                                     <div className="max-h-60 overflow-y-auto divide-y divide-gray-100">
-                                        {result.failures.map((fail, idx) => (
+                                        {result.summary.failures.map((fail, idx) => (
                                             <div key={idx} className="p-3 text-xs">
                                                 <div className="flex items-center justify-between mb-1">
-                                                    <span className="font-bold text-gray-900">Baris {fail.row}: {fail.nama_toko}</span>
+                                                    <span className="font-bold text-gray-900">
+                                                        [{fail.sheet}] Baris {fail.row}: {fail.name}
+                                                    </span>
                                                 </div>
                                                 <p className="text-red-600 font-medium">{fail.error}</p>
                                             </div>
@@ -238,7 +250,6 @@ const ImportCustomerModal: React.FC<ImportCustomerModalProps> = ({ isOpen, onClo
                     </div>
                 )}
 
-                {/* Error Message */}
                 {error && (
                     <div className="bg-red-50 border border-red-200 rounded-lg p-4 flex items-start space-x-3 animate-in slide-in-from-top-2">
                         <AlertCircle className="w-5 h-5 text-red-600 mt-0.5 shrink-0" />
@@ -246,7 +257,6 @@ const ImportCustomerModal: React.FC<ImportCustomerModalProps> = ({ isOpen, onClo
                     </div>
                 )}
 
-                {/* Action Buttons */}
                 {!result && (
                     <div className="flex justify-end space-x-3 pt-4 border-t border-gray-100">
                         <button
@@ -270,4 +280,4 @@ const ImportCustomerModal: React.FC<ImportCustomerModalProps> = ({ isOpen, onClo
     );
 };
 
-export default ImportCustomerModal;
+export default ImportJadwalMasterModal;

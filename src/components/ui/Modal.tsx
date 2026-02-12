@@ -9,9 +9,10 @@ interface ModalProps {
     children: React.ReactNode;
     size?: 'sm' | 'md' | 'lg' | 'xl' | '2xl' | '3xl' | '4xl' | '5xl' | '6xl' | '7xl' | 'full';
     noPadding?: boolean;
+    closeOnOutsideClick?: boolean;
 }
 
-export const Modal: React.FC<ModalProps> = ({ isOpen, onClose, title, children, size = 'md', noPadding = false }) => {
+export const Modal: React.FC<ModalProps> = ({ isOpen, onClose, title, children, size = 'md', noPadding = false, closeOnOutsideClick = true }) => {
     if (!isOpen) return null;
 
     const sizeClasses = {
@@ -33,12 +34,12 @@ export const Modal: React.FC<ModalProps> = ({ isOpen, onClose, title, children, 
             {/* Backdrop */}
             <div 
                 className="fixed inset-0 bg-black/40 backdrop-blur-[2px] transition-opacity" 
-                onClick={onClose}
+                onClick={closeOnOutsideClick ? onClose : undefined}
             ></div>
 
             {/* Modal Content */}
             <div className={`relative w-full ${sizeClasses[size]} transform overflow-hidden rounded-xl bg-white shadow-2xl transition-all animate-in fade-in zoom-in-95 duration-200 max-h-[90vh] flex flex-col`}>
-                <div className="flex items-center justify-between border-b border-gray-100 px-6 py-4 flex-shrink-0">
+                <div className="flex items-center justify-between border-b border-gray-100 px-6 py-4 shrink-0">
                     <h2 className="text-xl font-bold text-gray-900">{title}</h2>
                     <button 
                         onClick={onClose} 
@@ -64,11 +65,12 @@ interface ConfirmModalProps {
     confirmText?: string;
     cancelText?: string;
     type?: 'danger' | 'warning' | 'info';
+    closeOnOutsideClick?: boolean;
 }
 
 export const ConfirmModal: React.FC<ConfirmModalProps> = ({ 
     isOpen, onClose, onConfirm, title, message, 
-    confirmText = 'Konfirmasi', cancelText = 'Batal', type = 'warning'
+    confirmText = 'Konfirmasi', cancelText = 'Batal', type = 'warning', closeOnOutsideClick = true
 }) => {
     if (!isOpen) return null;
 
@@ -80,7 +82,7 @@ export const ConfirmModal: React.FC<ConfirmModalProps> = ({
             {/* Backdrop */}
             <div 
                 className="fixed inset-0 bg-black/40 backdrop-blur-[2px] transition-opacity" 
-                onClick={onClose}
+                onClick={closeOnOutsideClick ? onClose : undefined}
             ></div>
 
             {/* Modal Content */}

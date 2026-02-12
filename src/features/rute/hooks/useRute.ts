@@ -74,6 +74,28 @@ export const useRute = () => {
         }
     };
 
+    const importRute = async (file: File) => {
+        setLoading(true);
+        setError(null);
+        const formData = new FormData();
+        formData.append('file', file);
+
+        try {
+            const response = await api.post('/rute/import', formData, {
+                headers: { 'Content-Type': 'multipart/form-data' },
+            });
+            await fetchRutes();
+            return { success: true, data: response.data };
+        } catch (err: unknown) {
+            const error = err as AxiosError<{ message: string }>;
+            const msg = error.response?.data?.message || 'Gagal mengimpor rute.';
+            setError(msg);
+            return { success: false, message: msg };
+        } finally {
+            setLoading(false);
+        }
+    };
+
     return {
         rutes,
         loading,
@@ -81,6 +103,7 @@ export const useRute = () => {
         fetchRutes,
         createRute,
         updateRute,
-        deleteRute
+        deleteRute,
+        importRute
     };
 };

@@ -50,7 +50,7 @@ const RouteTable: React.FC<RouteTableProps> = ({ data, loading, onEdit, onDelete
                             <tr key={rute.id} className="hover:bg-gray-50 transition-colors">
                                 <td className="px-6 py-4 whitespace-nowrap">
                                     <div className="flex items-center">
-                                        <div className="h-10 w-10 flex-shrink-0 rounded-full bg-indigo-100 flex items-center justify-center text-indigo-600">
+                                        <div className="h-10 w-10 shrink-0 rounded-full bg-indigo-100 flex items-center justify-center text-indigo-600">
                                             <Map className="h-5 w-5" />
                                         </div>
                                         <div className="ml-4">

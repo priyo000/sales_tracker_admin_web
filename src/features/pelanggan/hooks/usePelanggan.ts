@@ -7,14 +7,43 @@ export const usePelanggan = () => {
     const [pelanggans, setPelanggans] = useState<Pelanggan[]>([]);
     const [loading, setLoading] = useState(false);
     const [error, setError] = useState<string | null>(null);
+    const [pagination, setPagination] = useState<{
+        currentPage: number;
+        lastPage: number;
+        total: number;
+        perPage: number;
+    }>({
+        currentPage: 1,
+        lastPage: 1,
+        total: 0,
+        perPage: 20
+    });
 
-    const fetchPelanggans = useCallback(async (params?: { search?: string, status?: string }) => {
+    const fetchPelanggans = useCallback(async (params?: { 
+        search?: string, 
+        status?: string, 
+        per_page?: number, 
+        page?: number,
+        id_sales?: number,
+        id_karyawan?: number 
+    }) => {
         setLoading(true);
         setError(null);
         try {
             const response = await api.get('/pelanggan', { params });
-            // Ideally ensure data is typed correctly or transformed
-            setPelanggans(response.data.data);
+            if (response.data.data && Array.isArray(response.data.data)) {
+                setPelanggans(response.data.data);
+                if (response.data.current_page) {
+                    setPagination({
+                        currentPage: response.data.current_page,
+                        lastPage: response.data.last_page,
+                        total: response.data.total,
+                        perPage: response.data.per_page
+                    });
+                }
+            } else {
+                setPelanggans(response.data); // Fallback for non-paginated -1
+            }
         } catch (err) {
             const error = err as AxiosError<{ message: string }>;
             setError(error.response?.data?.message || error.message || 'Failed to fetch customers');
@@ -79,11 +108,11 @@ export const usePelanggan = () => {
         const formData = new FormData();
         formData.append('file', file);
         try {
-            await api.post('/pelanggan/import', formData, {
+            const response = await api.post('/pelanggan/import', formData, {
                 headers: { 'Content-Type': 'multipart/form-data' }
             });
             await fetchPelanggans();
-            return { success: true };
+            return { success: true, data: response.data };
         } catch (err) {
             const error = err as AxiosError<{ message: string }>;
             const msg = error.response?.data?.message || 'Gagal mengimport pelanggan';
@@ -94,6 +123,16 @@ export const usePelanggan = () => {
         }
     };
 
+    const fetchFilterOptions = useCallback(async (params?: { only_with_data?: boolean }) => {
+        try {
+            const response = await api.get('/pelanggan/filter-options', { params });
+            return response.data.data;
+        } catch (err) {
+            console.error('Failed to fetch filter options', err);
+            return [];
+        }
+    }, []);
+
     return {
         pelanggans,
         loading,
@@ -102,6 +141,8 @@ export const usePelanggan = () => {
         updateStatus,
         createPelanggan,
         updatePelanggan,
-        importPelanggan
+        importPelanggan,
+        fetchFilterOptions,
+        pagination
     };
 };

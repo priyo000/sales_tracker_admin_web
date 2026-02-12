@@ -3,7 +3,7 @@ import { Store, MapPin, User, CreditCard, Landmark, Phone, LucideIcon, Upload, I
 import { Pelanggan, PelangganFormData } from '../types';
 import MapPicker from './MapPicker';
 import { cn } from '@/lib/utils';
-import { useUser } from '../../users/hooks/useUser';
+import { usePelanggan } from '../hooks/usePelanggan';
 
 interface CustomerFormProps {
     initialData?: Pelanggan | null;
@@ -101,21 +101,32 @@ const CustomerForm: React.FC<CustomerFormProps> = ({ initialData, onSubmit, onCa
         }
     };
 
-    const { users, fetchUsers } = useUser();
+    interface FilterOption {
+        id: number;
+        nama_lengkap: string;
+        jabatan?: string;
+        has_account: boolean;
+        has_data: boolean;
+    }
+
+    const { fetchFilterOptions } = usePelanggan();
+    const [filterOptions, setFilterOptions] = useState<FilterOption[]>([]);
 
     React.useEffect(() => {
-        fetchUsers({ peran: 'sales' });
-    }, [fetchUsers]);
+        const loadOptions = async () => {
+            const options = await fetchFilterOptions();
+            setFilterOptions(options);
+        };
+        loadOptions();
+    }, [fetchFilterOptions]);
 
     const handleSalesChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
-        const userId = Number(e.target.value);
-        const selectedUser = users.find(u => u.id === userId);
+        const karyawanId = Number(e.target.value);
+        // Find selection in options to maybe show more info, but ID is enough for state
         
         setFormData(prev => ({
             ...prev,
-            id_sales_pembuat: userId,
-            // Auto-fill Division if employee has one
-            id_divisi: selectedUser?.karyawan?.divisi?.id || prev.id_divisi
+            id_sales_pembuat: karyawanId,
         }));
     };
 
@@ -140,7 +151,7 @@ const CustomerForm: React.FC<CustomerFormProps> = ({ initialData, onSubmit, onCa
     return (
         <form onSubmit={handleSubmit} className="flex flex-col h-[80vh] bg-white">
             {/* Tab Navigation */}
-            <div className="flex border-b border-gray-200 px-6 pt-2 bg-gray-50 flex-shrink-0">
+            <div className="flex border-b border-gray-200 px-6 pt-2 bg-gray-50 shrink-0">
                 {(['pemilik', 'usaha', 'pembayaran'] as const).map((id) => {
                     const tab = {
                         pemilik: { label: 'Informasi Pemilik', icon: User },
@@ -282,6 +293,8 @@ const CustomerForm: React.FC<CustomerFormProps> = ({ initialData, onSubmit, onCa
                                                 <option value="active">Aktif</option>
                                                 <option value="pending">Pending</option>
                                                 <option value="prospect">Prospek</option>
+                                                <option value="nonactive">Non-Active</option>
+                                                <option value="rejected">Ditolak</option>
                                             </select>
                                         </FormField>
                                         <FormField label="Klasifikasi Outlet">
@@ -577,18 +590,19 @@ const CustomerForm: React.FC<CustomerFormProps> = ({ initialData, onSubmit, onCa
                                     className={inputClasses}
                                 >
                                     <option value="">-- Pilih Sales Representative --</option>
-                                    {users.map((user) => (
-                                        <option key={user.id} value={user.id}>
-                                            {user.karyawan?.nama_lengkap || user.username} 
-                                            {user.karyawan?.divisi ? ` - ${user.karyawan.divisi.nama_divisi}` : ''}
+                                    {filterOptions.map((opt) => (
+                                        <option key={opt.id} value={opt.id}>
+                                            {opt.nama_lengkap} 
+                                            {!opt.has_account ? ' (No Account)' : ''}
+                                            {opt.jabatan ? ` - ${opt.jabatan}` : ''}
                                         </option>
                                     ))}
                                 </select>
                             </FormField>
 
-                            <FormField label="Divisi (Otomatis)">
+                            <FormField label="Info Karyawan">
                                 <div className="mt-1 px-4 py-2 bg-white/60 border border-indigo-200 rounded-md text-indigo-700 font-medium">
-                                    {users.find(u => u.id === formData.id_sales_pembuat)?.karyawan?.divisi?.nama_divisi || 'Belum ada divisi terpilih'}
+                                    {filterOptions.find(o => o.id === formData.id_sales_pembuat)?.jabatan || 'Pilih sales untuk melihat detail'}
                                 </div>
                             </FormField>
                         </div>

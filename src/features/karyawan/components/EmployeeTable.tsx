@@ -56,7 +56,7 @@ const EmployeeTable: React.FC<EmployeeTableProps> = ({ data, loading, onEdit, on
                             <tr key={k.id} className="hover:bg-gray-50 transition-colors">
                                 <td className="px-6 py-4 whitespace-nowrap">
                                     <div className="flex items-center">
-                                        <div className="h-10 w-10 flex-shrink-0 rounded-full bg-indigo-100 flex items-center justify-center text-indigo-600">
+                                        <div className="h-10 w-10 shrink-0 rounded-full bg-indigo-100 flex items-center justify-center text-indigo-600">
                                             <User className="h-5 w-5" />
                                         </div>
                                         <div className="ml-4">
@@ -98,7 +98,7 @@ const EmployeeTable: React.FC<EmployeeTableProps> = ({ data, loading, onEdit, on
                                 </td>
                                 <td className="px-6 py-4">
                                     <div className="flex items-start text-sm text-gray-500 max-w-xs">
-                                        <MapPin className="h-3 w-3 mr-1.5 mt-0.5 text-gray-400 flex-shrink-0" />
+                                        <MapPin className="h-3 w-3 mr-1.5 mt-0.5 text-gray-400 shrink-0" />
                                         <span className="truncate" title={k.alamat_domisili}>
                                             {k.alamat_domisili || '-'}
                                         </span>

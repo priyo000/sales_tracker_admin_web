@@ -46,7 +46,7 @@ const DivisionTable: React.FC<DivisionTableProps> = ({ data, loading, onDelete }
                             <tr key={d.id} className="hover:bg-gray-50/50 transition-colors group">
                                 <td className="px-6 py-4 whitespace-nowrap">
                                     <div className="flex items-center">
-                                        <div className="h-9 w-9 flex-shrink-0 rounded-lg bg-indigo-50 flex items-center justify-center text-indigo-600 border border-indigo-100">
+                                        <div className="h-9 w-9 shrink-0 rounded-lg bg-indigo-50 flex items-center justify-center text-indigo-600 border border-indigo-100">
                                             <Layout className="h-4 w-4" />
                                         </div>
                                         <div className="ml-4">

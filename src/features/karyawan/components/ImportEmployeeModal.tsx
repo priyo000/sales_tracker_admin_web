@@ -168,7 +168,7 @@ const ImportEmployeeModal: React.FC<ImportEmployeeModalProps> = ({ isOpen, onClo
                 {/* Error Message */}
                 {error && (
                     <div className="bg-red-50 border border-red-200 rounded-lg p-4 flex items-start space-x-3 animate-in slide-in-from-top-2">
-                        <AlertCircle className="w-5 h-5 text-red-600 mt-0.5 flex-shrink-0" />
+                        <AlertCircle className="w-5 h-5 text-red-600 mt-0.5 shrink-0" />
                         <span className="text-sm text-red-700 font-medium">{error}</span>
                     </div>
                 )}

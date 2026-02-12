@@ -1,7 +1,6 @@
 import React from 'react';
 import { Store, MapPin, Phone, Check, X } from 'lucide-react';
-import { Pelanggan, PelangganStatus } from '../types';
-import { cn } from '@/lib/utils'; // Assuming this exists or I'll implement inline if needed
+import { Pelanggan } from '../types';
 
 interface CustomerCardProps {
     pelanggan: Pelanggan;
@@ -13,9 +12,9 @@ const CustomerCard: React.FC<CustomerCardProps> = ({ pelanggan, onApprove, onRej
     return (
         <div className="overflow-hidden rounded-lg bg-white shadow hover:shadow-lg transition-shadow duration-300">
             <div className="h-32 bg-gray-200 relative">
-                {pelanggan.foto_toko ? (
+                {pelanggan.foto_toko_url ? (
                     <img 
-                        src={pelanggan.foto_toko} 
+                        src={pelanggan.foto_toko_url} 
                         alt={pelanggan.nama_toko} 
                         className="h-full w-full object-cover" 
                         onError={(e) => {
@@ -44,12 +43,12 @@ const CustomerCard: React.FC<CustomerCardProps> = ({ pelanggan, onApprove, onRej
                 
                 <div className="space-y-2 mb-4">
                     <div className="flex items-start text-sm text-gray-600">
-                        <MapPin className="mr-2 h-4 w-4 mt-0.5 flex-shrink-0 text-gray-400" />
-                        <span className="line-clamp-2">{pelanggan.alamat_toko}</span>
+                        <MapPin className="mr-2 h-4 w-4 mt-0.5 shrink-0 text-gray-400" />
+                        <span className="line-clamp-2">{pelanggan.alamat_usaha}</span>
                     </div>
                     <div className="flex items-center text-sm text-gray-600">
-                        <Phone className="mr-2 h-4 w-4 flex-shrink-0 text-gray-400" />
-                        <span>{pelanggan.no_hp_pemilik}</span>
+                        <Phone className="mr-2 h-4 w-4 shrink-0 text-gray-400" />
+                        <span>{pelanggan.no_hp_pribadi}</span>
                     </div>
                 </div>
 

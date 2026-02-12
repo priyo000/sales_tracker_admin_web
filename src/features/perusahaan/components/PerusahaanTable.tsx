@@ -44,7 +44,7 @@ const PerusahaanTable: React.FC<PerusahaanTableProps> = ({ data, loading, onEdit
                         <tr key={item.id} className="hover:bg-slate-50 transition-colors">
                             <td className="px-6 py-4">
                                 <div className="flex items-center">
-                                    <div className="h-10 w-10 flex-shrink-0 rounded-lg bg-indigo-50 flex items-center justify-center">
+                                    <div className="h-10 w-10 shrink-0 rounded-lg bg-indigo-50 flex items-center justify-center">
                                         <Building2 className="h-6 w-6 text-indigo-600" />
                                     </div>
                                     <div className="ml-4">

@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
-import { JadwalFormData, KaryawanOption, RuteOption } from '../types';
+import { Jadwal, JadwalFormData, KaryawanOption, RuteOption } from '../types';
+import toast from 'react-hot-toast';
 
 interface JadwalFormProps {
     onSubmit: (data: JadwalFormData) => void;
@@ -8,7 +9,9 @@ interface JadwalFormProps {
     initialDate?: string;
     onCancel: () => void;
     loading?: boolean;
-}
+    initialData?: Jadwal;
+    existingJadwals?: Jadwal[];
+} 
 
 const JadwalForm: React.FC<JadwalFormProps> = ({ 
     onSubmit, 
@@ -16,16 +19,33 @@ const JadwalForm: React.FC<JadwalFormProps> = ({
     ruteOptions, 
     initialDate, 
     onCancel,
-    loading 
+    loading,
+    initialData,
+    existingJadwals = []
 }) => {
     const [formData, setFormData] = useState<JadwalFormData>({
-        id_karyawan: '',
-        id_rute: '',
-        tanggal: initialDate || new Date().toISOString().slice(0, 10),
+        id_karyawan: initialData?.id_karyawan.toString() || '',
+        id_rute: initialData?.id_rute.toString() || '',
+        tanggal: initialData?.tanggal || initialDate || new Date().toISOString().slice(0, 10),
     });
 
     const handleSubmit = (e: React.FormEvent) => {
         e.preventDefault();
+        
+        // Single Schedule Check
+        // Check if there is already a schedule for this sales on this date
+        // EXCLUDING the current schedule if we are editing
+        const isDuplicate = existingJadwals.some(j => 
+            j.id_karyawan === Number(formData.id_karyawan) && 
+            j.tanggal === formData.tanggal && 
+            j.id !== initialData?.id // Ignore self when editing
+        );
+
+        if (isDuplicate) {
+            toast.error('Sales ini sudah memiliki jadwal pada tanggal tersebut.');
+            return;
+        }
+
         onSubmit(formData);
     };
 
@@ -92,7 +112,7 @@ const JadwalForm: React.FC<JadwalFormProps> = ({
                     className="flex justify-center rounded-md border border-transparent bg-indigo-600 px-4 py-2 text-sm font-medium text-white shadow-sm hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2 disabled:opacity-50 transition-colors"
                     disabled={loading}
                 >
-                    {loading ? 'Menyimpan...' : 'Simpan Jadwal'}
+                    {loading ? 'Menyimpan...' : (initialData ? 'Update Jadwal' : 'Simpan Jadwal')}
                 </button>
             </div>
         </form>

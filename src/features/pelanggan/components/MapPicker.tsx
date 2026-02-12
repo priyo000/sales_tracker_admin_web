@@ -1,14 +1,11 @@
 import React, { useState, useEffect } from 'react';
 import { MapContainer, TileLayer, Marker, useMap, useMapEvents } from 'react-leaflet';
 import L from 'leaflet';
-// @ts-expect-error - leaflet css is not typed
 import 'leaflet/dist/leaflet.css';
 import { Search, MapPin } from 'lucide-react';
 
 // Fix for default marker icon in Leaflet + Vite
-// @ts-expect-error - leaflet images are not typed
 import icon from 'leaflet/dist/images/marker-icon.png';
-// @ts-expect-error - leaflet images are not typed
 import iconShadow from 'leaflet/dist/images/marker-shadow.png';
 
 const DefaultIcon = L.icon({
@@ -113,7 +110,7 @@ const MapPicker: React.FC<MapPickerProps> = ({ lat, lng, onChange, hideSearch = 
                         type="button"
                         onClick={handleSearch}
                         disabled={isSearching}
-                        className="inline-flex items-center rounded-lg bg-indigo-600 px-3 py-2 text-sm font-semibold text-white shadow-sm hover:bg-indigo-500 focus-visible:outline focus-visible:outline-2 focus-visible:outline-indigo-600 disabled:opacity-50"
+                        className="inline-flex items-center rounded-lg bg-indigo-600 px-3 py-2 text-sm font-semibold text-white shadow-sm hover:bg-indigo-500 focus-visible:outline-2 focus-visible:outline-indigo-600 disabled:opacity-50"
                     >
                         {isSearching ? '...' : 'Cari'}
                     </button>
@@ -135,7 +132,7 @@ const MapPicker: React.FC<MapPickerProps> = ({ lat, lng, onChange, hideSearch = 
                     <Updater lat={lat} lng={lng} />
                 </MapContainer>
                 {!hideSearch && (
-                    <div className="absolute bottom-2 left-2 z-[1000] bg-white/90 px-2 py-1 rounded text-[10px] font-mono shadow-sm border border-gray-200">
+                    <div className="absolute bottom-2 left-2 z-1000 bg-white/90 px-2 py-1 rounded text-[10px] font-mono shadow-sm border border-gray-200">
                         <MapPin className="h-3 w-3 inline mr-1 text-red-500" />
                         {lat.toFixed(6)}, {lng.toFixed(6)}
                     </div>

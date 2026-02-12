@@ -76,7 +76,7 @@ const Dashboard: React.FC = () => {
                     <div key={index} className="overflow-hidden rounded-lg bg-white shadow">
                         <div className="p-5">
                             <div className="flex items-center">
-                                <div className={`flex-shrink-0 rounded-md p-3 ${card.bg}`}>
+                                <div className={`shrink-0 rounded-md p-3 ${card.bg}`}>
                                     <card.icon className={`h-6 w-6 ${card.color}`} aria-hidden="true" />
                                 </div>
                                 <div className="ml-5 w-0 flex-1">
@@ -135,7 +135,7 @@ const Dashboard: React.FC = () => {
                                         <div className="truncate text-sm font-medium text-indigo-600">
                                             {order.no_pesanan}
                                         </div>
-                                        <div className="ml-2 flex flex-shrink-0">
+                                        <div className="ml-2 flex shrink-0">
                                             <span className="inline-flex rounded-full bg-green-100 px-2 text-xs font-semibold leading-5 text-green-800">
                                                 {order.status}
                                             </span>
@@ -144,12 +144,12 @@ const Dashboard: React.FC = () => {
                                     <div className="mt-2 flex justify-between">
                                         <div className="sm:flex">
                                             <div className="flex items-center text-sm text-gray-500">
-                                                <Users className="mr-1.5 h-4 w-4 flex-shrink-0 text-gray-400" />
+                                                <Users className="mr-1.5 h-4 w-4 shrink-0 text-gray-400" />
                                                 <p>{order.nama_toko || 'Toko'}</p>
                                             </div>
                                         </div>
                                         <div className="flex items-center text-sm text-gray-500">
-                                            <Clock className="mr-1.5 h-4 w-4 flex-shrink-0 text-gray-400" />
+                                            <Clock className="mr-1.5 h-4 w-4 shrink-0 text-gray-400" />
                                             <p>{order.tanggal}</p>
                                         </div>
                                     </div>

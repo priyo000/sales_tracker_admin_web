@@ -10,7 +10,7 @@ import { cn } from '@/lib/utils';
 import { PelangganStatus, PelangganFormData, Pelanggan } from '../features/pelanggan/types';
 
 const PelangganPage: React.FC = () => {
-    const { pelanggans, loading: loadingData, error, fetchPelanggans, updateStatus, createPelanggan, updatePelanggan, importPelanggan } = usePelanggan();
+    const { pelanggans, loading: loadingData, error, fetchPelanggans, updateStatus, createPelanggan, updatePelanggan, importPelanggan, pagination } = usePelanggan();
     
     const [search, setSearch] = useState('');
     const [filterStatus, setFilterStatus] = useState<PelangganStatus | 'all'>('all');
@@ -18,16 +18,41 @@ const PelangganPage: React.FC = () => {
     const [editingPelanggan, setEditingPelanggan] = useState<Pelanggan | null>(null);
     const [isSubmitting, setIsSubmitting] = useState(false);
     const [isImportModalOpen, setIsImportModalOpen] = useState(false);
+    const [perPage, setPerPage] = useState(20);
     
     // Confirmation State
     const [confirmAction, setConfirmAction] = useState<{ id: number, type: 'approve' | 'reject' } | null>(null);
 
     useEffect(() => {
         const timer = setTimeout(() => {
-            fetchPelanggans({ search, status: filterStatus });
+            fetchPelanggans({ 
+                search, 
+                status: filterStatus,
+                page: pagination.currentPage,
+                per_page: perPage
+            });
         }, 300); // Debounce search
         return () => clearTimeout(timer);
-    }, [search, filterStatus, fetchPelanggans]);
+    }, [search, filterStatus, fetchPelanggans, pagination.currentPage, perPage]);
+
+    const handlePageChange = (page: number) => {
+        fetchPelanggans({ 
+            search, 
+            status: filterStatus, 
+            page,
+            per_page: perPage
+        });
+    };
+
+    const handlePerPageChange = (newPerPage: number) => {
+        setPerPage(newPerPage);
+        fetchPelanggans({
+            search,
+            status: filterStatus,
+            page: 1, // Reset to first page when changing per page
+            per_page: newPerPage
+        });
+    };
 
 
     const handleAction = async () => {
@@ -101,8 +126,8 @@ const PelangganPage: React.FC = () => {
                     </button>
                     
                     {/* Status Tabs */}
-                    <div className="flex space-x-1 rounded-xl bg-gray-100 p-1 border border-gray-200">
-                        {(['all', 'pending', 'active', 'rejected', 'prospect'] as const).map(status => (
+                    <div className="flex space-x-1 rounded-xl bg-gray-100 p-1 border border-gray-200 overflow-x-auto">
+                        {(['all', 'pending', 'active', 'nonactive', 'rejected', 'prospect'] as const).map(status => (
                             <button
                                 key={status}
                                 onClick={() => setFilterStatus(status)}
@@ -148,6 +173,9 @@ const PelangganPage: React.FC = () => {
                 onApprove={(id) => setConfirmAction({ id, type: 'approve' })}
                 onReject={(id) => setConfirmAction({ id, type: 'reject' })}
                 onEdit={(p) => setEditingPelanggan(p)}
+                pagination={pagination}
+                onPageChange={handlePageChange}
+                onPerPageChange={handlePerPageChange}
             />
 
             {/* Add Pelanggan Modal */}

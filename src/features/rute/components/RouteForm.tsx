@@ -1,8 +1,9 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback, useMemo, memo } from 'react';
+import { Pelanggan } from '../../pelanggan/types';
 import { Rute, RuteFormData } from '../types';
 import { usePelanggan } from '../../pelanggan/hooks/usePelanggan';
 import RouteCustomerMap from './RouteCustomerMap';
-import { Search, Map as MapIcon, Route as RouteIcon, Info, CheckCircle2 } from 'lucide-react';
+import { Search, Map as MapIcon, Info, CheckCircle2, User as UserIcon } from 'lucide-react';
 import api from '../../../services/api';
 import { cn } from '@/lib/utils';
 
@@ -13,21 +14,47 @@ interface RouteFormProps {
     loading?: boolean;
 }
 
+interface SalesFilterOption {
+    id: number;
+    nama_lengkap: string;
+    jabatan: string;
+    has_account: boolean;
+    has_data: boolean;
+}
+
 const RouteForm: React.FC<RouteFormProps> = ({ initialData, onSubmit, onCancel, loading }) => {
-    const { pelanggans, fetchPelanggans, loading: pelanggansLoading } = usePelanggan();
+    const { pelanggans, fetchPelanggans, fetchFilterOptions, loading: pelanggansLoading } = usePelanggan();
     const [searchQuery, setSearchQuery] = useState('');
+    const [filterOptions, setFilterOptions] = useState<SalesFilterOption[]>([]);
+    const [selectedKaryawanId, setSelectedKaryawanId] = useState<number | 'all'>('all');
     const [detailsLoading, setDetailsLoading] = useState(false);
+    const [focusLocation, setFocusLocation] = useState<{ lat: number, lng: number, timestamp: number } | null>(null);
     
     const [formData, setFormData] = useState<RuteFormData>({
         nama_rute: initialData?.nama_rute || '',
         deskripsi: initialData?.deskripsi || '',
         customer_ids: []
     });
+    const [namaRute, setNamaRute] = useState(initialData?.nama_rute || '');
+    const [deskripsi, setDeskripsi] = useState(initialData?.deskripsi || '');
 
-    // Fetch customers (active only)
+    // Fetch sales filter options
     useEffect(() => {
-        fetchPelanggans({ status: 'active' });
-    }, [fetchPelanggans]);
+        const loadOptions = async () => {
+            const options = await fetchFilterOptions({ only_with_data: true });
+            setFilterOptions(options);
+        };
+        loadOptions();
+    }, [fetchFilterOptions]);
+
+    // Fetch customers (active & pending)
+    useEffect(() => {
+        fetchPelanggans({ 
+            status: 'active,pending', 
+            per_page: -1,
+            id_karyawan: selectedKaryawanId === 'all' ? undefined : selectedKaryawanId
+        });
+    }, [fetchPelanggans, selectedKaryawanId]);
 
     // Fetch existing route details if editing
     useEffect(() => {
@@ -58,12 +85,7 @@ const RouteForm: React.FC<RouteFormProps> = ({ initialData, onSubmit, onCancel, 
         }
     }, [initialData]);
 
-    const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
-        const { name, value } = e.target;
-        setFormData(prev => ({ ...prev, [name]: value }));
-    };
-
-    const toggleCustomer = (id: number) => {
+    const toggleCustomer = useCallback((id: number) => {
         setFormData(prev => {
             const currentIds = prev.customer_ids || [];
             if (currentIds.includes(id)) {
@@ -72,17 +94,47 @@ const RouteForm: React.FC<RouteFormProps> = ({ initialData, onSubmit, onCancel, 
                 return { ...prev, customer_ids: [...currentIds, id] };
             }
         });
-    };
+
+        // Focus map on this customer
+        const customer = pelanggans.find(p => p.id === id);
+        if (customer?.latitude && customer?.longitude) {
+            setFocusLocation({ 
+                lat: customer.latitude, 
+                lng: customer.longitude, 
+                timestamp: Date.now() 
+            });
+        }
+
+        // Auto-scroll list and focus
+        setTimeout(() => {
+            const element = document.getElementById(`customer-item-${id}`);
+            if (element) {
+                element.scrollIntoView({ behavior: 'smooth', block: 'center' });
+                element.classList.add('ring-4', 'ring-indigo-400', 'ring-offset-2', 'z-30');
+                setTimeout(() => {
+                    element.classList.remove('ring-4', 'ring-indigo-400', 'ring-offset-2', 'z-30');
+                }, 1500);
+            }
+        }, 100);
+    }, [pelanggans]);
 
     const handleSubmit = (e: React.FormEvent) => {
         e.preventDefault();
-        onSubmit(formData);
+        onSubmit({
+            ...formData,
+            nama_rute: namaRute,
+            deskripsi: deskripsi
+        });
     };
 
-    const filteredCustomers = pelanggans.filter(p => 
-        p.nama_toko.toLowerCase().includes(searchQuery.toLowerCase()) ||
-        (p.alamat_usaha && p.alamat_usaha.toLowerCase().includes(searchQuery.toLowerCase()))
-    );
+    const filteredCustomers = useMemo(() => {
+        return pelanggans.filter(p => 
+            p.nama_toko.toLowerCase().includes(searchQuery.toLowerCase()) ||
+            (p.alamat_usaha && p.alamat_usaha.toLowerCase().includes(searchQuery.toLowerCase()))
+        );
+    }, [pelanggans, searchQuery]);
+
+    const selectedIdsSet = useMemo(() => new Set(formData.customer_ids), [formData.customer_ids]);
 
     const isLoading = loading || detailsLoading;
     const selectedCount = formData.customer_ids?.length || 0;
@@ -94,13 +146,7 @@ const RouteForm: React.FC<RouteFormProps> = ({ initialData, onSubmit, onCancel, 
                 {/* Header Section */}
                 <div className="p-6 border-b border-gray-100 bg-white space-y-4">
                     <div className="flex items-center gap-3 mb-2">
-                        <div className="p-2 bg-indigo-100 rounded-lg text-indigo-600">
-                            <RouteIcon className="w-5 h-5" />
-                        </div>
                         <div>
-                            <h2 className="text-lg font-bold text-gray-900">
-                                {initialData ? 'Edit Data Rute' : 'Buat Rute Baru'}
-                            </h2>
                             <p className="text-xs text-gray-500">Isi detail rute dan pilih pelanggan.</p>
                         </div>
                     </div>
@@ -112,8 +158,8 @@ const RouteForm: React.FC<RouteFormProps> = ({ initialData, onSubmit, onCancel, 
                                 type="text"
                                 required
                                 className="block w-full rounded-lg border-gray-200 bg-gray-50 px-3 py-2 text-sm focus:border-indigo-500 focus:bg-white focus:ring-1 focus:ring-indigo-500 transition-all font-medium placeholder:font-normal"
-                                value={formData.nama_rute}
-                                onChange={handleChange}
+                                value={namaRute}
+                                onChange={(e) => setNamaRute(e.target.value)}
                                 placeholder="Nama Rute (Ex: Rute Senin Barat)"
                             />
                         </div>
@@ -121,8 +167,8 @@ const RouteForm: React.FC<RouteFormProps> = ({ initialData, onSubmit, onCancel, 
                             <input
                                 name="deskripsi"
                                 className="block w-full rounded-lg border-gray-200 bg-gray-50 px-3 py-2 text-sm focus:border-indigo-500 focus:bg-white focus:ring-1 focus:ring-indigo-500 transition-all placeholder:font-normal"
-                                value={formData.deskripsi}
-                                onChange={handleChange}
+                                value={deskripsi}
+                                onChange={(e) => setDeskripsi(e.target.value)}
                                 placeholder="Keterangan / Deskripsi..."
                             />
                         </div>
@@ -130,8 +176,8 @@ const RouteForm: React.FC<RouteFormProps> = ({ initialData, onSubmit, onCancel, 
                 </div>
 
                 {/* Search & List Header */}
-                <div className="px-4 py-3 bg-gray-50/80 border-b border-gray-200 backdrop-blur-sm sticky top-0 z-20">
-                    <div className="relative mb-2">
+                <div className="px-4 py-3 bg-gray-50/80 border-b border-gray-200 backdrop-blur-sm sticky top-0 z-20 space-y-2">
+                    <div className="relative">
                         <Search className="absolute left-3 top-2.5 h-4 w-4 text-gray-400" />
                         <input 
                             type="text"
@@ -141,15 +187,30 @@ const RouteForm: React.FC<RouteFormProps> = ({ initialData, onSubmit, onCancel, 
                             onChange={(e) => setSearchQuery(e.target.value)}
                         />
                     </div>
+                    
+                    <div className="relative">
+                        <UserIcon className="absolute left-3 top-2.5 h-4 w-4 text-gray-400" />
+                        <select
+                            className="w-full pl-9 pr-3 py-2 text-sm border-gray-200 rounded-lg focus:border-indigo-500 focus:ring-indigo-500 shadow-sm bg-white"
+                            value={selectedKaryawanId}
+                            onChange={(e) => setSelectedKaryawanId(e.target.value === 'all' ? 'all' : Number(e.target.value))}
+                        >
+                            <option value="all">Semua Sales (Karyawan)</option>
+                            {filterOptions.map(opt => (
+                                <option key={opt.id} value={opt.id}>
+                                    {opt.nama_lengkap} {!opt.has_account ? '(No Account)' : ''} {opt.has_data ? '✓' : ''}
+                                </option>
+                            ))}
+                        </select>
+                    </div>
                     <div className="flex items-center justify-between text-xs text-gray-500 px-1">
                         <span>Menampilkan {filteredCustomers.length} pelanggan</span>
                         <span className={cn("font-medium", selectedCount > 0 ? "text-indigo-600" : "")}>
-                            Toat: {selectedCount} Terpilih
+                            Total: {selectedCount} Terpilih
                         </span>
                     </div>
                 </div>
 
-                {/* SCROLLABLE LIST */}
                 <div className="flex-1 overflow-y-auto p-3 space-y-2 bg-gray-50/30">
                     {pelanggansLoading ? (
                         <div className="flex flex-col items-center justify-center h-40 text-gray-400 space-y-2">
@@ -162,59 +223,11 @@ const RouteForm: React.FC<RouteFormProps> = ({ initialData, onSubmit, onCancel, 
                             <span className="text-xs">Tidak ada pelanggan ditemukan.</span>
                         </div>
                     ) : (
-                        filteredCustomers.map(customer => {
-                            const isSelected = formData.customer_ids?.includes(customer.id);
-                            return (
-                                <div 
-                                    key={customer.id}
-                                    onClick={() => toggleCustomer(customer.id)}
-                                    className={cn(
-                                        "relative p-3 rounded-xl border transition-all cursor-pointer hover:shadow-md group",
-                                        isSelected 
-                                            ? "bg-indigo-50 border-indigo-200 shadow-sm ring-1 ring-indigo-200" 
-                                            : "bg-white border-gray-100 hover:border-indigo-200"
-                                    )}
-                                >
-                                    <div className="flex items-start gap-3">
-                                        <div className={cn(
-                                            "mt-0.5 w-5 h-5 rounded-full flex items-center justify-center shrink-0 transition-all",
-                                            isSelected 
-                                                ? "bg-indigo-600 text-white shadow-sm scale-110" 
-                                                : "bg-gray-100 text-gray-300 group-hover:bg-indigo-100 group-hover:text-indigo-400"
-                                        )}>
-                                            {isSelected ? <CheckCircle2 className="w-3.5 h-3.5" /> : <div className="w-2 h-2 rounded-full bg-current" />}
-                                        </div>
-                                        <div className="min-w-0 flex-1">
-                                            <div className="flex justify-between items-start">
-                                                <h4 className={cn(
-                                                    "text-sm font-bold truncate pr-2",
-                                                    isSelected ? "text-indigo-900" : "text-gray-800"
-                                                )}>
-                                                    {customer.nama_toko}
-                                                </h4>
-                                            </div>
-                                            <p className="text-xs text-gray-500 line-clamp-2 mt-0.5 leading-relaxed">
-                                                {customer.alamat_usaha}
-                                            </p>
-                                            
-                                            <div className="flex flex-wrap gap-1 mt-2">
-                                                 {customer.divisi && (
-                                                    <span className="inline-flex items-center px-1.5 py-0.5 rounded text-[10px] font-medium bg-gray-100 text-gray-600 border border-gray-200">
-                                                        {customer.divisi.nama_divisi}
-                                                    </span>
-                                                )}
-                                                {customer.status === 'active' && (
-                                                    <span className="inline-flex items-center px-1.5 py-0.5 rounded text-[10px] font-medium bg-green-50 text-green-700 border border-green-100">
-                                                        Active
-                                                    </span>
-                                                )}
-                                            </div>
-                                        </div>
-                                    </div>
-                                    {isSelected && <div className="absolute right-0 top-0 bottom-0 w-1 bg-indigo-500 rounded-r-xl" />}
-                                </div>
-                            );
-                        })
+                        <CustomerListItems 
+                            customers={filteredCustomers} 
+                            selectedIds={selectedIdsSet} 
+                            onToggle={toggleCustomer} 
+                        />
                     )}
                 </div>
 
@@ -248,8 +261,9 @@ const RouteForm: React.FC<RouteFormProps> = ({ initialData, onSubmit, onCancel, 
             <div className="flex-1 relative bg-slate-100">
                 <RouteCustomerMap 
                     customers={pelanggans}
-                    selectedIds={formData.customer_ids || []}
+                    selectedIds={selectedIdsSet}
                     onToggle={toggleCustomer}
+                    focusLocation={focusLocation || null}
                     height="h-full"
                 />
                 
@@ -266,3 +280,92 @@ const RouteForm: React.FC<RouteFormProps> = ({ initialData, onSubmit, onCancel, 
 };
 
 export default RouteForm;
+
+
+// MEMOIZED COMPONENTS FOR PERFORMANCE
+const CustomerListItems = memo(({ customers, selectedIds, onToggle }: { customers: Pelanggan[], selectedIds: Set<number> | number[], onToggle: (id: number) => void }) => {
+    return (
+        <>
+            {customers.map(customer => {
+                const isSelected = selectedIds instanceof Set 
+                    ? selectedIds.has(customer.id) 
+                    : selectedIds.includes(customer.id);
+                return (
+                    <CustomerItem 
+                        key={customer.id} 
+                        customer={customer} 
+                        isSelected={isSelected} 
+                        onToggle={onToggle} 
+                    />
+                );
+            })}
+        </>
+    );
+});
+
+const CustomerItem = memo(({ customer, isSelected, onToggle }: { customer: Pelanggan, isSelected: boolean, onToggle: (id: number) => void }) => {
+    return (
+        <div 
+            id={`customer-item-${customer.id}`}
+            onClick={() => onToggle(customer.id)}
+            className={cn(
+                "relative p-3 rounded-xl border transition-all duration-300 cursor-pointer hover:shadow-md group",
+                isSelected 
+                    ? "bg-indigo-50 border-indigo-200 shadow-sm ring-1 ring-indigo-200" 
+                    : "bg-white border-gray-100 hover:border-indigo-200"
+            )}
+        >
+            <div className="flex items-start gap-3">
+                <div className={cn(
+                    "mt-0.5 w-5 h-5 rounded-full flex items-center justify-center shrink-0 transition-all",
+                    isSelected 
+                        ? "bg-indigo-600 text-white shadow-sm scale-110" 
+                        : "bg-gray-100 text-gray-300 group-hover:bg-indigo-100 group-hover:text-indigo-400"
+                )}>
+                    {isSelected ? <CheckCircle2 className="w-3.5 h-3.5" /> : <div className="w-2 h-2 rounded-full bg-current" />}
+                </div>
+                <div className="min-w-0 flex-1">
+                    <div className="flex justify-between items-start">
+                        <h4 className={cn(
+                            "text-sm font-bold truncate pr-2",
+                            isSelected ? "text-indigo-900" : "text-gray-800"
+                        )}>
+                            {customer.nama_toko}
+                        </h4>
+                    </div>
+                    <p className="text-xs text-gray-500 line-clamp-2 mt-0.5 leading-relaxed">
+                        {customer.alamat_usaha}
+                    </p>
+                    
+                    <div className="flex flex-wrap gap-1 mt-2">
+                        {customer.details_rute && customer.details_rute.length > 0 && (
+                            <div className="w-full flex flex-wrap gap-1 mb-1">
+                                {customer.details_rute.map((dr) => (
+                                    <span key={dr.id} className="inline-flex items-center px-1.5 py-0.5 rounded text-[9px] font-bold bg-amber-100 text-amber-800 border border-amber-200">
+                                        Rute: {dr.rute?.nama_rute || 'Unknown'}
+                                    </span>
+                                ))}
+                            </div>
+                        )}
+                        {customer.divisi && (
+                            <span className="inline-flex items-center px-1.5 py-0.5 rounded text-[10px] font-medium bg-gray-100 text-gray-600 border border-gray-200">
+                                {customer.divisi.nama_divisi}
+                            </span>
+                        )}
+                        {customer.status === 'active' && (
+                            <span className="inline-flex items-center px-1.5 py-0.5 rounded text-[10px] font-medium bg-green-50 text-green-700 border border-green-100">
+                                Active
+                            </span>
+                        )}
+                        {customer.status === 'pending' && (
+                            <span className="inline-flex items-center px-1.5 py-0.5 rounded text-[10px] font-medium bg-amber-50 text-amber-700 border border-amber-100">
+                                Pending
+                            </span>
+                        )}
+                    </div>
+                </div>
+            </div>
+            {isSelected && <div className="absolute right-0 top-0 bottom-0 w-1 bg-indigo-500 rounded-r-xl" />}
+        </div>
+    );
+});
