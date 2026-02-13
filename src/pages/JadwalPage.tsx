@@ -34,8 +34,16 @@ const JadwalPage: React.FC = () => {
     } = useJadwal();
 
     const [activeTab, setActiveTab] = useState<'daily' | 'recurring'>('daily');
-    const [startDate, setStartDate] = useState('');
-    const [endDate, setEndDate] = useState('');
+    
+    // Default date to Today
+    const today = new Date();
+    const yyyy = today.getFullYear();
+    const mm = String(today.getMonth() + 1).padStart(2, '0');
+    const dd = String(today.getDate()).padStart(2, '0');
+    const todayStr = `${yyyy}-${mm}-${dd}`;
+
+    const [startDate, setStartDate] = useState(todayStr);
+    const [endDate, setEndDate] = useState(todayStr);
     const [searchTerm, setSearchTerm] = useState('');
     const [isModalOpen, setIsModalOpen] = useState(false);
     const [editingJadwal, setEditingJadwal] = useState<Jadwal | null>(null);
@@ -188,7 +196,7 @@ const JadwalPage: React.FC = () => {
 
                 {/* Date Filter */}
                 <div className="flex items-center gap-2 bg-gray-50 px-3 py-2 rounded-lg border border-gray-200">
-                    <CalendarIcon className="h-4 w-4 text-gray-500" />
+                    {/* <CalendarIcon className="h-4 w-4 text-gray-500" /> */}
                     <input 
                         type="date" 
                         className="bg-transparent border-none p-0 text-sm focus:ring-0 text-gray-600 w-32"

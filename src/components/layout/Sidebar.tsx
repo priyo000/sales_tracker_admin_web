@@ -1,4 +1,4 @@
-import { Home, Calendar, Map, Users, Package, FileText, Settings, LogOut, Layout, Building2, UserPlus } from 'lucide-react';
+import { Home, Calendar, Map, MapPin, Users, Package, FileText, Settings, LogOut, Layout, Building2, UserPlus } from 'lucide-react';
 import { NavLink } from 'react-router-dom';
 import { useAuth } from '@/hooks/useAuth';
 import { cn } from '@/lib/utils';
@@ -9,7 +9,8 @@ const Sidebar = () => {
     const navItems = [
         { icon: Home, label: 'Dashboard', to: '/' },
         ...(user?.peran === 'super_admin' ? [{ icon: Building2, label: 'Perusahaan', to: '/perusahaan' }] : []),
-        { icon: Calendar, label: 'Jadwal & Kunjungan', to: '/jadwal' },
+        { icon: Calendar, label: 'Jadwal Sales', to: '/jadwal' },
+        { icon: MapPin, label: 'Monitoring Kunjungan', to: '/kunjungan' },
         { icon: Map, label: 'Rute', to: '/rute' },
         { icon: Users, label: 'Pelanggan', to: '/pelanggan' },
         { icon: Users, label: 'Karyawan', to: '/karyawan' },

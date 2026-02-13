@@ -4,6 +4,7 @@ import { usePerusahaan } from '@/features/perusahaan/hooks/usePerusahaan';
 import { useEffect } from 'react';
 import { Building2, ChevronDown } from 'lucide-react';
 import { cn } from '@/lib/utils';
+import { useLocation } from 'react-router-dom';
 
 interface MainLayoutProps {
     children: React.ReactNode;
@@ -12,6 +13,9 @@ interface MainLayoutProps {
 const MainLayout: React.FC<MainLayoutProps> = ({ children }) => {
     const { user, switchCompany } = useAuth();
     const { perusahaans, fetchPerusahaans } = usePerusahaan();
+    const location = useLocation();
+
+    const isMonitoringPage = location.pathname === '/kunjungan';
 
     useEffect(() => {
         if (user?.peran === 'super_admin') {
@@ -23,7 +27,7 @@ const MainLayout: React.FC<MainLayoutProps> = ({ children }) => {
         <div className="flex h-screen bg-gray-100">
             <Sidebar />
             <div className="flex flex-1 flex-col overflow-hidden">
-                <header className="flex h-16 items-center border-b bg-white px-8 shadow-sm justify-between">
+                <header className="flex h-16 items-center border-b bg-white px-8 shadow-sm justify-between shrink-0">
                     <div className="flex items-center space-x-4">
                         {user?.peran === 'super_admin' ? (
                             <div className="flex items-center space-x-3 bg-slate-50 px-4 py-2 rounded-xl border border-slate-200">
@@ -65,7 +69,10 @@ const MainLayout: React.FC<MainLayoutProps> = ({ children }) => {
                         </div>
                     </div>
                 </header>
-                <main className="flex-1 overflow-y-auto p-6">
+                <main className={cn(
+                    "flex-1",
+                    isMonitoringPage ? "p-0 overflow-hidden" : "overflow-y-auto p-6"
+                )}>
                     {children}
                 </main>
             </div>
