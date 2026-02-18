@@ -14,6 +14,7 @@ const ProductForm: React.FC<ProductFormProps> = ({ initialData, onSubmit, onCanc
         kode_barang: initialData?.kode_barang || '',
         sku: initialData?.sku || '',
         nama_produk: initialData?.nama_produk || '',
+        kategori: initialData?.kategori || '',
         harga_jual: initialData?.harga_jual?.toString() || '',
         stok_tersedia: initialData?.stok_tersedia?.toString() || '0',
         satuan: initialData?.satuan || 'pcs'
@@ -101,15 +102,27 @@ const ProductForm: React.FC<ProductFormProps> = ({ initialData, onSubmit, onCanc
                 </div>
             </div>
             
-            <div>
-                <label className="block text-sm font-medium text-gray-700">Nama Produk</label>
-                <input
-                    type="text"
-                    required
-                    className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm border p-2"
-                    value={formData.nama_produk}
-                    onChange={(e) => setFormData({ ...formData, nama_produk: e.target.value })}
-                />
+            <div className="grid grid-cols-2 gap-4">
+                <div>
+                    <label className="block text-sm font-medium text-gray-700">Nama Produk</label>
+                    <input
+                        type="text"
+                        required
+                        className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm border p-2"
+                        value={formData.nama_produk}
+                        onChange={(e) => setFormData({ ...formData, nama_produk: e.target.value })}
+                    />
+                </div>
+                <div>
+                    <label className="block text-sm font-medium text-gray-700">Kategori</label>
+                    <input
+                        type="text"
+                        className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm border p-2"
+                        value={formData.kategori}
+                        onChange={(e) => setFormData({ ...formData, kategori: e.target.value })}
+                        placeholder="Contoh: Makanan, Alat Tulis"
+                    />
+                </div>
             </div>
 
             <div className="grid grid-cols-2 gap-4">

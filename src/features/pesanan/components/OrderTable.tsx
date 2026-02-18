@@ -14,6 +14,7 @@ const getStatusColor = (status: string) => {
         case 'pending': return 'bg-yellow-100 text-yellow-800';
         case 'batal': return 'bg-red-100 text-red-800';
         case 'proses': return 'bg-blue-100 text-blue-800';
+        case 'dikirim': return 'bg-indigo-100 text-indigo-800';
         default: return 'bg-gray-100 text-gray-800';
     }
 };
@@ -29,6 +30,9 @@ const OrderTable: React.FC<OrderTableProps> = ({ data, loading, onViewDetail }) 
                         </th>
                         <th className="px-6 py-3 text-left text-xs font-medium uppercase tracking-wider text-gray-500">
                             Toko & Sales
+                        </th>
+                        <th className="px-6 py-3 text-center text-xs font-medium uppercase tracking-wider text-gray-500">
+                            Items
                         </th>
                         <th className="px-6 py-3 text-right text-xs font-medium uppercase tracking-wider text-gray-500">
                             Total
@@ -63,25 +67,25 @@ const OrderTable: React.FC<OrderTableProps> = ({ data, loading, onViewDetail }) 
                                 <td className="px-6 py-4">
                                     <div className="text-sm font-bold text-gray-900">{p.no_pesanan}</div>
                                     <div className="flex items-center text-xs text-gray-500 mt-1">
-                                        <Clock className="mr-1 h-3 w-3" /> {p.tanggal}
+                                        <Clock className="mr-1 h-3 w-3" /> {p.tanggal_transaksi}
                                     </div>
                                 </td>
                                 <td className="px-6 py-4">
-                                    <div className="text-sm font-medium text-gray-900">{p.nama_toko}</div>
-                                    <div className="text-xs text-gray-500 mt-0.5">{p.sales}</div>
+                                    <div className="text-sm font-medium text-gray-900">{p.pelanggan?.nama_toko || 'N/A'}</div>
+                                    <div className="text-xs text-gray-500 mt-0.5">{p.karyawan?.nama_lengkap || 'Unknown Sales'}</div>
+                                </td>
+                                <td className="px-6 py-4 text-center">
+                                    <span className="inline-flex items-center rounded-md bg-gray-50 px-2 py-1 text-xs font-medium text-gray-600 ring-1 ring-inset ring-gray-500/10">
+                                        {p.items?.length || 0}
+                                    </span>
                                 </td>
                                 <td className="px-6 py-4 text-right whitespace-nowrap">
                                     <div className="text-sm font-bold text-gray-900">
-                                        Rp {p.total_harga.toLocaleString('id-ID')}
+                                        Rp {(Number(p.total_tagihan) || 0).toLocaleString('id-ID')}
                                     </div>
                                 </td>
                                 <td className="px-6 py-4 text-center whitespace-nowrap">
-                                    <span className={`inline-flex rounded-full px-2.5 py-0.5 text-xs font-medium ${getStatusColor(p.status)}`}>
-                                        <span className={`w-1.5 h-1.5 mr-1.5 rounded-full ${
-                                            p.status.toLowerCase() === 'sukses' ? 'bg-green-500' :
-                                            p.status.toLowerCase() === 'batal' ? 'bg-red-500' :
-                                            p.status.toLowerCase() === 'proses' ? 'bg-blue-500' : 'bg-yellow-500'
-                                        }`}></span>
+                                    <span className={`inline-flex rounded-full px-2.5 py-0.5 text-xs font-medium ${getStatusColor(p.status || '')}`}>
                                         {p.status}
                                     </span>
                                 </td>

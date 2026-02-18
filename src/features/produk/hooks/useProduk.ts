@@ -8,7 +8,7 @@ export const useProduk = () => {
     const [loading, setLoading] = useState(false);
     const [error, setError] = useState<string | null>(null);
 
-    const fetchProduks = useCallback(async (params?: { search?: string }) => {
+    const fetchProduks = useCallback(async (params?: { search?: string, kategori?: string }) => {
         setLoading(true);
         setError(null);
         try {

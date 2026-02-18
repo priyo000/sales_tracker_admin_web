@@ -1,6 +1,6 @@
 import { useState, useCallback } from 'react';
 import api from '../../../services/api';
-import { Pesanan } from '../types';
+import { Pesanan, UpdatePesananData } from '../types';
 import { AxiosError } from 'axios';
 
 export const usePesanan = () => {
@@ -28,7 +28,7 @@ export const usePesanan = () => {
         setError(null);
         try {
             const response = await api.get(`/pesanan/${id}`);
-            return { success: true, data: response.data.data as Pesanan };
+            return { success: true, data: response.data as Pesanan };
         } catch (err) {
             const error = err as AxiosError<{ message: string }>;
             const msg = error.response?.data?.message || 'Gagal memuat detail pesanan.';
@@ -56,12 +56,30 @@ export const usePesanan = () => {
         }
     };
 
+    const updatePesanan = async (id: number, data: UpdatePesananData) => {
+        setLoading(true);
+        setError(null);
+        try {
+            const response = await api.put(`/pesanan/${id}`, data);
+            await fetchPesanans(); // Refresh list
+            return { success: true, data: response.data as Pesanan };
+        } catch (err) {
+            const error = err as AxiosError<{ message: string }>;
+            const msg = error.response?.data?.message || 'Gagal mengubah pesanan.';
+            setError(msg);
+            return { success: false, message: msg };
+        } finally {
+            setLoading(false);
+        }
+    };
+
     return {
         pesanans,
         loading,
         error,
         fetchPesanans,
         getPesananDetail,
-        updateStatus
+        updateStatus,
+        updatePesanan
     };
 };

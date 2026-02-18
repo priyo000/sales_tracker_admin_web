@@ -14,17 +14,18 @@ const ProdukPage: React.FC = () => {
     } = useProduk();
 
     const [search, setSearch] = useState('');
+    const [selectedKategori, setSelectedKategori] = useState('');
     const [isFormOpen, setIsFormOpen] = useState(false);
     const [editingProduct, setEditingProduct] = useState<Produk | null>(null);
     const [deletingId, setDeletingId] = useState<number | null>(null);
 
-    // Initial Fetch & Search Debounce
+    // Initial Fetch & Filter Debounce
     useEffect(() => {
         const timer = setTimeout(() => {
-            fetchProduks({ search });
+            fetchProduks({ search, kategori: selectedKategori });
         }, 300);
         return () => clearTimeout(timer);
-    }, [search, fetchProduks]);
+    }, [search, selectedKategori, fetchProduks]);
 
     const handleCreate = () => {
         setEditingProduct(null);
@@ -85,18 +86,39 @@ const ProdukPage: React.FC = () => {
                 Kelola data produk yang akan dijual oleh sales.
             </p>
 
-            {/* Search Bar */}
-            <div className="relative max-w-md">
-                <div className="pointer-events-none absolute inset-y-0 left-0 flex items-center pl-3">
-                    <Search className="h-5 w-5 text-gray-400" />
+            {/* Filters */}
+            <div className="flex flex-col md:flex-row gap-4">
+                {/* Search Bar */}
+                <div className="relative flex-1">
+                    <div className="pointer-events-none absolute inset-y-0 left-0 flex items-center pl-3">
+                        <Search className="h-5 w-5 text-gray-400" />
+                    </div>
+                    <input
+                        type="text"
+                        className="block w-full rounded-md border border-gray-300 bg-white py-2 pl-10 pr-3 leading-5 placeholder-gray-500 focus:border-indigo-500 focus:placeholder-gray-400 focus:outline-none focus:ring-1 focus:ring-indigo-500 sm:text-sm shadow-sm transition-shadow"
+                        placeholder="Cari produk (Nama, Kode, SKU)..."
+                        value={search}
+                        onChange={(e) => setSearch(e.target.value)}
+                    />
                 </div>
-                <input
-                    type="text"
-                    className="block w-full rounded-md border border-gray-300 bg-white py-2 pl-10 pr-3 leading-5 placeholder-gray-500 focus:border-indigo-500 focus:placeholder-gray-400 focus:outline-none focus:ring-1 focus:ring-indigo-500 sm:text-sm shadow-sm transition-shadow"
-                    placeholder="Cari produk (Nama, Kode, SKU)..."
-                    value={search}
-                    onChange={(e) => setSearch(e.target.value)}
-                />
+
+                {/* Category Filter */}
+                <div className="w-full md:w-64">
+                    <select
+                        className="block w-full rounded-md border border-gray-300 bg-white py-2 px-3 leading-5 focus:border-indigo-500 focus:outline-none focus:ring-1 focus:ring-indigo-500 sm:text-sm shadow-sm"
+                        value={selectedKategori}
+                        onChange={(e) => setSelectedKategori(e.target.value)}
+                    >
+                        <option value="">Semua Kategori</option>
+                        {/* 
+                            Kita bisa mengambil list kategori unik dari 'produks' 
+                            atau idealnya ada API terpisah. Untuk sekarang kita ambil dari data yang ada.
+                        */}
+                        {Array.from(new Set(produks.map(p => p.kategori).filter(Boolean))).map(kat => (
+                            <option key={kat} value={kat}>{kat}</option>
+                        ))}
+                    </select>
+                </div>
             </div>
 
             {/* Error Message */}

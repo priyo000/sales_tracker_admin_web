@@ -6,7 +6,7 @@ import { usePesanan } from '../features/pesanan/hooks/usePesanan';
 import OrderTable from '../features/pesanan/components/OrderTable';
 import OrderDetail from '../features/pesanan/components/OrderDetail';
 import { Modal } from '../components/ui/Modal';
-import { Pesanan } from '../features/pesanan/types';
+import { Pesanan, UpdatePesananData } from '../features/pesanan/types';
 
 const PesananPage: React.FC = () => {
     const { 
@@ -15,7 +15,8 @@ const PesananPage: React.FC = () => {
         error, 
         fetchPesanans, 
         getPesananDetail, 
-        updateStatus 
+        updateStatus,
+        updatePesanan
     } = usePesanan();
 
     const [search, setSearch] = useState('');
@@ -41,19 +42,30 @@ const PesananPage: React.FC = () => {
         }
     };
 
-    const handleStatusChange = async (id: number, newStatus: string) => {
-        if (confirm(`Ubah status pesanan menjadi ${newStatus}?`)) {
-            const result = await updateStatus(id, newStatus);
-            if (result.success) {
-                toast.success('Status pesanan berhasil diperbarui');
-                // If detail modal is open, update the selectedPesanan locally or refetch detail
-                // For simplicity, we close modal or update local state if we want better UX
-                if (selectedPesanan && selectedPesanan.id === id) {
-                    setSelectedPesanan({ ...selectedPesanan, status: newStatus });
-                }
-            } else {
-                toast.error(result.message || 'Gagal mengubah status');
+    const handleUpdatePesanan = async (id: number, data: UpdatePesananData) => {
+        const result = await updatePesanan(id, data);
+        if (result.success) {
+            toast.success('Pesanan berhasil diperbarui');
+            if (selectedPesanan && selectedPesanan.id === id) {
+                // Fetch fresh detail to show updated items
+                const fresh = await getPesananDetail(id);
+                if (fresh.success) setSelectedPesanan(fresh.data || null);
             }
+        } else {
+            toast.error(result.message || 'Gagal memperbarui pesanan');
+        }
+        return result;
+    };
+
+    const handleStatusChange = async (id: number, newStatus: string) => {
+        const result = await updateStatus(id, newStatus);
+        if (result.success) {
+            toast.success('Status pesanan berhasil diperbarui');
+            if (selectedPesanan && selectedPesanan.id === id) {
+                setSelectedPesanan({ ...selectedPesanan, status: newStatus });
+            }
+        } else {
+            toast.error(result.message || 'Gagal mengubah status');
         }
     };
 
@@ -67,7 +79,7 @@ const PesananPage: React.FC = () => {
             <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between space-y-4 sm:space-y-0">
                 <h1 className="text-2xl font-bold text-gray-800">Daftar Pesanan</h1>
                 <div className="flex space-x-2 overflow-x-auto pb-2 sm:pb-0">
-                    {['', 'PENDING', 'PROSES', 'SUKSES', 'BATAL'].map(s => (
+                    {['', 'PENDING', 'PROSES', 'DIKIRIM', 'SUKSES', 'BATAL'].map(s => (
                         <button
                             key={s || 'ALL'}
                             onClick={() => setStatusFilter(s)}
@@ -122,12 +134,13 @@ const PesananPage: React.FC = () => {
                 isOpen={isDetailOpen && !!selectedPesanan}
                 onClose={handleCloseDetail}
                 title={`Detail Pesanan: ${selectedPesanan?.no_pesanan || ''}`}
-                size="lg"
+                size="4xl"
             >
                 {selectedPesanan && (
                     <OrderDetail 
                         pesanan={selectedPesanan}
                         onStatusChange={handleStatusChange}
+                        onUpdatePesanan={handleUpdatePesanan}
                         onClose={handleCloseDetail}
                     />
                 )}

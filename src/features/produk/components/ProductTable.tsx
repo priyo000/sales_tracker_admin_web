@@ -51,7 +51,14 @@ const ProductTable: React.FC<ProductTableProps> = ({ produks, onEdit, onDelete, 
                                         </div>
                                         <div className="ml-4">
                                             <div className="text-sm font-medium text-gray-900">{produk.nama_produk}</div>
-                                            <div className="text-sm text-gray-500">{produk.satuan}</div>
+                                            <div className="flex items-center gap-2 mt-0.5">
+                                                <span className="text-sm text-gray-500">{produk.satuan}</span>
+                                                {produk.kategori && (
+                                                    <span className="inline-flex items-center px-1.5 py-0.5 rounded text-[10px] font-medium bg-indigo-50 text-indigo-600 border border-indigo-100">
+                                                        {produk.kategori}
+                                                    </span>
+                                                )}
+                                            </div>
                                         </div>
                                     </div>
                                 </td>
