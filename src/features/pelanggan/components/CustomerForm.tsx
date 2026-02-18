@@ -76,6 +76,7 @@ const CustomerForm: React.FC<CustomerFormProps> = ({ initialData, onSubmit, onCa
         no_telp_gudang: initialData?.no_telp_gudang || '',
         sistem_pembayaran: initialData?.sistem_pembayaran || '',
         catatan_lain: initialData?.catatan_lain || '',
+        id_sales_pembuat: initialData?.id_sales_pembuat || undefined,
         foto_toko: null,
     });
 

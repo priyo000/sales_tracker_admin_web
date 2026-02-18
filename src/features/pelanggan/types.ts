@@ -2,6 +2,8 @@ export type PelangganStatus = 'prospect' | 'pending' | 'active' | 'rejected' | '
 
 export interface Pelanggan {
     id: number;
+    id_perusahaan?: number;
+    id_sales_pembuat?: number;
     id_divisi: number;
     kode_pelanggan?: string;
     nama_toko: string;

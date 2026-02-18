@@ -1,8 +1,8 @@
 import { VisitPoint } from '../types';
 import { Clock, MapPin, Camera, AlertTriangle, CheckCircle, Smartphone, BadgeCheck } from 'lucide-react';
-import { cn } from '@/lib/utils';
 import { useState } from 'react';
 import { Modal } from '@/components/ui/Modal'; 
+import { getImageUrl, cn } from '@/lib/utils';
 
 interface CustomerVisitCardProps {
     point: VisitPoint;
@@ -12,6 +12,7 @@ interface CustomerVisitCardProps {
 export const CustomerVisitCard = ({ point, onClick }: CustomerVisitCardProps) => {
     const { pelanggan, visit, status, type } = point;
     const [isImageModalOpen, setIsImageModalOpen] = useState(false);
+    const [selectedImage, setSelectedImage] = useState<string | null>(null);
 
     // Get time formatted
     const formatTime = (isoString?: string) => {
@@ -25,7 +26,12 @@ export const CustomerVisitCard = ({ point, onClick }: CustomerVisitCardProps) =>
     };
 
     // Get images
-    const images = [visit?.foto_1_url, visit?.foto_2_url, visit?.foto_3_url, visit?.foto_4_url].filter(Boolean);
+    const images = [
+        getImageUrl(visit?.foto_1_url), 
+        getImageUrl(visit?.foto_2_url), 
+        getImageUrl(visit?.foto_3_url), 
+        getImageUrl(visit?.foto_4_url)
+    ].filter(Boolean);
 
     // Status Badge Logic
     let statusBadge = (
@@ -55,6 +61,7 @@ export const CustomerVisitCard = ({ point, onClick }: CustomerVisitCardProps) =>
 
     return (
         <div 
+            id={`visit-card-${pelanggan.id}`}
             onClick={onClick}
             className="bg-white border border-gray-100 rounded-xl p-4 hover:shadow-md transition-all mb-3 last:mb-0 cursor-pointer ring-offset-2 hover:ring-2 hover:ring-blue-100"
         >
@@ -180,29 +187,60 @@ export const CustomerVisitCard = ({ point, onClick }: CustomerVisitCardProps) =>
             {/* Image Modal */}
             <Modal
                 isOpen={isImageModalOpen}
-                onClose={() => setIsImageModalOpen(false)}
+                onClose={() => {
+                    setIsImageModalOpen(false);
+                    setSelectedImage(null);
+                }}
                 title="Bukti Foto Kunjungan"
                 size="lg"
             >
-                <div className="grid grid-cols-2 gap-4">
-                    {images.map((img, idx) => (
-                        <div key={idx} className="relative aspect-video bg-gray-100 rounded-lg overflow-hidden border border-gray-200 shadow-sm group">
-                            <img src={img as string} alt={`Bukti ${idx+1}`} className="object-cover w-full h-full group-hover:scale-105 transition-transform duration-500" />
-                            <div className="absolute top-2 left-2 bg-black/60 text-white text-[10px] px-2 py-1 rounded backdrop-blur-sm">
-                                Foto {idx + 1}
-                            </div>
+                <div className="space-y-4">
+                    {/* Zoomed Preview */}
+                    <div className="relative aspect-auto min-h-[300px] max-h-[500px] w-full bg-black rounded-lg overflow-hidden flex items-center justify-center border border-gray-800 shadow-inner">
+                        <img 
+                            src={selectedImage || images[0] as string} 
+                            alt="Preview Zoom" 
+                            className="max-w-full max-h-full object-contain animate-in fade-in zoom-in duration-300"
+                        />
+                        <div className="absolute bottom-3 left-1/2 -translate-x-1/2 bg-black/60 text-white text-[10px] px-3 py-1.5 rounded-full backdrop-blur-md border border-white/10 font-medium">
+                            Klik thumbnail di bawah untuk lihat foto lainnya
                         </div>
-                    ))}
-                </div>
-                <div className="mt-4 flex justify-end">
-                    <button 
-                        onClick={() => setIsImageModalOpen(false)}
-                        className="px-4 py-2 bg-gray-200 text-gray-800 rounded-lg hover:bg-gray-300 text-sm font-medium transition-colors"
-                    >
-                        Tutup
-                    </button>
+                    </div>
+
+                    {/* Thumbnail Selection */}
+                    <div className="flex gap-3 overflow-x-auto pb-2 justify-center scrollbar-hide">
+                        {images.map((img, idx) => (
+                            <button 
+                                key={idx} 
+                                onClick={() => setSelectedImage(img as string)}
+                                className={cn(
+                                    "relative h-20 w-20 rounded-lg overflow-hidden border-2 transition-all shrink-0 shadow-sm",
+                                    (selectedImage === img || (!selectedImage && idx === 0)) 
+                                        ? "border-indigo-500 scale-105 shadow-indigo-100" 
+                                        : "border-gray-100 opacity-50 hover:opacity-100 hover:border-gray-300"
+                                )}
+                            >
+                                <img src={img as string} alt={`Bukti ${idx+1}`} className="object-cover w-full h-full" />
+                                <div className="absolute inset-0 bg-black/5 flex items-center justify-center opacity-0 hover:opacity-100 transition-opacity">
+                                    <span className="text-[10px] text-white font-bold bg-black/40 px-1.5 py-0.5 rounded">#{idx+1}</span>
+                                </div>
+                            </button>
+                        ))}
+                    </div>
+
+                    <div className="pt-4 flex justify-end border-t border-gray-100">
+                        <button 
+                            onClick={() => {
+                                setIsImageModalOpen(false);
+                                setSelectedImage(null);
+                            }}
+                            className="px-6 py-2.5 bg-indigo-600 text-white rounded-xl hover:bg-indigo-700 text-sm font-bold transition-all active:scale-95 shadow-lg shadow-indigo-100"
+                        >
+                            Selesai
+                        </button>
+                    </div>
                 </div>
             </Modal>
         </div>
     );
-}
+};

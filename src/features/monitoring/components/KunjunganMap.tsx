@@ -9,6 +9,7 @@ interface KunjunganMapProps {
     points: VisitPoint[]; // All points to display
     focusPoints?: VisitPoint[]; // Points to zoom/pan to
     selectedEmployeeColor?: string; // Optional
+    onMarkerClick?: (point: VisitPoint) => void;
 }
 
 // Map Updater Component to fit bounds
@@ -118,7 +119,7 @@ const createCustomIcon = (color: string, status: string, isUnplanned: boolean, i
     });
 };
 
-export const KunjunganMap = ({ points, focusPoints, selectedEmployeeColor }: KunjunganMapProps) => {
+export const KunjunganMap = ({ points, focusPoints, selectedEmployeeColor, onMarkerClick }: KunjunganMapProps) => {
     // Default center Jakarta
     const defaultCenter: [number, number] = [-6.2088, 106.8456];
     
@@ -212,6 +213,11 @@ export const KunjunganMap = ({ points, focusPoints, selectedEmployeeColor }: Kun
                         key={`marker-${point.pelanggan.id}-${point.type}`}
                         position={[lat, lng]}
                         icon={icon}
+                        eventHandlers={{
+                            click: () => {
+                                onMarkerClick?.(point);
+                            },
+                        }}
                     >
                         <Popup>
                             <div className="p-1 min-w-[180px]">

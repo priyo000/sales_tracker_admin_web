@@ -87,9 +87,26 @@ const KunjunganPage = () => {
         }
     };
     
-    // Handle Customer Click
+    // Handle Customer Click (from List or Map)
     const handleCustomerClick = (point: VisitPoint) => {
+        // If clicking from map, we need to ensure the right employee is selected and sidebar is open
+        if (point.employee && selectedEmployeeId !== point.employee.id) {
+            setSelectedEmployeeId(point.employee.id);
+        }
+        
         setSelectedCustomerPoint(point);
+        setIsRightSidebarOpen(true);
+
+        // Scroll the element into view if it exists in the list
+        setTimeout(() => {
+            const element = document.getElementById(`visit-card-${point.pelanggan.id}`);
+            if (element) {
+                element.scrollIntoView({ behavior: 'smooth', block: 'center' });
+                // Optional: add a temporary highlight class
+                element.classList.add('ring-2', 'ring-indigo-500');
+                setTimeout(() => element.classList.remove('ring-2', 'ring-indigo-500'), 2000);
+            }
+        }, 300);
     }
 
     // Derived State: Selected Employee Color
@@ -117,6 +134,7 @@ const KunjunganPage = () => {
                         points={allPoints} 
                         focusPoints={mapFocusPoints}
                         selectedEmployeeColor={selectedEmployeeColor} 
+                        onMarkerClick={handleCustomerClick}
                     />
                 ) : (
                     // Empty State or Placeholder Map

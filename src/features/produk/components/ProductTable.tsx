@@ -1,6 +1,7 @@
 import React from 'react';
 import { Package, Edit, Trash } from 'lucide-react';
 import { Produk } from '../types';
+import { getImageUrl } from '@/lib/utils';
 
 interface ProductTableProps {
     produks: Produk[];
@@ -10,11 +11,6 @@ interface ProductTableProps {
 }
 
 const ProductTable: React.FC<ProductTableProps> = ({ produks, onEdit, onDelete, loading }) => {
-    const getImageUrl = (path?: string) => {
-        if (!path) return null;
-        if (path.startsWith('http')) return path;
-        return `http://localhost:8000/storage/${path}`;
-    };
 
     return (
         <div className="overflow-hidden rounded-lg bg-white shadow">

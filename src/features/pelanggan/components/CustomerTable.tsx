@@ -1,6 +1,7 @@
 import React from 'react';
 import { Store, User, Phone, MapPin, Check, X, ChevronLeft, ChevronRight } from 'lucide-react';
 import { Pelanggan } from '../types';
+import { getImageUrl } from '@/lib/utils';
 
 interface CustomerTableProps {
     data: Pelanggan[];
@@ -78,7 +79,7 @@ const CustomerTable: React.FC<CustomerTableProps> = ({
                                         <div className="flex items-center">
                                             <div className="h-10 w-10 shrink-0 rounded-lg bg-indigo-50 flex items-center justify-center text-indigo-600 border border-indigo-100 overflow-hidden">
                                                 {p.foto_toko_url ? (
-                                                    <img src={p.foto_toko_url} alt="" className="h-full w-full object-cover" />
+                                                    <img src={getImageUrl(p.foto_toko_url)} alt="" className="h-full w-full object-cover" />
                                                 ) : (
                                                     <Store className="h-5 w-5" />
                                                 )}

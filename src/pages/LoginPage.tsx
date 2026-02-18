@@ -16,7 +16,7 @@ const LoginPage: React.FC = () => {
         try {
             // Use axios directly or the api instance (api.post)
             // Using full URL for clarity here, but api.post('/login') is better
-            const response = await axios.post('http://localhost:8000/api/login', {
+            const response = await axios.post('http://backend-salestracker/api/login', {
                 username,
                 password,
                 device_name: 'Admin Panel',

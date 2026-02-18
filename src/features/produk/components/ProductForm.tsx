@@ -23,7 +23,7 @@ const ProductForm: React.FC<ProductFormProps> = ({ initialData, onSubmit, onCanc
         if (initialData?.gambar_url) {
             return initialData.gambar_url.startsWith('http') 
                 ? initialData.gambar_url 
-                : `http://localhost:8000/storage/${initialData.gambar_url}`;
+                : `http://backend-salestracker/storage/${initialData.gambar_url}`;
         }
         return null;
     });

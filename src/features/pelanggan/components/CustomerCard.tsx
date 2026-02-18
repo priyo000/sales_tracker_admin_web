@@ -1,6 +1,7 @@
 import React from 'react';
 import { Store, MapPin, Phone, Check, X } from 'lucide-react';
 import { Pelanggan } from '../types';
+import { getImageUrl } from '@/lib/utils';
 
 interface CustomerCardProps {
     pelanggan: Pelanggan;
@@ -14,7 +15,7 @@ const CustomerCard: React.FC<CustomerCardProps> = ({ pelanggan, onApprove, onRej
             <div className="h-32 bg-gray-200 relative">
                 {pelanggan.foto_toko_url ? (
                     <img 
-                        src={pelanggan.foto_toko_url} 
+                        src={getImageUrl(pelanggan.foto_toko_url)} 
                         alt={pelanggan.nama_toko} 
                         className="h-full w-full object-cover" 
                         onError={(e) => {
