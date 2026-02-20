@@ -67,7 +67,7 @@ const OrderTable: React.FC<OrderTableProps> = ({ data, loading, onViewDetail }) 
                                 <td className="px-6 py-4">
                                     <div className="text-sm font-bold text-gray-900">{p.no_pesanan}</div>
                                     <div className="flex items-center text-xs text-gray-500 mt-1">
-                                        <Clock className="mr-1 h-3 w-3" /> {p.tanggal_transaksi}
+                                        <Clock className="mr-1 h-3 w-3" /> {new Date(p.tanggal_transaksi).toLocaleString('id-ID', { day: 'numeric', month: 'long', year: 'numeric', hour: '2-digit', minute: '2-digit' })}
                                     </div>
                                 </td>
                                 <td className="px-6 py-4">

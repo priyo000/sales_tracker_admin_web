@@ -36,6 +36,8 @@ export interface VisitPoint {
         waktu_check_out?: string;
         durasi_detik?: number;
         jarak_validasi?: number; // meters
+        batas_jarak?: number;
+        is_valid_distance?: boolean;
         status_kunjungan: string;
         status_transaksi: boolean;
         catatan?: string;

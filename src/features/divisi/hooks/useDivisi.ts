@@ -36,6 +36,20 @@ export const useDivisi = () => {
         }
     };
 
+    const updateDivisi = async (id: number, data: DivisiFormData) => {
+        setLoading(true);
+        try {
+            await api.put(`/divisi/${id}`, data);
+            await fetchDivisis();
+            return { success: true };
+        } catch (err) {
+            const error = err as AxiosError<{ message: string }>;
+            return { success: false, message: error.response?.data?.message || 'Gagal mengubah divisi.' };
+        } finally {
+            setLoading(false);
+        }
+    };
+
     const deleteDivisi = async (id: number) => {
         setLoading(true);
         try {
@@ -56,6 +70,7 @@ export const useDivisi = () => {
         error,
         fetchDivisis,
         createDivisi,
+        updateDivisi,
         deleteDivisi
     };
 };

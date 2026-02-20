@@ -148,7 +148,9 @@ const OrderDetail: React.FC<OrderDetailProps> = ({ pesanan, onStatusChange, onUp
                     </div>
                     <div>
                         <p className="text-gray-500 mb-1">Tanggal Pesanan</p>
-                        <p className="font-medium text-gray-700">{pesanan.tanggal_transaksi}</p>
+                        <p className="font-medium text-gray-700">
+                            {new Date(pesanan.tanggal_transaksi).toLocaleString('id-ID', { day: 'numeric', month: 'long', year: 'numeric', hour: '2-digit', minute: '2-digit' })}
+                        </p>
                     </div>
                     <div>
                         <p className="text-gray-500 mb-1">Status Saat Ini</p>

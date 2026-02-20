@@ -5,7 +5,7 @@ import { useDivisi } from '../features/divisi/hooks/useDivisi';
 import DivisionTable from '../features/divisi/components/DivisionTable';
 import DivisionForm from '../features/divisi/components/DivisionForm';
 import { Modal, ConfirmModal } from '../components/ui/Modal';
-import { DivisiFormData } from '../features/divisi/types';
+import { DivisiFormData, Divisi } from '../features/divisi/types';
 
 const DivisiPage: React.FC = () => {
     const { 
@@ -14,10 +14,12 @@ const DivisiPage: React.FC = () => {
         error, 
         fetchDivisis, 
         createDivisi, 
+        updateDivisi,
         deleteDivisi 
     } = useDivisi();
 
     const [isFormOpen, setIsFormOpen] = useState(false);
+    const [editingDivisi, setEditingDivisi] = useState<Divisi | null>(null);
     const [deletingId, setDeletingId] = useState<number | null>(null);
 
     useEffect(() => {
@@ -25,6 +27,12 @@ const DivisiPage: React.FC = () => {
     }, [fetchDivisis]);
 
     const handleCreate = () => {
+        setEditingDivisi(null);
+        setIsFormOpen(true);
+    };
+
+    const handleEdit = (divisi: Divisi) => {
+        setEditingDivisi(divisi);
         setIsFormOpen(true);
     };
 
@@ -45,10 +53,17 @@ const DivisiPage: React.FC = () => {
     };
 
     const handleFormSubmit = async (data: DivisiFormData) => {
-        const result = await createDivisi(data);
+        let result;
+        if (editingDivisi) {
+            result = await updateDivisi(editingDivisi.id, data);
+        } else {
+            result = await createDivisi(data);
+        }
+
         if (result.success) {
-            toast.success('Divisi berhasil ditambahkan');
+            toast.success(editingDivisi ? 'Divisi berhasil diperbarui' : 'Divisi berhasil ditambahkan');
             setIsFormOpen(false);
+            setEditingDivisi(null);
         } else {
             toast.error(result.message || 'Gagal menyimpan divisi');
         }
@@ -85,18 +100,29 @@ const DivisiPage: React.FC = () => {
             <DivisionTable 
                 data={divisis} 
                 loading={loading} 
-                onDelete={handleDeleteClick} 
+                onDelete={handleDeleteClick}
+                onEdit={handleEdit}
             />
 
             {/* Form Modal */}
             <Modal
                 isOpen={isFormOpen}
-                onClose={() => setIsFormOpen(false)}
-                title="Tambah Divisi Baru"
+                onClose={() => {
+                    setIsFormOpen(false);
+                    setEditingDivisi(null);
+                }}
+                title={editingDivisi ? "Edit Divisi" : "Tambah Divisi Baru"}
             >
                 <DivisionForm 
+                    initialData={editingDivisi ? {
+                        nama_divisi: editingDivisi.nama_divisi,
+                        radius_toleransi: editingDivisi.radius_toleransi
+                    } : undefined}
                     onSubmit={handleFormSubmit}
-                    onCancel={() => setIsFormOpen(false)}
+                    onCancel={() => {
+                        setIsFormOpen(false);
+                        setEditingDivisi(null);
+                    }}
                     loading={loading}
                 />
             </Modal>

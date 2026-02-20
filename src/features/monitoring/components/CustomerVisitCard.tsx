@@ -57,7 +57,7 @@ export const CustomerVisitCard = ({ point, onClick }: CustomerVisitCardProps) =>
     }
 
     // Distance warning
-    const isOutOfRange = (visit?.jarak_validasi || 0) > 100;
+    const isOutOfRange = visit ? (visit.is_valid_distance === false || (visit.is_valid_distance === undefined && (visit.jarak_validasi || 0) > (visit.batas_jarak || 100))) : false;
 
     return (
         <div 
@@ -167,7 +167,7 @@ export const CustomerVisitCard = ({ point, onClick }: CustomerVisitCardProps) =>
                         {isOutOfRange && (
                             <div className="flex items-start gap-2 text-red-600 text-[11px] bg-red-50 p-2 rounded-lg border border-red-100">
                                 <AlertTriangle className="h-3.5 w-3.5 mt-0.5 shrink-0" />
-                                <span>Check-in dilakukan diluar area toleransi (&gt;100m).</span>
+                                <span>Check-in dilakukan diluar area toleransi (&gt;{visit?.batas_jarak || 100}m).</span>
                             </div>
                         )}
                     </>
