@@ -114,9 +114,11 @@ const DivisiPage: React.FC = () => {
                 title={editingDivisi ? "Edit Divisi" : "Tambah Divisi Baru"}
             >
                 <DivisionForm 
+                    key={editingDivisi?.id || 'new'}
                     initialData={editingDivisi ? {
                         nama_divisi: editingDivisi.nama_divisi,
-                        radius_toleransi: editingDivisi.radius_toleransi
+                        radius_toleransi: editingDivisi.radius_toleransi,
+                        view_scope: editingDivisi.view_scope
                     } : undefined}
                     onSubmit={handleFormSubmit}
                     onCancel={() => {

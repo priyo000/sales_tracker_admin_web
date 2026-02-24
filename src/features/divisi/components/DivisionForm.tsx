@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState } from 'react';
 import { DivisiFormData } from '../types';
 
 interface DivisionFormProps {
@@ -12,14 +12,6 @@ const DivisionForm: React.FC<DivisionFormProps> = ({ initialData, onSubmit, onCa
     const [namaDivisi, setNamaDivisi] = useState(initialData?.nama_divisi || '');
     const [radiusToleransi, setRadiusToleransi] = useState(initialData?.radius_toleransi || 100);
     const [viewScope, setViewScope] = useState<'SELF' | 'DIVISION' | 'COMPANY'>(initialData?.view_scope || 'SELF');
-
-    useEffect(() => {
-        if (initialData) {
-            setNamaDivisi(initialData.nama_divisi);
-            setRadiusToleransi(initialData.radius_toleransi || 100);
-            setViewScope(initialData.view_scope || 'SELF');
-        }
-    }, [initialData]);
 
     const handleSubmit = (e: React.FormEvent) => {
         e.preventDefault();

@@ -16,6 +16,7 @@ import KaryawanPage from './pages/KaryawanPage';
 import DivisiPage from './pages/DivisiPage';
 import PerusahaanPage from './pages/PerusahaanPage';
 import UserPage from './pages/UserPage';
+import NotifikasiPage from './pages/NotifikasiPage';
 
 const ProtectedRoute = ({ children }: { children: React.ReactNode }) => {
     const { token, isLoading } = useAuth();
@@ -55,6 +56,7 @@ function App() {
                                     <Route path="/divisi" element={<DivisiPage />} />
                                     <Route path="/perusahaan" element={<PerusahaanPage />} />
                                     <Route path="/users" element={<UserPage />} />
+                                    <Route path="/notifikasi" element={<NotifikasiPage />} />
                                 </Routes>
                             </MainLayout>
                         </ProtectedRoute>

@@ -8,6 +8,7 @@ export interface User {
     id_perusahaan: number;
     username: string;
     peran: UserRole;
+    fcm_token?: string;
     created_at: string;
     karyawan?: Karyawan;
 }

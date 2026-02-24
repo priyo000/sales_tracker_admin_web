@@ -14,11 +14,13 @@ export interface Pelanggan {
     latitude: number | null;
     longitude: number | null;
     foto_toko_url?: string;
+    foto_ktp_url?: string;
     
     // Additional fields
     no_ktp_pemilik?: string;
     no_npwp_pribadi?: string;
     alamat_rumah_pemilik?: string;
+    provinsi_usaha?: string;
     kota_usaha?: string;
     kecamatan_usaha?: string;
     nama_kontak_person?: string;
@@ -87,6 +89,7 @@ export interface PelangganFormData {
     no_ktp_pemilik?: string;
     no_npwp_pribadi?: string;
     alamat_rumah_pemilik?: string;
+    provinsi_usaha?: string;
     kota_usaha?: string;
     kecamatan_usaha?: string;
     nama_kontak_person?: string;
@@ -121,4 +124,5 @@ export interface PelangganFormData {
 
     // File
     foto_toko?: File | null;
+    foto_ktp?: File | null;
 }

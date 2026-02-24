@@ -2,7 +2,7 @@ import React, { useState } from 'react';
 import { Store, MapPin, User, CreditCard, Landmark, Phone, LucideIcon, Upload, Image, X, Shield, Briefcase } from 'lucide-react';
 import { Pelanggan, PelangganFormData } from '../types';
 import MapPicker from './MapPicker';
-import { cn } from '@/lib/utils';
+import { cn, getImageUrl } from '@/lib/utils';
 import { usePelanggan } from '../hooks/usePelanggan';
 
 interface CustomerFormProps {
@@ -36,7 +36,8 @@ const FormField = ({ label, required, children }: { label: string; required?: bo
 
 const CustomerForm: React.FC<CustomerFormProps> = ({ initialData, onSubmit, onCancel, loading }) => {
     const [activeTab, setActiveTab] = useState<'pemilik' | 'usaha' | 'pembayaran'>('pemilik');
-    const [imagePreview, setImagePreview] = useState<string | null>(initialData?.foto_toko_url || null);
+    const [imagePreview, setImagePreview] = useState<string | null>(initialData?.foto_toko_url ? getImageUrl(initialData.foto_toko_url) : null);
+    const [ktpPreview, setKtpPreview] = useState<string | null>(initialData?.foto_ktp_url ? getImageUrl(initialData.foto_ktp_url) : null);
     
     const [formData, setFormData] = useState<PelangganFormData>({
         nama_toko: initialData?.nama_toko || '',
@@ -55,6 +56,7 @@ const CustomerForm: React.FC<CustomerFormProps> = ({ initialData, onSubmit, onCa
         tanggal_lahir_pemilik: initialData?.tanggal_lahir_pemilik || '',
         kode_pos_rumah: initialData?.kode_pos_rumah || '',
         kota_rumah: initialData?.kota_rumah || '',
+        provinsi_usaha: initialData?.provinsi_usaha || '',
         kota_usaha: initialData?.kota_usaha || '',
         kecamatan_usaha: initialData?.kecamatan_usaha || '',
         nama_kontak_person: initialData?.nama_kontak_person || '',
@@ -78,6 +80,7 @@ const CustomerForm: React.FC<CustomerFormProps> = ({ initialData, onSubmit, onCa
         catatan_lain: initialData?.catatan_lain || '',
         id_sales_pembuat: initialData?.id_sales_pembuat || undefined,
         foto_toko: null,
+        foto_ktp: null,
     });
 
     const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement>) => {
@@ -97,6 +100,18 @@ const CustomerForm: React.FC<CustomerFormProps> = ({ initialData, onSubmit, onCa
             const reader = new FileReader();
             reader.onloadend = () => {
                 setImagePreview(reader.result as string);
+            };
+            reader.readAsDataURL(file);
+        }
+    };
+
+    const handleKtpChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+        const file = e.target.files?.[0];
+        if (file) {
+            setFormData(prev => ({ ...prev, foto_ktp: file }));
+            const reader = new FileReader();
+            reader.onloadend = () => {
+                setKtpPreview(reader.result as string);
             };
             reader.readAsDataURL(file);
         }
@@ -131,14 +146,15 @@ const CustomerForm: React.FC<CustomerFormProps> = ({ initialData, onSubmit, onCa
         }));
     };
 
-    const handleLocationChange = (lat: number, lng: number, address?: string, city?: string, district?: string) => {
+    const handleLocationChange = (lat: number, lng: number, address?: string, city?: string, district?: string, state?: string) => {
         setFormData(prev => ({
             ...prev,
             latitude: lat,
             longitude: lng,
             alamat_usaha: address || prev.alamat_usaha,
             kota_usaha: city || prev.kota_usaha,
-            kecamatan_usaha: district || prev.kecamatan_usaha
+            kecamatan_usaha: district || prev.kecamatan_usaha,
+            provinsi_usaha: state || prev.provinsi_usaha
         }));
     };
 
@@ -212,6 +228,43 @@ const CustomerForm: React.FC<CustomerFormProps> = ({ initialData, onSubmit, onCa
                                     <FormField label="NPWP Pribadi">
                                         <input name="no_npwp_pribadi" value={formData.no_npwp_pribadi} onChange={handleChange} className={inputClasses} placeholder="00.000..." />
                                     </FormField>
+                                </div>
+                            </div>
+                            
+                            {/* Foto KTP Section - Inside Left Column to balance height if needed, OR keep it separate */}
+                             <div className="bg-white border border-gray-200 rounded-lg p-6 shadow-sm mt-6">
+                                <div className="flex items-center space-x-2 mb-5 pb-4 border-b border-gray-200">
+                                    <div className="p-2 bg-indigo-100 rounded-lg">
+                                        <Image className="h-5 w-5 text-indigo-600" />
+                                    </div>
+                                    <h3 className="text-lg font-semibold text-gray-900">Foto KTP Pemilik</h3>
+                                </div>
+                                
+                                <div className="space-y-4">
+                                    {ktpPreview && (
+                                        <div className="relative w-full h-48 rounded-lg overflow-hidden border-2 border-gray-200 shadow-sm group">
+                                            <img src={ktpPreview} alt="Preview KTP" className="w-full h-full object-cover" />
+                                            <button
+                                                type="button"
+                                                onClick={() => {
+                                                    setKtpPreview(null);
+                                                    setFormData({ ...formData, foto_ktp: null });
+                                                }}
+                                                className="absolute top-2 right-2 p-1.5 bg-red-500 hover:bg-red-600 text-white rounded-full shadow-lg transition-all opacity-0 group-hover:opacity-100"
+                                                title="Hapus foto"
+                                            >
+                                                <X className="h-4 w-4" />
+                                            </button>
+                                        </div>
+                                    )}
+                                    {!ktpPreview && (
+                                        <label className="flex flex-col items-center justify-center w-full h-48 px-4 py-6 border-2 border-dashed border-gray-300 rounded-lg text-sm font-medium text-gray-700 bg-gray-50 hover:bg-gray-100 cursor-pointer transition-all hover:border-indigo-400">
+                                            <Upload className="w-10 h-10 mb-2 text-indigo-600" />
+                                            <span className="text-indigo-600 font-semibold text-sm">Upload Foto KTP</span>
+                                            <span className="text-xs text-gray-500 mt-1">JPG, PNG - Maksimal 5MB</span>
+                                            <input type="file" className="hidden" accept="image/*" onChange={handleKtpChange} />
+                                        </label>
+                                    )}
                                 </div>
                             </div>
                         </div>
@@ -402,6 +455,11 @@ const CustomerForm: React.FC<CustomerFormProps> = ({ initialData, onSubmit, onCa
                                             </FormField>
                                             <FormField label="Kota">
                                                 <input name="kota_usaha" value={formData.kota_usaha} onChange={handleChange} className={inputClasses} placeholder="Surabaya" />
+                                            </FormField>
+                                        </div>
+                                        <div className="grid grid-cols-1 gap-4">
+                                            <FormField label="Provinsi">
+                                                <input name="provinsi_usaha" value={formData.provinsi_usaha} onChange={handleChange} className={inputClasses} placeholder="Jawa Timur" />
                                             </FormField>
                                         </div>
                                     </div>

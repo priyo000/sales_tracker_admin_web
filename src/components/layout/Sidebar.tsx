@@ -1,4 +1,4 @@
-import { Home, Calendar, Map, MapPin, Users, Package, FileText, Settings, LogOut, Layout, Building2, UserPlus } from 'lucide-react';
+import { Home, Calendar, Map, MapPin, Users, Package, FileText, Settings, LogOut, Layout, Building2, UserPlus, Bell } from 'lucide-react';
 import { NavLink } from 'react-router-dom';
 import { useAuth } from '@/hooks/useAuth';
 import { cn } from '@/lib/utils';
@@ -18,6 +18,7 @@ const Sidebar = () => {
         { icon: UserPlus, label: 'Pengguna', to: '/users' },
         { icon: Package, label: 'Produk', to: '/produk' },
         { icon: FileText, label: 'Pesanan', to: '/pesanan' },
+        { icon: Bell, label: 'Notifikasi', to: '/notifikasi' },
         { icon: Settings, label: 'Pengaturan', to: '/pengaturan' },
     ];
 

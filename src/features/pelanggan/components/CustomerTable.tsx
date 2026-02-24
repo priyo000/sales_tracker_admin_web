@@ -111,8 +111,13 @@ const CustomerTable: React.FC<CustomerTableProps> = ({
                                         </div>
                                         <div className="text-xs text-gray-500 flex items-start mt-1 max-w-xs sm:max-w-sm">
                                             <MapPin className="h-3 w-3 mr-1.5 mt-0.5 text-gray-400 shrink-0" />
-                                            <span className="line-clamp-1 truncate" title={p.alamat_usaha}>
+                                            <span className="line-clamp-2" title={`${p.alamat_usaha} ${p.kecamatan_usaha || ''} ${p.kota_usaha || ''} ${p.provinsi_usaha || ''}`}>
                                                 {p.alamat_usaha}
+                                                {(p.kecamatan_usaha || p.kota_usaha || p.provinsi_usaha) && (
+                                                    <div className="text-[10px] text-gray-400 font-normal mt-0.5">
+                                                        {[p.kecamatan_usaha, p.kota_usaha, p.provinsi_usaha].filter(Boolean).join(', ')}
+                                                    </div>
+                                                )}
                                             </span>
                                         </div>
                                     </td>

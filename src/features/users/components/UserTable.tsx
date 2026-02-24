@@ -1,5 +1,5 @@
 import React from 'react';
-import { Edit, Trash, User as UserIcon, Shield, Smartphone } from 'lucide-react';
+import { Edit, Trash, User as UserIcon, Shield, Smartphone, Bell } from 'lucide-react';
 import { User } from '../types';
 
 interface UserTableProps {
@@ -23,6 +23,9 @@ const UserTable: React.FC<UserTableProps> = ({ data, loading, onEdit, onDelete }
                         </th>
                         <th scope="col" className="px-6 py-3 text-left text-xs font-medium uppercase tracking-wider text-gray-500">
                             Role
+                        </th>
+                        <th scope="col" className="px-6 py-3 text-left text-xs font-medium uppercase tracking-wider text-gray-500">
+                            Status App
                         </th>
                         <th scope="col" className="px-6 py-3 text-right text-xs font-medium uppercase tracking-wider text-gray-500">
                             Aksi
@@ -89,6 +92,19 @@ const UserTable: React.FC<UserTableProps> = ({ data, loading, onEdit, onDelete }
                                         <Shield className="w-3 h-3 mr-1.5" />
                                         {u.peran.replace('_', ' ')}
                                      </span>
+                                </td>
+                                <td className="px-6 py-4 whitespace-nowrap">
+                                    {u.fcm_token ? (
+                                        <span className="inline-flex items-center text-xs text-green-600 font-semibold bg-green-50 px-2 py-1 rounded-full border border-green-100">
+                                            <Bell className="w-3 h-3 mr-1 text-green-500" />
+                                            Aktif
+                                        </span>
+                                    ) : (
+                                        <span className="inline-flex items-center text-xs text-slate-400 bg-slate-50 px-2 py-1 rounded-full border border-slate-100">
+                                            <Bell className="w-3 h-3 mr-1 text-slate-300" />
+                                            N/A
+                                        </span>
+                                    )}
                                 </td>
                                 <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
                                     <button 

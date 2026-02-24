@@ -19,7 +19,7 @@ L.Marker.prototype.options.icon = DefaultIcon;
 interface MapPickerProps {
     lat: number;
     lng: number;
-    onChange: (lat: number, lng: number, address?: string, city?: string, district?: string) => void;
+    onChange: (lat: number, lng: number, address?: string, city?: string, district?: string, state?: string) => void;
     hideSearch?: boolean;
     height?: string;
 }
@@ -44,7 +44,8 @@ const LocationMarker = ({ lat, lng, onChange }: MapPickerProps) => {
                 if (data && data.address) {
                     const city = data.address.city || data.address.town || data.address.county || data.address.city_district || "";
                     const district = data.address.suburb || data.address.village || data.address.municipality || "";
-                    onChange(newLat, newLng, data.display_name, city, district);
+                    const state = data.address.state || "";
+                    onChange(newLat, newLng, data.display_name, city, district, state);
                 }
             } catch (err) {
                 console.error("Reverse Geocoding failed:", err);
@@ -79,8 +80,9 @@ const MapPicker: React.FC<MapPickerProps> = ({ lat, lng, onChange, hideSearch = 
                 const address = result.address || {};
                 const city = address.city || address.town || address.county || address.city_district || "";
                 const district = address.suburb || address.village || address.municipality || "";
+                const state = address.state || "";
                 
-                onChange(newLat, newLon, result.display_name, city, district);
+                onChange(newLat, newLon, result.display_name, city, district, state);
             }
         } catch (error) {
             console.error('Search error:', error);
