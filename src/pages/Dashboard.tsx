@@ -38,7 +38,7 @@ const Dashboard: React.FC = () => {
     useEffect(() => {
         const fetchStats = async () => {
             try {
-                const response = await api.get('/dashboard');
+                const response = await api.get('/admin/dashboard');
                 setStats(response.data.data);
             } catch (error) {
                 console.error("Failed to fetch dashboard stats", error);
