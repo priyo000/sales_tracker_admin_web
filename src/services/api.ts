@@ -1,6 +1,7 @@
 import axios from "axios";
 
-export const BASE_URL = "http://backend-salestracker";
+export const BASE_URL =
+  import.meta.env.VITE_API_URL || "https://app.intigroup.top";
 
 const api = axios.create({
   baseURL: `${BASE_URL}/api`,
