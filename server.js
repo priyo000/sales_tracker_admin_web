@@ -16,7 +16,7 @@ app.use(express.static(path.join(__dirname, "dist")));
 
 // Menangkap semua routing (Catch-all) dan diarahkan ke index.html di dalam folder dist
 // (Penting agar React Router berfungsi tanpa error 404 saat direfresh)
-app.get("*", (req, res) => {
+app.use((req, res) => {
   res.sendFile(path.join(__dirname, "dist", "index.html"));
 });
 
