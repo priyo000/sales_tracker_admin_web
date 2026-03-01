@@ -14,7 +14,7 @@ export const useProduk = () => {
       setError(null);
       try {
         const response = await api.get("/produk", { params });
-        setProduks(response.data.data);
+        setProduks(Array.isArray(response.data.data) ? response.data.data : []);
       } catch (err) {
         const error = err as AxiosError<{ message: string }>;
         setError(

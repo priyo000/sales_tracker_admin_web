@@ -45,28 +45,33 @@ const ProductTable: React.FC<ProductTableProps> = ({
                 colSpan={5}
                 className="px-6 py-4 text-center text-sm text-gray-500"
               >
-                Loading...
+                <div className="flex items-center justify-center py-4">
+                  <div className="h-5 w-5 animate-spin rounded-full border-2 border-indigo-500 border-t-transparent"></div>
+                  <span className="ml-2">Memuat data produk...</span>
+                </div>
               </td>
             </tr>
-          ) : produks.length === 0 ? (
+          ) : !Array.isArray(produks) || produks.length === 0 ? (
             <tr>
               <td
                 colSpan={5}
                 className="px-6 py-4 text-center text-sm text-gray-500"
               >
-                Belum ada data produk.
+                {!Array.isArray(produks)
+                  ? "Data produk tidak valid dari server."
+                  : "Belum ada data produk."}
               </td>
             </tr>
           ) : (
-            produks.map((produk) => (
-              <tr key={produk.id}>
+            produks.map((produk, index) => (
+              <tr key={produk?.id || index}>
                 <td className="px-6 py-4">
                   <div className="flex items-center">
                     <div className="h-10 w-10 shrink-0 rounded bg-indigo-100 flex items-center justify-center text-indigo-500 overflow-hidden">
-                      {produk.gambar_url ? (
+                      {produk?.gambar_url ? (
                         <img
                           src={getImageUrl(produk.gambar_url) || ""}
-                          alt={produk.nama_produk}
+                          alt={produk.nama_produk || "Produk"}
                           className="h-full w-full object-cover"
                         />
                       ) : (
@@ -75,43 +80,49 @@ const ProductTable: React.FC<ProductTableProps> = ({
                     </div>
                     <div className="ml-4">
                       <div className="text-sm font-medium text-gray-900">
-                        {produk.nama_produk}
+                        {produk?.nama_produk || "-"}
                       </div>
                       <div className="flex items-center gap-2 mt-0.5">
                         <span className="text-sm text-gray-500">
-                          {produk.satuan}
+                          {produk?.satuan || "pcs"}
                         </span>
-                        {produk.kategori && (
-                          <span className="inline-flex items-center px-1.5 py-0.5 rounded text-[10px] font-medium bg-indigo-50 text-indigo-600 border border-indigo-100">
-                            {produk.kategori.nama_kategori}
-                          </span>
-                        )}
+                        {produk?.kategori &&
+                          typeof produk.kategori === "object" && (
+                            <span className="inline-flex items-center px-1.5 py-0.5 rounded text-[10px] font-medium bg-indigo-50 text-indigo-600 border border-indigo-100">
+                              {produk.kategori.nama_kategori || "Tanpa Nama"}
+                            </span>
+                          )}
                       </div>
                     </div>
                   </div>
                 </td>
                 <td className="px-6 py-4">
                   <div className="text-sm text-gray-900">
-                    {produk.kode_barang}
+                    {produk?.kode_barang || "-"}
                   </div>
-                  <div className="text-xs text-gray-500">{produk.sku}</div>
+                  <div className="text-xs text-gray-500">
+                    {produk?.sku || "-"}
+                  </div>
                 </td>
-                <td className="whitespace-nowrap px-6 py-4 text-right text-sm text-gray-500">
-                  Rp {parseFloat(produk.harga_jual).toLocaleString("id-ID")}
+                <td className="whitespace-nowrap px-6 py-4 text-right text-sm text-gray-500 font-medium">
+                  Rp{" "}
+                  {(parseFloat(produk?.harga_jual || "0") || 0).toLocaleString(
+                    "id-ID",
+                  )}
                 </td>
-                <td className="whitespace-nowrap px-6 py-4 text-center text-sm text-gray-900">
-                  {produk.stok_tersedia}
+                <td className="whitespace-nowrap px-6 py-4 text-center text-sm text-gray-900 font-bold">
+                  {produk?.stok_tersedia ?? 0}
                 </td>
                 <td className="whitespace-nowrap px-6 py-4 text-right text-sm font-medium">
                   <button
-                    onClick={() => onEdit(produk)}
-                    className="mr-3 text-indigo-600 hover:text-indigo-900"
+                    onClick={() => produk && onEdit(produk)}
+                    className="mr-3 text-indigo-600 hover:text-indigo-900 p-1 rounded-md hover:bg-indigo-50"
                   >
                     <Edit className="h-4 w-4" />
                   </button>
                   <button
-                    onClick={() => onDelete(produk.id)}
-                    className="text-red-600 hover:text-red-900"
+                    onClick={() => produk?.id && onDelete(produk.id)}
+                    className="text-red-600 hover:text-red-900 p-1 rounded-md hover:bg-red-50"
                   >
                     <Trash className="h-4 w-4" />
                   </button>
