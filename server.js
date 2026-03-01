@@ -6,27 +6,38 @@ import fs from "fs";
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 
+// Setup logging to a file to debug on FlyEnv
+const logStream = fs.createWriteStream(
+  path.join(__dirname, "flyenv_debug.log"),
+  { flags: "a" },
+);
+function log(msg) {
+  const line = `[${new Date().toISOString()}] ${msg}\n`;
+  console.log(msg);
+  logStream.write(line);
+}
+
+log("=== Starting server.js ===");
+
+process.on("uncaughtException", (err) => {
+  log(`UNCAUGHT EXCEPTION: ${err.message}\n${err.stack}`);
+});
+
 const app = express();
 
-// Cari PORT dari environment variabel, ATAU dari panel (misal disuntikkan argumen --port 3099)
 let PORT = process.env.PORT || 3000;
 const portArgIndex = process.argv.indexOf("--port");
 if (portArgIndex !== -1 && process.argv[portArgIndex + 1]) {
   PORT = Number(process.argv[portArgIndex + 1]);
 }
+log(`PORT resolved to: ${PORT}`);
+log(`process.env.PORT is: ${process.env.PORT}`);
 
 const distPath = path.join(__dirname, "dist");
+log(`Dist path: ${distPath}`);
+
 if (!fs.existsSync(distPath)) {
-  console.error(
-    "=========================================================================",
-  );
-  console.error(" [ERROR] Folder 'dist' TIDAK DITEMUKAN!");
-  console.error(
-    " Tolong jalankan perintah 'npm run build' terlebih dahulu sebelum start.",
-  );
-  console.error(
-    "=========================================================================",
-  );
+  log("ERROR: Folder 'dist' TIDAK DITEMUKAN!");
 }
 
 app.use(express.static(distPath));
@@ -36,15 +47,14 @@ app.use((req, res) => {
   if (fs.existsSync(indexPath)) {
     res.sendFile(indexPath);
   } else {
-    res
-      .status(500)
-      .send(
-        "<h1>Aplikasi React belum dibuild!</h1><p>Masuk ke terminal server dan jalankan <code>npm install</code> lalu <code>npm run build</code>.</p>",
-      );
+    res.status(500).send("<h1>Aplikasi React belum dibuild!</h1>");
   }
 });
 
-// Gunakan 0.0.0.0 agar bisa diakses dari IP jaringan luar jika tidak diproxy
-app.listen(PORT, "0.0.0.0", () => {
-  console.log(`Server is running on port ${PORT}`);
-});
+app
+  .listen(PORT, "0.0.0.0", () => {
+    log(`Server is running on 0.0.0.0:${PORT}`);
+  })
+  .on("error", (err) => {
+    log(`LISTEN ERROR: ${err.message}\n${err.stack}`);
+  });
