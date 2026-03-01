@@ -1,25 +1,50 @@
 import express from "express";
 import path from "path";
 import { fileURLToPath } from "url";
+import fs from "fs";
 
-// Mendapatkan path directory (karena type: "module" di package.json)
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 
 const app = express();
 
-// Set Port (biasanya FlyEnv akan menyuntikkan port lewat process.env.PORT, jika tidak ada default ke 3000)
-const PORT = process.env.PORT || 3000;
+// Cari PORT dari environment variabel, ATAU dari panel (misal disuntikkan argumen --port 3099)
+let PORT = process.env.PORT || 3000;
+const portArgIndex = process.argv.indexOf("--port");
+if (portArgIndex !== -1 && process.argv[portArgIndex + 1]) {
+  PORT = Number(process.argv[portArgIndex + 1]);
+}
 
-// Melayani file statis dari folder "dist" (hasil build Vite)
-app.use(express.static(path.join(__dirname, "dist")));
+const distPath = path.join(__dirname, "dist");
+if (!fs.existsSync(distPath)) {
+  console.error(
+    "=========================================================================",
+  );
+  console.error(" [ERROR] Folder 'dist' TIDAK DITEMUKAN!");
+  console.error(
+    " Tolong jalankan perintah 'npm run build' terlebih dahulu sebelum start.",
+  );
+  console.error(
+    "=========================================================================",
+  );
+}
 
-// Menangkap semua routing (Catch-all) dan diarahkan ke index.html di dalam folder dist
-// (Penting agar React Router berfungsi tanpa error 404 saat direfresh)
+app.use(express.static(distPath));
+
 app.use((req, res) => {
-  res.sendFile(path.join(__dirname, "dist", "index.html"));
+  const indexPath = path.join(distPath, "index.html");
+  if (fs.existsSync(indexPath)) {
+    res.sendFile(indexPath);
+  } else {
+    res
+      .status(500)
+      .send(
+        "<h1>Aplikasi React belum dibuild!</h1><p>Masuk ke terminal server dan jalankan <code>npm install</code> lalu <code>npm run build</code>.</p>",
+      );
+  }
 });
 
-app.listen(PORT, () => {
+// Gunakan 0.0.0.0 agar bisa diakses dari IP jaringan luar jika tidak diproxy
+app.listen(PORT, "0.0.0.0", () => {
   console.log(`Server is running on port ${PORT}`);
 });
