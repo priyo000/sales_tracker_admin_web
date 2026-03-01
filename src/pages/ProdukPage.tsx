@@ -14,12 +14,15 @@ const ProdukPage: React.FC = () => {
     produks,
     loading,
     error,
+    pagination,
     fetchProduks,
     createProduk,
     updateProduk,
     deleteProduk,
     importProduk,
   } = useProduk();
+
+  const [perPage, setPerPage] = useState(20);
 
   const {
     kategoris,
@@ -49,10 +52,34 @@ const ProdukPage: React.FC = () => {
   // Filter debounce for products
   useEffect(() => {
     const timer = setTimeout(() => {
-      fetchProduks({ search, id_kategori: selectedKategori || undefined });
+      fetchProduks({
+        search,
+        id_kategori: selectedKategori || undefined,
+        page: pagination.currentPage,
+        per_page: perPage,
+      });
     }, 300);
     return () => clearTimeout(timer);
-  }, [search, selectedKategori, fetchProduks]);
+  }, [search, selectedKategori, fetchProduks, pagination.currentPage, perPage]);
+
+  const handlePageChange = (page: number) => {
+    fetchProduks({
+      search,
+      id_kategori: selectedKategori || undefined,
+      page,
+      per_page: perPage,
+    });
+  };
+
+  const handlePerPageChange = (newPerPage: number) => {
+    setPerPage(newPerPage);
+    fetchProduks({
+      search,
+      id_kategori: selectedKategori || undefined,
+      page: 1,
+      per_page: newPerPage,
+    });
+  };
 
   const handleCreate = () => {
     setEditingProduct(null);
@@ -200,6 +227,9 @@ const ProdukPage: React.FC = () => {
         loading={loading}
         onEdit={handleEdit}
         onDelete={handleDeleteClick}
+        pagination={pagination}
+        onPageChange={handlePageChange}
+        onPerPageChange={handlePerPageChange}
       />
 
       {/* ===== MODAL: Kelola Kategori (inline, no nested modal) ===== */}

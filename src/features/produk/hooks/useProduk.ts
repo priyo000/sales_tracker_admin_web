@@ -7,14 +7,36 @@ export const useProduk = () => {
   const [produks, setProduks] = useState<Produk[]>([]);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [pagination, setPagination] = useState({
+    currentPage: 1,
+    lastPage: 1,
+    total: 0,
+    perPage: 20,
+  });
 
   const fetchProduks = useCallback(
-    async (params?: { search?: string; id_kategori?: string }) => {
+    async (params?: {
+      search?: string;
+      id_kategori?: string;
+      page?: number;
+      per_page?: number;
+    }) => {
       setLoading(true);
       setError(null);
       try {
         const response = await api.get("/produk", { params });
-        setProduks(Array.isArray(response.data.data) ? response.data.data : []);
+        const data = response.data;
+        if (data && data.data) {
+          setProduks(data.data);
+          setPagination({
+            currentPage: data.current_page || 1,
+            lastPage: data.last_page || 1,
+            total: data.total || 0,
+            perPage: data.per_page || 20,
+          });
+        } else {
+          setProduks(Array.isArray(data) ? data : []);
+        }
       } catch (err) {
         const error = err as AxiosError<{ message: string }>;
         setError(
@@ -133,6 +155,7 @@ export const useProduk = () => {
     produks,
     loading,
     error,
+    pagination,
     fetchProduks,
     createProduk,
     updateProduk,
