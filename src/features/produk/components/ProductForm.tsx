@@ -1,6 +1,8 @@
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import { X, Upload } from "lucide-react";
 import { Produk, ProductFormData } from "../types";
+import { useKategoriProduk } from "../hooks/useKategoriProduk";
+import { BASE_URL } from "../../../services/api";
 
 interface ProductFormProps {
   initialData?: Produk | null;
@@ -9,19 +11,23 @@ interface ProductFormProps {
   isLoading?: boolean;
 }
 
-import { BASE_URL } from "../../../services/api";
-
 const ProductForm: React.FC<ProductFormProps> = ({
   initialData,
   onSubmit,
   onCancel,
   isLoading,
 }) => {
+  const { kategoris, fetchKategoris } = useKategoriProduk();
+
+  useEffect(() => {
+    fetchKategoris();
+  }, [fetchKategoris]);
+
   const [formData, setFormData] = useState<ProductFormData>({
     kode_barang: initialData?.kode_barang || "",
     sku: initialData?.sku || "",
     nama_produk: initialData?.nama_produk || "",
-    kategori: initialData?.kategori || "",
+    id_kategori: initialData?.id_kategori?.toString() || "",
     harga_jual: initialData?.harga_jual?.toString() || "",
     stok_tersedia: initialData?.stok_tersedia?.toString() || "0",
     satuan: initialData?.satuan || "pcs",
@@ -53,7 +59,10 @@ const ProductForm: React.FC<ProductFormProps> = ({
     e.preventDefault();
     const data = new FormData();
     Object.keys(formData).forEach((key) => {
-      data.append(key, formData[key as keyof ProductFormData]);
+      const val = formData[key as keyof ProductFormData];
+      if (val !== "" && val !== null && val !== undefined) {
+        data.append(key, val);
+      }
     });
 
     if (selectedImage) {
@@ -145,15 +154,20 @@ const ProductForm: React.FC<ProductFormProps> = ({
           <label className="block text-sm font-medium text-gray-700">
             Kategori
           </label>
-          <input
-            type="text"
-            className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm border p-2"
-            value={formData.kategori}
+          <select
+            className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm border p-2 bg-white"
+            value={formData.id_kategori}
             onChange={(e) =>
-              setFormData({ ...formData, kategori: e.target.value })
+              setFormData({ ...formData, id_kategori: e.target.value })
             }
-            placeholder="Contoh: Makanan, Alat Tulis"
-          />
+          >
+            <option value="">-- Pilih Kategori --</option>
+            {kategoris.map((kat) => (
+              <option key={kat.id} value={kat.id.toString()}>
+                {kat.nama_kategori}
+              </option>
+            ))}
+          </select>
         </div>
       </div>
 

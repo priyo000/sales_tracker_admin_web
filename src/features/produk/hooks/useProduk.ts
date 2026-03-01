@@ -9,7 +9,7 @@ export const useProduk = () => {
   const [error, setError] = useState<string | null>(null);
 
   const fetchProduks = useCallback(
-    async (params?: { search?: string; kategori?: string }) => {
+    async (params?: { search?: string; id_kategori?: string }) => {
       setLoading(true);
       setError(null);
       try {
@@ -97,7 +97,13 @@ export const useProduk = () => {
       return { success: true, data: response.data };
     } catch (err) {
       const error = err as AxiosError<{ message: string; error?: string }>;
-      const errData = error.response?.data as any;
+      const errData = error.response?.data as
+        | {
+            message?: string;
+            error?: string;
+            errors?: Record<string, string[]>;
+          }
+        | undefined;
 
       let msg = "Gagal mengimport produk";
       if (error.response?.status === 413) {
