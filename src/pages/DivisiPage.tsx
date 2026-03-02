@@ -1,146 +1,134 @@
-import React, { useEffect, useState } from 'react';
-import { Plus, Layout } from 'lucide-react';
-import toast from 'react-hot-toast';
-import { useDivisi } from '../features/divisi/hooks/useDivisi';
-import DivisionTable from '../features/divisi/components/DivisionTable';
-import DivisionForm from '../features/divisi/components/DivisionForm';
-import { Modal, ConfirmModal } from '../components/ui/Modal';
-import { DivisiFormData, Divisi } from '../features/divisi/types';
+import React, { useEffect, useState } from "react";
+import { Plus, LayoutGrid } from "lucide-react";
+import toast from "react-hot-toast";
+import { useDivisi } from "../features/divisi/hooks/useDivisi";
+import DivisionTable from "../features/divisi/components/DivisionTable";
+import DivisionForm from "../features/divisi/components/DivisionForm";
+import { Modal, ConfirmModal } from "../components/ui/Modal";
+import { Divisi, DivisiFormData } from "../features/divisi/types";
+import { Button } from "@/components/ui/button";
 
 const DivisiPage: React.FC = () => {
-    const { 
-        divisis, 
-        loading, 
-        error, 
-        fetchDivisis, 
-        createDivisi, 
-        updateDivisi,
-        deleteDivisi 
-    } = useDivisi();
+  const {
+    divisis,
+    loading,
+    fetchDivisis,
+    createDivisi,
+    updateDivisi,
+    deleteDivisi,
+  } = useDivisi();
+  const [isModalOpen, setIsModalOpen] = useState(false);
+  const [editingDivisi, setEditingDivisi] = useState<Divisi | null>(null);
+  const [deletingId, setDeletingId] = useState<number | null>(null);
 
-    const [isFormOpen, setIsFormOpen] = useState(false);
-    const [editingDivisi, setEditingDivisi] = useState<Divisi | null>(null);
-    const [deletingId, setDeletingId] = useState<number | null>(null);
+  useEffect(() => {
+    fetchDivisis();
+  }, [fetchDivisis]);
 
-    useEffect(() => {
+  const handleOpenModal = () => {
+    setEditingDivisi(null);
+    setIsModalOpen(true);
+  };
+
+  const handleEditDivisi = (divisi: Divisi) => {
+    setEditingDivisi(divisi);
+    setIsModalOpen(true);
+  };
+
+  const handleCreateOrUpdateDivisi = async (data: DivisiFormData) => {
+    let result;
+    if (editingDivisi) {
+      result = await updateDivisi(editingDivisi.id, data);
+    } else {
+      result = await createDivisi(data);
+    }
+
+    if (result.success) {
+      toast.success(
+        editingDivisi ? "Divisi diperbarui" : "Divisi baru ditambahkan",
+      );
+      setIsModalOpen(false);
+      setEditingDivisi(null);
+      fetchDivisis();
+    } else {
+      toast.error(result.message || "Gagal menyimpan divisi");
+    }
+  };
+
+  const handleDeleteDivisi = (id: number) => {
+    setDeletingId(id);
+  };
+
+  const confirmDelete = async () => {
+    if (deletingId) {
+      const result = await deleteDivisi(deletingId);
+      if (result.success) {
+        toast.success("Divisi berhasil dihapus");
+        setDeletingId(null);
         fetchDivisis();
-    }, [fetchDivisis]);
+      } else {
+        toast.error(result.message || "Gagal menghapus divisi");
+      }
+    }
+  };
 
-    const handleCreate = () => {
-        setEditingDivisi(null);
-        setIsFormOpen(true);
-    };
-
-    const handleEdit = (divisi: Divisi) => {
-        setEditingDivisi(divisi);
-        setIsFormOpen(true);
-    };
-
-    const handleDeleteClick = (id: number) => {
-        setDeletingId(id);
-    };
-
-    const confirmDelete = async () => {
-        if (deletingId) {
-            const result = await deleteDivisi(deletingId);
-            if (result.success) {
-                toast.success('Divisi berhasil dihapus');
-                setDeletingId(null);
-            } else {
-                toast.error(result.message || 'Gagal menghapus divisi');
-            }
-        }
-    };
-
-    const handleFormSubmit = async (data: DivisiFormData) => {
-        let result;
-        if (editingDivisi) {
-            result = await updateDivisi(editingDivisi.id, data);
-        } else {
-            result = await createDivisi(data);
-        }
-
-        if (result.success) {
-            toast.success(editingDivisi ? 'Divisi berhasil diperbarui' : 'Divisi berhasil ditambahkan');
-            setIsFormOpen(false);
-            setEditingDivisi(null);
-        } else {
-            toast.error(result.message || 'Gagal menyimpan divisi');
-        }
-    };
-
-    return (
-        <div className="space-y-6">
-            <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between space-y-4 sm:space-y-0">
-                <div className="flex items-center space-x-3">
-                    <div className="p-2 bg-indigo-600 rounded-lg shadow-lg shadow-indigo-200">
-                        <Layout className="h-6 w-6 text-white" />
-                    </div>
-                    <div>
-                        <h1 className="text-2xl font-bold text-gray-900">Manajemen Divisi</h1>
-                        <p className="text-sm text-gray-500">Kelola departemen atau kelompok kerja karyawan.</p>
-                    </div>
-                </div>
-                <button 
-                    onClick={handleCreate}
-                    className="flex items-center justify-center rounded-lg bg-indigo-600 px-5 py-2.5 text-sm font-bold text-white hover:bg-indigo-700 shadow-md transition-all active:scale-95"
-                >
-                    <Plus className="mr-2 h-4 w-4" /> Tambah Divisi
-                </button>
-            </div>
-
-            {/* Error Message */}
-            {error && (
-                <div className="rounded-xl bg-red-50 p-4 border border-red-200 shadow-sm animate-in fade-in slide-in-from-top-2">
-                    <div className="text-sm text-red-700 font-medium">{error}</div>
-                </div>
-            )}
-
-            {/* Table */}
-            <DivisionTable 
-                data={divisis} 
-                loading={loading} 
-                onDelete={handleDeleteClick}
-                onEdit={handleEdit}
-            />
-
-            {/* Form Modal */}
-            <Modal
-                isOpen={isFormOpen}
-                onClose={() => {
-                    setIsFormOpen(false);
-                    setEditingDivisi(null);
-                }}
-                title={editingDivisi ? "Edit Divisi" : "Tambah Divisi Baru"}
-            >
-                <DivisionForm 
-                    key={editingDivisi?.id || 'new'}
-                    initialData={editingDivisi ? {
-                        nama_divisi: editingDivisi.nama_divisi,
-                        radius_toleransi: editingDivisi.radius_toleransi,
-                        view_scope: editingDivisi.view_scope
-                    } : undefined}
-                    onSubmit={handleFormSubmit}
-                    onCancel={() => {
-                        setIsFormOpen(false);
-                        setEditingDivisi(null);
-                    }}
-                    loading={loading}
-                />
-            </Modal>
-
-            {/* Delete Confirmation */}
-            <ConfirmModal
-                isOpen={!!deletingId}
-                onClose={() => setDeletingId(null)}
-                onConfirm={confirmDelete}
-                title="Hapus Divisi"
-                message="Apakah Anda yakin ingin menghapus divisi ini? Pastikan tidak ada karyawan yang masih terdaftar di divisi ini."
-                type="danger"
-                confirmText="Hapus"
-            />
+  return (
+    <div className="space-y-6">
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+        <div className="flex items-center gap-3">
+          <div className="p-2 bg-primary text-white rounded-lg shadow-lg shadow-primary/30">
+            <LayoutGrid className="h-6 w-6" />
+          </div>
+          <div>
+            <h1 className="text-2xl font-bold tracking-tight text-foreground">
+              Manajemen Divisi
+            </h1>
+            <p className="text-sm text-muted-foreground mt-1">
+              Kelola struktur organisasi dan jangkauan akses data.
+            </p>
+          </div>
         </div>
-    );
+      </div>
+
+      <DivisionTable
+        data={divisis}
+        loading={loading}
+        onEdit={handleEditDivisi}
+        onDelete={handleDeleteDivisi}
+        toolbar={
+          <Button onClick={handleOpenModal} className="gap-2 shadow-md h-9">
+            <Plus className="h-4 w-4" /> Tambah Divisi
+          </Button>
+        }
+      />
+
+      {/* Modal Form */}
+      <Modal
+        isOpen={isModalOpen}
+        onClose={() => setIsModalOpen(false)}
+        title={editingDivisi ? "Edit Data Divisi" : "Tambah Divisi Baru"}
+        size="2xl"
+      >
+        <DivisionForm
+          initialData={editingDivisi || undefined}
+          onSubmit={handleCreateOrUpdateDivisi}
+          onCancel={() => setIsModalOpen(false)}
+          loading={loading}
+        />
+      </Modal>
+
+      {/* Delete Confirmation */}
+      <ConfirmModal
+        isOpen={!!deletingId}
+        onClose={() => setDeletingId(null)}
+        onConfirm={confirmDelete}
+        title="Hapus Divisi"
+        message="Apakah Anda yakin ingin menghapus divisi ini?"
+        type="danger"
+        confirmText="Hapus"
+      />
+    </div>
+  );
 };
 
 export default DivisiPage;

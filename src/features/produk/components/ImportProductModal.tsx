@@ -22,12 +22,14 @@ interface ImportProductModalProps {
       failures: Array<{ row: number; nama_produk: string; error: string }>;
     };
   }>;
+  onSuccess?: () => void;
 }
 
 const ImportProductModal: React.FC<ImportProductModalProps> = ({
   isOpen,
   onClose,
   onImport,
+  onSuccess,
 }) => {
   const [file, setFile] = useState<File | null>(null);
   const [loading, setLoading] = useState(false);
@@ -103,6 +105,7 @@ const ImportProductModal: React.FC<ImportProductModalProps> = ({
       if (res.success && res.data) {
         setResult(res.data);
         if (res.data.summary.failed === 0) {
+          onSuccess?.();
           setTimeout(() => {
             if (res.data?.summary.failed === 0) handleClose();
           }, 3000);

@@ -7,6 +7,7 @@ import {
 } from "react-router-dom";
 import { Toaster } from "react-hot-toast";
 import { AuthProvider } from "./context/AuthContext";
+import { ThemeProvider } from "./context/ThemeContext";
 import { useAuth } from "./hooks/useAuth";
 import LoginPage from "./pages/LoginPage";
 import MainLayout from "./components/layout/MainLayout";
@@ -76,45 +77,47 @@ const SuperAdminRoute = ({ children }: { children: React.ReactNode }) => {
 
 function App() {
   return (
-    <Router>
-      <AuthProvider>
-        <Toaster position="top-right" />
-        <Routes>
-          <Route path="/login" element={<LoginPage />} />
-          <Route
-            path="/*"
-            element={
-              <ProtectedRoute>
-                <MainLayout>
-                  <Routes>
-                    <Route path="/" element={<Dashboard />} />
-                    <Route path="/jadwal" element={<JadwalPage />} />
-                    <Route path="/kunjungan" element={<KunjunganPage />} />
-                    <Route path="/rute" element={<RutePage />} />
-                    <Route path="/pelanggan" element={<PelangganPage />} />
-                    <Route path="/produk" element={<ProdukPage />} />
-                    <Route path="/pesanan" element={<PesananPage />} />
-                    <Route path="/karyawan" element={<KaryawanPage />} />
-                    <Route path="/divisi" element={<DivisiPage />} />
-                    <Route path="/users" element={<UserPage />} />
-                    <Route path="/notifikasi" element={<NotifikasiPage />} />
-                    {/* Perusahaan — Super Admin only */}
-                    <Route
-                      path="/perusahaan"
-                      element={
-                        <SuperAdminRoute>
-                          <PerusahaanPage />
-                        </SuperAdminRoute>
-                      }
-                    />
-                  </Routes>
-                </MainLayout>
-              </ProtectedRoute>
-            }
-          />
-        </Routes>
-      </AuthProvider>
-    </Router>
+    <ThemeProvider>
+      <Router>
+        <AuthProvider>
+          <Toaster position="top-right" />
+          <Routes>
+            <Route path="/login" element={<LoginPage />} />
+            <Route
+              path="/*"
+              element={
+                <ProtectedRoute>
+                  <MainLayout>
+                    <Routes>
+                      <Route path="/" element={<Dashboard />} />
+                      <Route path="/jadwal" element={<JadwalPage />} />
+                      <Route path="/kunjungan" element={<KunjunganPage />} />
+                      <Route path="/rute" element={<RutePage />} />
+                      <Route path="/pelanggan" element={<PelangganPage />} />
+                      <Route path="/produk" element={<ProdukPage />} />
+                      <Route path="/pesanan" element={<PesananPage />} />
+                      <Route path="/karyawan" element={<KaryawanPage />} />
+                      <Route path="/divisi" element={<DivisiPage />} />
+                      <Route path="/users" element={<UserPage />} />
+                      <Route path="/notifikasi" element={<NotifikasiPage />} />
+                      {/* Perusahaan — Super Admin only */}
+                      <Route
+                        path="/perusahaan"
+                        element={
+                          <SuperAdminRoute>
+                            <PerusahaanPage />
+                          </SuperAdminRoute>
+                        }
+                      />
+                    </Routes>
+                  </MainLayout>
+                </ProtectedRoute>
+              }
+            />
+          </Routes>
+        </AuthProvider>
+      </Router>
+    </ThemeProvider>
   );
 }
 

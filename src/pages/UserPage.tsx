@@ -1,137 +1,153 @@
-import React, { useState, useEffect } from 'react';
-import { Plus, Search, Users } from 'lucide-react';
-import { useUser } from '../features/users/hooks/useUser';
-import UserTable from '../features/users/components/UserTable';
-import UserForm from '../features/users/components/UserForm';
-import { User, UserFormData } from '../features/users/types';
-import { Modal } from '../components/ui/Modal';
-import { Karyawan } from '../features/karyawan/types';
+import React, { useEffect, useState } from "react";
+import { Plus, ShieldCheck } from "lucide-react";
+import toast from "react-hot-toast";
+import { useUser } from "../features/users/hooks/useUser";
+import UserTable from "../features/users/components/UserTable";
+import UserForm from "../features/users/components/UserForm";
+import { Modal, ConfirmModal } from "../components/ui/Modal";
+import { User, UserFormData } from "../features/users/types";
+import { Karyawan } from "../features/karyawan/types";
+import { Button } from "@/components/ui/button";
 
 const UserPage: React.FC = () => {
-    const { 
-        users, 
-        loading, 
-        fetchUsers, 
-        fetchAvailableEmployees, 
-        createUser, 
-        updateUser, 
-        deleteUser 
-    } = useUser();
+  const {
+    users,
+    loading,
+    error: hookError,
+    fetchUsers,
+    fetchAvailableEmployees,
+    createUser,
+    updateUser,
+    deleteUser,
+  } = useUser();
 
-    const [searchTerm, setSearchTerm] = useState('');
-    const [filterPeran, setFilterPeran] = useState<string>('all');
-    const [isModalOpen, setIsModalOpen] = useState(false);
-    const [initialData, setInitialData] = useState<User | null>(null);
-    const [availableEmployees, setAvailableEmployees] = useState<Karyawan[]>([]);
-    const [isSubmitting, setIsSubmitting] = useState(false);
+  const [availableEmployees, setAvailableEmployees] = useState<Karyawan[]>([]);
+  const [searchTerm, setSearchTerm] = useState("");
+  const [isModalOpen, setIsModalOpen] = useState(false);
+  const [editingUser, setEditingUser] = useState<User | null>(null);
+  const [deletingId, setDeletingId] = useState<number | null>(null);
 
-    useEffect(() => {
-        fetchUsers({ search: searchTerm, peran: filterPeran === 'all' ? '' : filterPeran });
-    }, [fetchUsers, searchTerm, filterPeran]);
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      fetchUsers({ search: searchTerm });
+    }, 500);
+    return () => clearTimeout(timer);
+  }, [searchTerm, fetchUsers]);
 
-    const handleAdd = async () => {
-        setInitialData(null);
-        setIsSubmitting(true);
-        const employees = await fetchAvailableEmployees();
-        setAvailableEmployees(employees);
-        setIsSubmitting(false);
-        setIsModalOpen(true);
-    };
+  useEffect(() => {
+    if (isModalOpen && !editingUser) {
+      fetchAvailableEmployees().then(setAvailableEmployees);
+    }
+  }, [isModalOpen, editingUser, fetchAvailableEmployees]);
 
-    const handleEdit = (user: User) => {
-        setInitialData(user);
-        setIsModalOpen(true);
-    };
+  const handleOpenModal = () => {
+    setEditingUser(null);
+    setIsModalOpen(true);
+  };
 
-    const handleSubmit = async (data: UserFormData) => {
-        setIsSubmitting(true);
-        let result;
-        if (initialData) {
-            result = await updateUser(initialData.id, data);
-        } else {
-            result = await createUser(data);
-        }
-        
-        if (result.success) {
-            setIsModalOpen(false);
-        }
-        setIsSubmitting(false);
-    };
+  const handleEditUser = (user: User) => {
+    setEditingUser(user);
+    setIsModalOpen(true);
+  };
 
-    return (
-        <div className="space-y-6">
-            <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
-                <div>
-                    <h1 className="text-2xl font-bold text-gray-900 flex items-center">
-                        <Users className="w-8 h-8 mr-3 text-indigo-600" />
-                        Manajemen Pengguna
-                    </h1>
-                    <p className="mt-1 text-sm text-gray-500">
-                        Atur akses login aplikasi untuk setiap karyawan.
-                    </p>
-                </div>
-                <button
-                    onClick={handleAdd}
-                    className="flex items-center justify-center rounded-md bg-indigo-600 px-4 py-2.5 text-sm font-semibold text-white shadow-sm hover:bg-indigo-700 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-indigo-600 transition-all active:scale-95"
-                >
-                    <Plus className="-ml-0.5 mr-2 h-4 w-4" />
-                    Tambah Pengguna
-                </button>
-            </div>
+  const handleCreateOrUpdateUser = async (data: UserFormData) => {
+    let result;
+    if (editingUser) {
+      result = await updateUser(editingUser.id, data);
+    } else {
+      result = await createUser(data);
+    }
 
-            <div className="bg-white p-4 rounded-xl shadow-sm border border-gray-100">
-                <div className="flex flex-col md:flex-row gap-4">
-                    <div className="relative flex-1">
-                        <div className="pointer-events-none absolute inset-y-0 left-0 flex items-center pl-3">
-                            <Search className="h-5 w-5 text-gray-400" />
-                        </div>
-                        <input
-                            type="text"
-                            className="block w-full rounded-lg border border-gray-300 py-2.5 pl-10 pr-3 text-sm placeholder-gray-400 focus:border-indigo-500 focus:outline-none focus:ring-1 focus:ring-indigo-500 bg-gray-50/50"
-                            placeholder="Cari berdasarkan username, nama, atau kode karyawan..."
-                            value={searchTerm}
-                            onChange={(e) => setSearchTerm(e.target.value)}
-                        />
-                    </div>
-                    <div className="w-full md:w-48">
-                        <select
-                            className="block w-full rounded-lg border border-gray-300 py-2.5 px-3 text-sm focus:border-indigo-500 focus:outline-none focus:ring-1 focus:ring-indigo-500 bg-gray-50/50"
-                            value={filterPeran}
-                            onChange={(e) => setFilterPeran(e.target.value)}
-                        >
-                            <option value="all">Semua Peran</option>
-                            <option value="admin_perusahaan">Admin Perusahaan</option>
-                            <option value="admin_divisi">Admin Divisi</option>
-                            <option value="sales">Sales</option>
-                            <option value="manager">Manager</option>
-                        </select>
-                    </div>
-                </div>
-            </div>
+    if (result && result.success) {
+      toast.success(
+        editingUser ? "User berhasil diperbarui" : "User berhasil dibuat",
+      );
+      setIsModalOpen(false);
+      setEditingUser(null);
+    } else {
+      // Error managed by hook/toast or above result
+    }
+  };
 
-            <UserTable 
-                data={users} 
-                loading={loading} 
-                onEdit={handleEdit} 
-                onDelete={deleteUser} 
-            />
+  const handleDeleteUser = (id: number) => {
+    setDeletingId(id);
+  };
 
-            <Modal
-                isOpen={isModalOpen}
-                onClose={() => setIsModalOpen(false)}
-                title={initialData ? 'Edit Akses Pengguna' : 'Tambah Pengguna Baru'}
-                size="md"
-            >
-                <UserForm
-                    initialData={initialData}
-                    availableEmployees={availableEmployees}
-                    onSubmit={handleSubmit}
-                    onCancel={() => setIsModalOpen(false)}
-                    loading={isSubmitting}
-                />
-            </Modal>
+  const confirmDelete = async () => {
+    if (deletingId) {
+      const success = await deleteUser(deletingId);
+      if (success) {
+        setDeletingId(null);
+      }
+    }
+  };
+
+  return (
+    <div className="space-y-6">
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+        <div className="flex items-center gap-3">
+          <div className="p-2 bg-primary text-white rounded-lg shadow-lg shadow-primary/30">
+            <ShieldCheck className="h-6 w-6" />
+          </div>
+          <div>
+            <h1 className="text-2xl font-bold tracking-tight text-foreground">
+              Manajemen User
+            </h1>
+            <p className="text-sm text-muted-foreground mt-1">
+              Kelola akun akses sistem dan hak akses.
+            </p>
+          </div>
         </div>
-    );
+      </div>
+
+      {hookError && (
+        <div className="rounded-xl bg-destructive/10 p-4 border border-destructive/20 text-sm text-destructive font-medium">
+          {hookError}
+        </div>
+      )}
+
+      <UserTable
+        data={users}
+        loading={loading}
+        onEdit={handleEditUser}
+        onDelete={handleDeleteUser}
+        onSearchChange={setSearchTerm}
+        toolbar={
+          <Button onClick={handleOpenModal} className="gap-2 shadow-md h-9">
+            <Plus className="h-4 w-4" /> Tambah User
+          </Button>
+        }
+      />
+
+      {/* Form Modal */}
+      <Modal
+        isOpen={isModalOpen}
+        onClose={() => setIsModalOpen(false)}
+        title={editingUser ? "Edit Akun User" : "Buat Akun User Baru"}
+        size="3xl"
+        noPadding
+      >
+        <UserForm
+          initialData={editingUser}
+          availableEmployees={availableEmployees}
+          onSubmit={handleCreateOrUpdateUser}
+          onCancel={() => setIsModalOpen(false)}
+          loading={loading}
+        />
+      </Modal>
+
+      {/* Delete Confirmation */}
+      <ConfirmModal
+        isOpen={!!deletingId}
+        onClose={() => setDeletingId(null)}
+        onConfirm={confirmDelete}
+        title="Hapus Akun User"
+        message="Apakah Anda yakin ingin menghapus akun user ini? Akses user tersebut akan segera dicabut."
+        type="danger"
+        confirmText="Hapus"
+      />
+    </div>
+  );
 };
 
 export default UserPage;
