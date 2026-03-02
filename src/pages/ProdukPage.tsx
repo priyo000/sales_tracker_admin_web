@@ -39,6 +39,8 @@ const ProdukPage: React.FC = () => {
   const [isKategoriModalOpen, setIsKategoriModalOpen] = useState(false);
   const [editingProduct, setEditingProduct] = useState<Produk | null>(null);
   const [deletingId, setDeletingId] = useState<number | null>(null);
+  const [page, setPage] = useState(1);
+  const [refreshKey, setRefreshKey] = useState(0);
 
   // State for inline add-category form inside the modal
   const [newKatNama, setNewKatNama] = useState("");
@@ -49,36 +51,36 @@ const ProdukPage: React.FC = () => {
     fetchKategoris();
   }, [fetchKategoris]);
 
-  // Filter debounce for products
+  // Fetch products with debounce
   useEffect(() => {
     const timer = setTimeout(() => {
       fetchProduks({
         search,
         id_kategori: selectedKategori || undefined,
-        page: pagination.currentPage,
+        page,
         per_page: perPage,
       });
     }, 300);
     return () => clearTimeout(timer);
-  }, [search, selectedKategori, fetchProduks, pagination.currentPage, perPage]);
+  }, [search, selectedKategori, page, perPage, fetchProduks, refreshKey]);
 
-  const handlePageChange = (page: number) => {
-    fetchProduks({
-      search,
-      id_kategori: selectedKategori || undefined,
-      page,
-      per_page: perPage,
-    });
+  const handleSearchChange = (val: string) => {
+    setSearch(val);
+    setPage(1);
+  };
+
+  const handleKategoriChange = (val: string) => {
+    setSelectedKategori(val);
+    setPage(1);
+  };
+
+  const handlePageChange = (newPage: number) => {
+    setPage(newPage);
   };
 
   const handlePerPageChange = (newPerPage: number) => {
     setPerPage(newPerPage);
-    fetchProduks({
-      search,
-      id_kategori: selectedKategori || undefined,
-      page: 1,
-      per_page: newPerPage,
-    });
+    setPage(1);
   };
 
   const handleCreate = () => {
@@ -101,6 +103,7 @@ const ProdukPage: React.FC = () => {
       if (result && result.success) {
         toast.success("Produk berhasil dihapus");
         setDeletingId(null);
+        setRefreshKey((prev) => prev + 1);
       } else {
         toast.error(result?.message || "Gagal menghapus produk");
       }
@@ -122,6 +125,8 @@ const ProdukPage: React.FC = () => {
           : "Produk berhasil ditambahkan",
       );
       setIsFormOpen(false);
+      setRefreshKey((prev) => prev + 1);
+      if (!editingProduct) setPage(1);
     } else {
       toast.error(result.message || "Gagal menyimpan produk");
     }
@@ -196,14 +201,14 @@ const ProdukPage: React.FC = () => {
             className="block w-full rounded-md border border-gray-300 bg-white py-2 pl-10 pr-3 leading-5 placeholder-gray-500 focus:border-indigo-500 focus:placeholder-gray-400 focus:outline-none focus:ring-1 focus:ring-indigo-500 sm:text-sm shadow-sm"
             placeholder="Cari produk (Nama, Kode, SKU)..."
             value={search}
-            onChange={(e) => setSearch(e.target.value)}
+            onChange={(e) => handleSearchChange(e.target.value)}
           />
         </div>
         <div className="w-full md:w-64">
           <select
             className="block w-full rounded-md border border-gray-300 bg-white py-2 px-3 leading-5 focus:border-indigo-500 focus:outline-none focus:ring-1 focus:ring-indigo-500 sm:text-sm shadow-sm"
             value={selectedKategori}
-            onChange={(e) => setSelectedKategori(e.target.value)}
+            onChange={(e) => handleKategoriChange(e.target.value)}
           >
             <option value="">Semua Kategori</option>
             {kategoris.map((kat) => (

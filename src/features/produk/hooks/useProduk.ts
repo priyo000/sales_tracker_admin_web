@@ -57,7 +57,6 @@ export const useProduk = () => {
     setError(null);
     try {
       await api.post("/produk", data);
-      await fetchProduks();
       return { success: true };
     } catch (err) {
       const error = err as AxiosError<{ message: string }>;
@@ -78,7 +77,6 @@ export const useProduk = () => {
         data.append("_method", "PUT");
       }
       await api.post(`/produk/${id}`, data);
-      await fetchProduks();
       return { success: true };
     } catch (err) {
       const error = err as AxiosError<{ message: string }>;
@@ -95,7 +93,6 @@ export const useProduk = () => {
     setError(null);
     try {
       await api.delete(`/produk/${id}`);
-      await fetchProduks();
       return { success: true };
     } catch (err) {
       const error = err as AxiosError<{ message: string }>;
