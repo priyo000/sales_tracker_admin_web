@@ -133,7 +133,6 @@ const RutePage: React.FC = () => {
         title={editingRoute ? "Edit Data Rute" : "Buat Rute Baru"}
         size="7xl"
         noPadding
-        closeOnOutsideClick={false}
       >
         <RouteForm
           key={editingRoute ? editingRoute.id : "create"}
