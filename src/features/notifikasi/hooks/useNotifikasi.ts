@@ -2,6 +2,7 @@ import { useState, useCallback } from "react";
 import api from "@/services/api";
 import { Notifikasi, NotifikasiFormData } from "../types";
 import { toast } from "react-hot-toast";
+import { AxiosError } from "axios";
 
 export const useNotifikasi = () => {
   const [notifikasies, setNotifikasies] = useState<Notifikasi[]>([]);
@@ -28,8 +29,9 @@ export const useNotifikasi = () => {
           per_page: response.data.per_page || perPage,
         });
       } catch (error: unknown) {
+        const axiosError = error as AxiosError<{ message: string }>;
         const message =
-          (error as any).response?.data?.message ||
+          axiosError.response?.data?.message ||
           "Gagal mengambil data notifikasi";
         toast.error(message);
       } finally {
@@ -46,9 +48,10 @@ export const useNotifikasi = () => {
       toast.success("Notifikasi berhasil dikirim");
       fetchNotifikasies();
       return true;
-    } catch (error) {
+    } catch (error: unknown) {
+      const axiosError = error as AxiosError<{ message: string }>;
       toast.error(
-        (error as any).response?.data?.message || "Gagal mengirim notifikasi",
+        axiosError.response?.data?.message || "Gagal mengirim notifikasi",
       );
       return false;
     } finally {
@@ -65,8 +68,9 @@ export const useNotifikasi = () => {
       toast.success("Notifikasi berhasil dihapus");
       fetchNotifikasies(pagination.current_page);
     } catch (error: unknown) {
+      const axiosError = error as AxiosError<{ message: string }>;
       toast.error(
-        (error as any).response?.data?.message || "Gagal menghapus notifikasi",
+        axiosError.response?.data?.message || "Gagal menghapus notifikasi",
       );
     } finally {
       setIsLoading(false);
