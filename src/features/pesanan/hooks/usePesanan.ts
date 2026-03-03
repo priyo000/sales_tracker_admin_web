@@ -7,6 +7,17 @@ export const usePesanan = () => {
   const [pesanans, setPesanans] = useState<Pesanan[]>([]);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [pagination, setPagination] = useState<{
+    currentPage: number;
+    lastPage: number;
+    total: number;
+    perPage: number;
+  }>({
+    currentPage: 1,
+    lastPage: 1,
+    total: 0,
+    perPage: 20,
+  });
 
   const fetchPesanans = useCallback(
     async (params?: {
@@ -15,12 +26,26 @@ export const usePesanan = () => {
       start_date?: string;
       end_date?: string;
       id_divisi?: string;
+      page?: number;
+      per_page?: number;
     }) => {
       setLoading(true);
       setError(null);
       try {
         const response = await api.get("/pesanan", { params });
-        setPesanans(response.data.data);
+        if (response.data.data && Array.isArray(response.data.data)) {
+          setPesanans(response.data.data);
+          if (response.data.current_page) {
+            setPagination({
+              currentPage: response.data.current_page,
+              lastPage: response.data.last_page,
+              total: response.data.total,
+              perPage: response.data.per_page,
+            });
+          }
+        } else {
+          setPesanans(response.data);
+        }
       } catch (err) {
         const error = err as AxiosError<{ message: string }>;
         setError(error.response?.data?.message || "Gagal memuat data pesanan.");
@@ -129,5 +154,6 @@ export const usePesanan = () => {
     updateStatus,
     updatePesanan,
     exportPesanan,
+    pagination,
   };
 };

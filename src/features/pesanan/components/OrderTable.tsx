@@ -11,6 +11,14 @@ interface OrderTableProps {
   onViewDetail: (id: number) => void;
   toolbar?: React.ReactNode;
   onSearchChange?: (value: string) => void;
+  pagination?: {
+    currentPage: number;
+    lastPage: number;
+    total: number;
+    perPage: number;
+  };
+  onPageChange?: (page: number) => void;
+  onPerPageChange?: (perPage: number) => void;
 }
 
 const STATUS_VARIANT: Record<
@@ -30,6 +38,9 @@ const OrderTable: React.FC<OrderTableProps> = ({
   onViewDetail,
   toolbar,
   onSearchChange,
+  pagination,
+  onPageChange,
+  onPerPageChange,
 }) => {
   const columns: ColumnDef<Pesanan>[] = [
     {
@@ -133,6 +144,15 @@ const OrderTable: React.FC<OrderTableProps> = ({
       emptyMessage="Belum ada pesanan"
       toolbar={toolbar}
       onSearchChange={onSearchChange}
+      serverPagination={
+        pagination && onPageChange
+          ? {
+              ...pagination,
+              onPageChange,
+              onPerPageChange,
+            }
+          : undefined
+      }
     />
   );
 };

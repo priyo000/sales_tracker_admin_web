@@ -29,6 +29,7 @@ const PesananPage: React.FC = () => {
     fetchPesanans,
     updateStatus,
     updatePesanan,
+    pagination,
   } = usePesanan();
   const [searchTerm, setSearchTerm] = useState("");
   const [statusFilter, setStatusFilter] = useState("all");
@@ -37,38 +38,52 @@ const PesananPage: React.FC = () => {
 
   const [startDate, setStartDate] = useState("");
   const [endDate, setEndDate] = useState("");
+  const [perPage, setPerPage] = useState(20);
 
   useEffect(() => {
-    fetchPesanans();
-  }, [fetchPesanans]);
+    const timer = setTimeout(() => {
+      fetchPesanans({
+        search: searchTerm,
+        status: statusFilter === "all" ? undefined : statusFilter,
+        start_date: startDate,
+        end_date: endDate,
+        page: pagination.currentPage,
+        per_page: perPage,
+      });
+    }, 300);
+    return () => clearTimeout(timer);
+  }, [
+    searchTerm,
+    statusFilter,
+    startDate,
+    endDate,
+    pagination.currentPage,
+    perPage,
+    fetchPesanans,
+  ]);
 
-  const filteredOrders = useMemo(() => {
-    return pesanans.filter((order) => {
-      const matchesSearch =
-        order.no_pesanan.toLowerCase().includes(searchTerm.toLowerCase()) ||
-        order.pelanggan?.nama_toko
-          .toLowerCase()
-          .includes(searchTerm.toLowerCase()) ||
-        order.karyawan?.nama_lengkap
-          .toLowerCase()
-          .includes(searchTerm.toLowerCase());
-
-      const matchesStatus =
-        statusFilter === "all" ||
-        order.status.toLowerCase() === statusFilter.toLowerCase();
-
-      let matchesDate = true;
-      if (startDate || endDate) {
-        const orderDate = new Date(order.tanggal_transaksi)
-          .toISOString()
-          .split("T")[0];
-        if (startDate && orderDate < startDate) matchesDate = false;
-        if (endDate && orderDate > endDate) matchesDate = false;
-      }
-
-      return matchesSearch && matchesStatus && matchesDate;
+  const handlePageChange = (page: number) => {
+    fetchPesanans({
+      search: searchTerm,
+      status: statusFilter === "all" ? undefined : statusFilter,
+      start_date: startDate,
+      end_date: endDate,
+      page,
+      per_page: perPage,
     });
-  }, [pesanans, searchTerm, statusFilter, startDate, endDate]);
+  };
+
+  const handlePerPageChange = (newPerPage: number) => {
+    setPerPage(newPerPage);
+    fetchPesanans({
+      search: searchTerm,
+      status: statusFilter === "all" ? undefined : statusFilter,
+      start_date: startDate,
+      end_date: endDate,
+      page: 1,
+      per_page: newPerPage,
+    });
+  };
 
   const selectedOrder = useMemo(
     () => pesanans.find((p) => p.id === selectedOrderId),
@@ -129,14 +144,23 @@ const PesananPage: React.FC = () => {
       )}
 
       <OrderTable
-        data={filteredOrders}
+        data={pesanans}
         loading={loading}
         onViewDetail={(id) => setSelectedOrderId(id)}
         onSearchChange={setSearchTerm}
+        pagination={pagination}
+        onPageChange={handlePageChange}
+        onPerPageChange={handlePerPageChange}
         toolbar={
           <div className="flex flex-wrap items-center gap-3">
             <div className="w-[180px]">
-              <Select value={statusFilter} onValueChange={setStatusFilter}>
+              <Select
+                value={statusFilter}
+                onValueChange={(val: string) => {
+                  setStatusFilter(val);
+                  handlePageChange(1);
+                }}
+              >
                 <SelectTrigger
                   size="sm"
                   className="w-full bg-background shadow-sm h-9"
@@ -164,14 +188,20 @@ const PesananPage: React.FC = () => {
                   type="date"
                   className="h-full w-32 border-none bg-transparent p-0 focus-visible:ring-0 shadow-none text-xs font-medium"
                   value={startDate}
-                  onChange={(e) => setStartDate(e.target.value)}
+                  onChange={(e) => {
+                    setStartDate(e.target.value);
+                    handlePageChange(1);
+                  }}
                 />
                 <span className="text-muted-foreground opacity-30 px-1">→</span>
                 <Input
                   type="date"
                   className="h-full w-32 border-none bg-transparent p-0 focus-visible:ring-0 shadow-none text-xs font-medium"
                   value={endDate}
-                  onChange={(e) => setEndDate(e.target.value)}
+                  onChange={(e) => {
+                    setEndDate(e.target.value);
+                    handlePageChange(1);
+                  }}
                 />
               </div>
             </div>
@@ -186,6 +216,7 @@ const PesananPage: React.FC = () => {
                   setStatusFilter("all");
                   setStartDate("");
                   setEndDate("");
+                  handlePageChange(1);
                 }}
               >
                 Reset Filter
