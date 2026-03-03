@@ -66,6 +66,16 @@ const RouteTable: React.FC<RouteTableProps> = ({
       ),
     },
     {
+      key: "id_divisi",
+      header: "Divisi",
+      sortable: true,
+      cell: (row) => (
+        <span className="text-xs font-medium text-muted-foreground uppercase tracking-tight">
+          {row.divisi?.nama_divisi || "—"}
+        </span>
+      ),
+    },
+    {
       key: "id",
       header: "",
       cell: (row) => (

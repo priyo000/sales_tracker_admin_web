@@ -2,14 +2,25 @@ import React, { useEffect, useState } from "react";
 import { Plus, FileUp, Route as RouteIcon } from "lucide-react";
 import toast from "react-hot-toast";
 import { useRute } from "../features/rute/hooks/useRute";
+import { useDivisi } from "../features/divisi/hooks/useDivisi";
+import { useAuth } from "../hooks/useAuth";
 import RouteTable from "../features/rute/components/RouteTable";
 import RouteForm from "../features/rute/components/RouteForm";
 import ImportRouteModal from "../features/rute/components/ImportRouteModal";
 import { Modal, ConfirmModal } from "../components/ui/Modal";
 import { Rute, RuteFormData } from "../features/rute/types";
 import { Button } from "@/components/ui/button";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
+import { SlidersHorizontal } from "lucide-react";
 
 const RutePage: React.FC = () => {
+  const { user } = useAuth();
   const {
     rutes,
     loading,
@@ -21,7 +32,10 @@ const RutePage: React.FC = () => {
     importRute,
   } = useRute();
 
+  const { divisis, fetchDivisis } = useDivisi();
+
   const [search, setSearch] = useState("");
+  const [filterDivisi, setFilterDivisi] = useState<string>("all");
   const [isFormOpen, setIsFormOpen] = useState(false);
   const [editingRoute, setEditingRoute] = useState<Rute | null>(null);
   const [deletingId, setDeletingId] = useState<number | null>(null);
@@ -29,11 +43,20 @@ const RutePage: React.FC = () => {
 
   // Initial Fetch & Search Debounce
   useEffect(() => {
+    if (user?.peran === "super_admin" || user?.peran === "admin_perusahaan") {
+      fetchDivisis();
+    }
+  }, [user, fetchDivisis]);
+
+  useEffect(() => {
     const timer = setTimeout(() => {
-      fetchRutes({ search });
+      fetchRutes({
+        search,
+        id_divisi: filterDivisi === "all" ? undefined : filterDivisi,
+      });
     }, 300);
     return () => clearTimeout(timer);
-  }, [search, fetchRutes]);
+  }, [search, filterDivisi, fetchRutes]);
 
   const handleCreate = () => {
     setEditingRoute(null);
@@ -110,18 +133,41 @@ const RutePage: React.FC = () => {
         onDelete={handleDeleteClick}
         onSearchChange={setSearch}
         toolbar={
-          <div className="flex items-center gap-2">
-            <Button
-              variant="outline"
-              size="sm"
-              onClick={() => setIsImportModalOpen(true)}
-              className="gap-2 border-primary/20 text-primary hover:bg-primary/5 shadow-sm h-9"
-            >
-              <FileUp className="h-4 w-4" /> Import Excel
-            </Button>
-            <Button onClick={handleCreate} className="gap-2 shadow-md h-9">
-              <Plus className="h-4 w-4" /> Tambah Rute
-            </Button>
+          <div className="flex flex-wrap items-center gap-3">
+            {(user?.peran === "super_admin" ||
+              user?.peran === "admin_perusahaan") && (
+              <div className="w-[200px]">
+                <Select value={filterDivisi} onValueChange={setFilterDivisi}>
+                  <SelectTrigger className="w-full bg-background shadow-sm h-9">
+                    <div className="flex items-center gap-2">
+                      <SlidersHorizontal className="h-3.5 w-3.5 text-muted-foreground" />
+                      <SelectValue placeholder="Pilih Divisi" />
+                    </div>
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="all">Semua Divisi</SelectItem>
+                    {divisis.map((div) => (
+                      <SelectItem key={div.id} value={div.id.toString()}>
+                        {div.nama_divisi}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </div>
+            )}
+            <div className="flex items-center gap-2 ml-auto">
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={() => setIsImportModalOpen(true)}
+                className="gap-2 border-primary/20 text-primary hover:bg-primary/5 shadow-sm h-9"
+              >
+                <FileUp className="h-4 w-4" /> Import Excel
+              </Button>
+              <Button onClick={handleCreate} className="gap-2 shadow-md h-9">
+                <Plus className="h-4 w-4" /> Tambah Rute
+              </Button>
+            </div>
           </div>
         }
       />

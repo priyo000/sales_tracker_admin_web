@@ -12,11 +12,23 @@ import {
 import { Modal } from "../../../components/ui/Modal";
 import { Button } from "@/components/ui/button";
 import { ScrollArea } from "@/components/ui/scroll-area";
+import { useDivisi } from "../../divisi/hooks/useDivisi";
+import { useAuth } from "../../../hooks/useAuth";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 
 interface ImportRouteModalProps {
   isOpen: boolean;
   onClose: () => void;
-  onImport: (file: File) => Promise<{
+  onImport: (
+    file: File,
+    id_divisi?: number,
+  ) => Promise<{
     success: boolean;
     message?: string;
     data?: {
@@ -32,7 +44,10 @@ const ImportRouteModal: React.FC<ImportRouteModalProps> = ({
   onClose,
   onImport,
 }) => {
+  const { user } = useAuth();
+  const { divisis, fetchDivisis } = useDivisi();
   const [file, setFile] = useState<File | null>(null);
+  const [selectedDivisi, setSelectedDivisi] = useState<string>("");
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [result, setResult] = useState<{
@@ -42,6 +57,15 @@ const ImportRouteModal: React.FC<ImportRouteModalProps> = ({
   } | null>(null);
   const [showFailures, setShowFailures] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
+
+  React.useEffect(() => {
+    if (
+      isOpen &&
+      (user?.peran === "super_admin" || user?.peran === "admin_perusahaan")
+    ) {
+      fetchDivisis();
+    }
+  }, [isOpen, user, fetchDivisis]);
 
   const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const selectedFile = e.target.files?.[0];
@@ -84,11 +108,22 @@ const ImportRouteModal: React.FC<ImportRouteModalProps> = ({
   const handleImport = async () => {
     if (!file) return;
 
+    if (
+      (user?.peran === "super_admin" || user?.peran === "admin_perusahaan") &&
+      !selectedDivisi
+    ) {
+      setError("Silakan pilih divisi target terlebih dahulu.");
+      return;
+    }
+
     setLoading(true);
     setError(null);
 
     try {
-      const res = await onImport(file);
+      const res = await onImport(
+        file,
+        selectedDivisi ? Number(selectedDivisi) : undefined,
+      );
       if (res.success && res.data) {
         setResult(res.data);
         if (res.data.summary.failed === 0) {
@@ -109,6 +144,7 @@ const ImportRouteModal: React.FC<ImportRouteModalProps> = ({
 
   const handleClose = () => {
     setFile(null);
+    setSelectedDivisi("");
     setError(null);
     setResult(null);
     setLoading(false);
@@ -126,31 +162,65 @@ const ImportRouteModal: React.FC<ImportRouteModalProps> = ({
       <div className="space-y-6">
         {/* Instructions */}
         {!result && (
-          <div className="bg-primary/5 border border-primary/10 rounded-2xl p-5 shadow-inner">
-            <div className="flex items-center gap-2 mb-3">
-              <Info className="h-4 w-4 text-primary" />
-              <h3 className="text-xs font-black uppercase tracking-widest text-primary">
-                Panduan Import:
-              </h3>
+          <div className="space-y-4">
+            <div className="bg-primary/5 border border-primary/10 rounded-2xl p-5 shadow-inner">
+              <div className="flex items-center gap-2 mb-3">
+                <Info className="h-4 w-4 text-primary" />
+                <h3 className="text-xs font-black uppercase tracking-widest text-primary">
+                  Panduan Import:
+                </h3>
+              </div>
+              <ul className="text-[11px] text-muted-foreground font-bold uppercase tracking-tight list-none space-y-2">
+                <li className="flex items-start gap-2">
+                  <div className="h-1.5 w-1.5 rounded-full bg-primary mt-1 shrink-0" />
+                  Gunakan format excel (.xlsx / .xls).
+                </li>
+                <li className="flex items-start gap-2 text-foreground font-black">
+                  <div className="h-1.5 w-1.5 rounded-full bg-primary mt-1 shrink-0" />
+                  Kolom Wajib: nama_rute, kode_pelanggan.
+                </li>
+                <li className="flex items-start gap-2">
+                  <div className="h-1.5 w-1.5 rounded-full bg-primary mt-1 shrink-0" />
+                  Sistem akan mencari kode_pelanggan dan menghubungkannya ke
+                  rute.
+                </li>
+                <li className="flex items-start gap-2 italic">
+                  <div className="h-1.5 w-1.5 rounded-full bg-primary mt-1 shrink-0" />
+                  Jika nama_rute belum ada, rute baru akan dibuat otomatis.
+                </li>
+              </ul>
             </div>
-            <ul className="text-[11px] text-muted-foreground font-bold uppercase tracking-tight list-none space-y-2">
-              <li className="flex items-start gap-2">
-                <div className="h-1.5 w-1.5 rounded-full bg-primary mt-1 shrink-0" />
-                Gunakan format excel (.xlsx / .xls).
-              </li>
-              <li className="flex items-start gap-2 text-foreground font-black">
-                <div className="h-1.5 w-1.5 rounded-full bg-primary mt-1 shrink-0" />
-                Kolom Wajib: nama_rute, kode_pelanggan.
-              </li>
-              <li className="flex items-start gap-2">
-                <div className="h-1.5 w-1.5 rounded-full bg-primary mt-1 shrink-0" />
-                Sistem akan mencari kode_pelanggan dan menghubungkannya ke rute.
-              </li>
-              <li className="flex items-start gap-2 italic">
-                <div className="h-1.5 w-1.5 rounded-full bg-primary mt-1 shrink-0" />
-                Jika nama_rute belum ada, rute baru akan dibuat otomatis.
-              </li>
-            </ul>
+
+            {(user?.peran === "super_admin" ||
+              user?.peran === "admin_perusahaan") && (
+              <div className="space-y-2">
+                <label className="text-[10px] font-black uppercase tracking-widest text-muted-foreground ml-1">
+                  Divisi Kerja Target
+                </label>
+                <Select
+                  value={selectedDivisi}
+                  onValueChange={setSelectedDivisi}
+                >
+                  <SelectTrigger className="w-full bg-card border-2 border-border/50 h-12 rounded-2xl shadow-sm focus:ring-primary">
+                    <SelectValue placeholder="Pilih Divisi Target Import" />
+                  </SelectTrigger>
+                  <SelectContent className="rounded-2xl border-2">
+                    {divisis.map((div) => (
+                      <SelectItem
+                        key={div.id}
+                        value={div.id.toString()}
+                        className="rounded-xl"
+                      >
+                        {div.nama_divisi}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+                <p className="text-[9px] text-muted-foreground italic ml-1">
+                  * Seluruh rute dalam file akan dimasukkan ke divisi ini.
+                </p>
+              </div>
+            )}
           </div>
         )}
 
