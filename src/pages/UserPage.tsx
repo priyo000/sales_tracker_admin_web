@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from "react";
-import { Plus, ShieldCheck } from "lucide-react";
+import { Plus, ShieldCheck, Building2 } from "lucide-react";
 import toast from "react-hot-toast";
 import { useUser } from "../features/users/hooks/useUser";
 import UserTable from "../features/users/components/UserTable";
@@ -8,8 +8,10 @@ import { Modal, ConfirmModal } from "../components/ui/Modal";
 import { User, UserFormData } from "../features/users/types";
 import { Karyawan } from "../features/karyawan/types";
 import { Button } from "@/components/ui/button";
+import { useAuth } from "@/hooks/useAuth";
 
 const UserPage: React.FC = () => {
+  const { user: currentUser } = useAuth();
   const {
     users,
     loading,
@@ -26,6 +28,8 @@ const UserPage: React.FC = () => {
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [editingUser, setEditingUser] = useState<User | null>(null);
   const [deletingId, setDeletingId] = useState<number | null>(null);
+
+  const isSuperAdmin = currentUser?.peran === "super_admin";
 
   useEffect(() => {
     const timer = setTimeout(() => {
@@ -103,6 +107,30 @@ const UserPage: React.FC = () => {
       {hookError && (
         <div className="rounded-xl bg-destructive/10 p-4 border border-destructive/20 text-sm text-destructive font-medium">
           {hookError}
+        </div>
+      )}
+
+      {/* Super Admin: context banner — shows which company is currently active */}
+      {isSuperAdmin && currentUser?.perusahaan && (
+        <div className="flex items-center gap-3 rounded-xl border border-purple-500/20 bg-purple-500/5 px-4 py-3">
+          <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg bg-purple-500/10">
+            <Building2 className="h-4 w-4 text-purple-600 dark:text-purple-400" />
+          </div>
+          <div className="min-w-0">
+            <p className="text-[10px] font-black uppercase tracking-widest text-purple-600/70 dark:text-purple-400/70">
+              Konteks Perusahaan Aktif
+            </p>
+            <p className="text-sm font-bold text-purple-700 dark:text-purple-300 truncate">
+              {currentUser.perusahaan.nama_perusahaan}
+            </p>
+          </div>
+          <p className="ml-auto text-[11px] text-muted-foreground hidden sm:block text-right shrink-0">
+            User yang dibuat/diubah akan belong to perusahaan ini.
+            <br />
+            <span className="font-bold text-purple-600/70">
+              Ganti perusahaan via dropdown di header.
+            </span>
+          </p>
         </div>
       )}
 
