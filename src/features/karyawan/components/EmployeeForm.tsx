@@ -1,189 +1,276 @@
-import React, { useState } from 'react';
-import { Karyawan, KaryawanFormData } from '../types';
+import React, { useState } from "react";
+import { Karyawan, KaryawanFormData } from "../types";
+import {
+  Contact,
+  IdCard,
+  User,
+  Building2,
+  Briefcase,
+  Phone,
+  Mail,
+  Calendar,
+  Activity,
+  MapPin,
+  LucideIcon,
+  Save,
+  X,
+} from "lucide-react";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import { Textarea } from "@/components/ui/textarea";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 
 interface EmployeeFormProps {
-    initialData?: Karyawan | null;
-    divisiOptions: { id: number, nama_divisi: string }[];
-    onSubmit: (data: KaryawanFormData) => void;
-    onCancel: () => void;
-    loading?: boolean;
+  initialData?: Karyawan | null;
+  divisiOptions: { id: number; nama_divisi: string }[];
+  onSubmit: (data: KaryawanFormData) => void;
+  onCancel: () => void;
+  loading?: boolean;
 }
 
-const EmployeeForm: React.FC<EmployeeFormProps> = ({ initialData, divisiOptions, onSubmit, onCancel, loading }) => {
-    const [formData, setFormData] = useState<KaryawanFormData>({
-        kode_karyawan: initialData?.kode_karyawan || '',
-        nik: initialData?.nik || '',
-        nama_lengkap: initialData?.nama_lengkap || '',
-        id_divisi: initialData?.id_divisi?.toString() || (divisiOptions[0]?.id.toString() || ''),
-        jabatan: initialData?.jabatan || 'Sales',
-        no_hp: initialData?.no_hp || '',
-        email: initialData?.email || '',
-        alamat_domisili: initialData?.alamat_domisili || '',
-        tanggal_bergabung: initialData?.tanggal_bergabung || new Date().toISOString().split('T')[0],
-        status_karyawan: initialData?.status_karyawan || 'aktif',
-    });
+const FormField = ({
+  label,
+  required,
+  children,
+  icon: Icon,
+}: {
+  label: string;
+  required?: boolean;
+  children: React.ReactNode;
+  icon?: LucideIcon;
+}) => (
+  <div className="space-y-2">
+    <Label className="flex items-center gap-2 text-[11px] font-black uppercase tracking-widest text-muted-foreground/80">
+      {Icon && <Icon className="h-3 w-3 text-primary" />}
+      {label}
+      {required && <span className="text-destructive ml-0.5">*</span>}
+    </Label>
+    {children}
+  </div>
+);
 
-    const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement>) => {
-        const { name, value } = e.target;
-        setFormData(prev => ({ ...prev, [name]: value }));
-    };
+const EmployeeForm: React.FC<EmployeeFormProps> = ({
+  initialData,
+  divisiOptions,
+  onSubmit,
+  onCancel,
+  loading,
+}) => {
+  const [formData, setFormData] = useState<KaryawanFormData>({
+    kode_karyawan: initialData?.kode_karyawan || "",
+    nik: initialData?.nik || "",
+    nama_lengkap: initialData?.nama_lengkap || "",
+    id_divisi:
+      initialData?.id_divisi?.toString() ||
+      divisiOptions[0]?.id.toString() ||
+      "",
+    jabatan: initialData?.jabatan || "Sales",
+    no_hp: initialData?.no_hp || "",
+    email: initialData?.email || "",
+    alamat_domisili: initialData?.alamat_domisili || "",
+    tanggal_bergabung:
+      initialData?.tanggal_bergabung || new Date().toISOString().split("T")[0],
+    status_karyawan: initialData?.status_karyawan || "aktif",
+  });
 
-    const handleSubmit = (e: React.FormEvent) => {
-        e.preventDefault();
-        onSubmit(formData);
-    };
+  const isEdit = !!initialData;
 
-    return (
-        <form onSubmit={handleSubmit} className="space-y-4">
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                <div>
-                    <label className="block text-sm font-medium text-gray-700">Kode Karyawan</label>
-                    <input
-                        name="kode_karyawan"
-                        type="text"
-                        className="mt-1 block w-full rounded-md border border-gray-300 p-2 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm"
-                        value={formData.kode_karyawan}
-                        onChange={handleChange}
-                        placeholder="Contoh: KYW001"
-                    />
-                </div>
-                <div>
-                    <label className="block text-sm font-medium text-gray-700">NIK (KTP)</label>
-                    <input
-                        name="nik"
-                        type="text"
-                        className="mt-1 block w-full rounded-md border border-gray-300 p-2 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm"
-                        value={formData.nik}
-                        onChange={handleChange}
-                        placeholder="16 digit NIK"
-                    />
-                </div>
-                <div>
-                    <label className="block text-sm font-medium text-gray-700">Nama Lengkap</label>
-                    <input
-                        name="nama_lengkap"
-                        type="text"
-                        required
-                        className="mt-1 block w-full rounded-md border border-gray-300 p-2 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm"
-                        value={formData.nama_lengkap}
-                        onChange={handleChange}
-                    />
-                </div>
-            </div>
+  const handleChange = (name: string, value: string) => {
+    setFormData((prev) => ({ ...prev, [name]: value }));
+  };
 
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                <div>
-                    <label className="block text-sm font-medium text-gray-700">Divisi</label>
-                    <select
-                        name="id_divisi"
-                        required
-                        className="mt-1 block w-full rounded-md border border-gray-300 p-2 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm"
-                        value={formData.id_divisi}
-                        onChange={handleChange}
-                    >
-                        <option value="">Pilih Divisi</option>
-                        {divisiOptions.map(option => (
-                            <option key={option.id} value={option.id}>{option.nama_divisi}</option>
-                        ))}
-                    </select>
-                </div>
-                <div>
-                    <label className="block text-sm font-medium text-gray-700">Jabatan</label>
-                    <select
-                        name="jabatan"
-                        className="mt-1 block w-full rounded-md border border-gray-300 p-2 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm"
-                        value={formData.jabatan}
-                        onChange={handleChange}
-                    >
-                        <option value="Sales">Sales</option>
-                        <option value="Driver">Driver</option>
-                        <option value="Gudang">Gudang</option>
-                        <option value="Admin">Admin</option>
-                        <option value="Manager">Manager</option>
-                    </select>
-                </div>
-            </div>
+  const handleSubmit = (e: React.FormEvent) => {
+    e.preventDefault();
+    onSubmit(formData);
+  };
 
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                <div>
-                    <label className="block text-sm font-medium text-gray-700">No HP</label>
-                    <input
-                        name="no_hp"
-                        type="text"
-                        required
-                        className="mt-1 block w-full rounded-md border border-gray-300 p-2 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm"
-                        value={formData.no_hp}
-                        onChange={handleChange}
-                    />
-                </div>
-                <div>
-                    <label className="block text-sm font-medium text-gray-700">Email (Optional)</label>
-                    <input
-                        name="email"
-                        type="email"
-                        className="mt-1 block w-full rounded-md border border-gray-300 p-2 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm"
-                        value={formData.email}
-                        onChange={handleChange}
-                        placeholder="email@perusahaan.com"
-                    />
-                </div>
-            </div>
+  return (
+    <form onSubmit={handleSubmit} className="space-y-8 py-2">
+      <div className="space-y-6">
+        {/* ID & NIK Row */}
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+          <FormField label="Kode Karyawan" icon={Contact}>
+            <Input
+              name="kode_karyawan"
+              type="text"
+              placeholder="Contoh: KYW001"
+              className="h-12 bg-card border-border/50 focus-visible:ring-primary shadow-sm font-bold"
+              value={formData.kode_karyawan}
+              onChange={(e) => handleChange("kode_karyawan", e.target.value)}
+            />
+          </FormField>
+          <FormField label="NIK (KTP)" icon={IdCard}>
+            <Input
+              name="nik"
+              type="text"
+              placeholder="16 digit NIK"
+              className="h-12 bg-card border-border/50 focus-visible:ring-primary shadow-sm font-bold"
+              value={formData.nik}
+              onChange={(e) => handleChange("nik", e.target.value)}
+            />
+          </FormField>
+        </div>
 
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                <div>
-                    <label className="block text-sm font-medium text-gray-700">Tanggal Bergabung</label>
-                    <input
-                        name="tanggal_bergabung"
-                        type="date"
-                        className="mt-1 block w-full rounded-md border border-gray-300 p-2 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm"
-                        value={formData.tanggal_bergabung}
-                        onChange={handleChange}
-                    />
-                </div>
-                <div>
-                    <label className="block text-sm font-medium text-gray-700">Status Karyawan</label>
-                    <select
-                        name="status_karyawan"
-                        className="mt-1 block w-full rounded-md border border-gray-300 p-2 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm"
-                        value={formData.status_karyawan}
-                        onChange={handleChange}
-                    >
-                        <option value="aktif">Aktif</option>
-                        <option value="non_aktif">Non-Aktif</option>
-                    </select>
-                </div>
-            </div>
+        {/* Full Name */}
+        <FormField label="Nama Lengkap Karyawan" icon={User} required>
+          <Input
+            name="nama_lengkap"
+            type="text"
+            required
+            className="h-12 bg-card border-border/50 focus-visible:ring-primary shadow-sm font-bold"
+            placeholder="Nama Lengkap Sesuai KTP"
+            value={formData.nama_lengkap}
+            onChange={(e) => handleChange("nama_lengkap", e.target.value)}
+          />
+        </FormField>
 
-            <div>
-                <label className="block text-sm font-medium text-gray-700">Alamat Domisili</label>
-                <textarea
-                    name="alamat_domisili"
-                    className="mt-1 block w-full rounded-md border border-gray-300 p-2 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm"
-                    rows={2}
-                    value={formData.alamat_domisili}
-                    onChange={handleChange}
-                />
-            </div>
+        {/* Division & Position Row */}
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+          <FormField label="Divisi Kerja" icon={Building2} required>
+            <Select
+              value={formData.id_divisi}
+              onValueChange={(val) => handleChange("id_divisi", val)}
+              required
+            >
+              <SelectTrigger className="h-12 bg-card border-border/50 shadow-sm font-bold">
+                <SelectValue placeholder="Pilih Divisi" />
+              </SelectTrigger>
+              <SelectContent>
+                {divisiOptions.map((option) => (
+                  <SelectItem key={option.id} value={option.id.toString()}>
+                    {option.nama_divisi}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+          </FormField>
+          <FormField label="Jabatan / Role" icon={Briefcase} required>
+            <Select
+              value={formData.jabatan}
+              onValueChange={(val) => handleChange("jabatan", val)}
+            >
+              <SelectTrigger className="h-12 bg-card border-border/50 shadow-sm font-bold">
+                <SelectValue placeholder="Pilih Jabatan" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="Sales">Sales</SelectItem>
+                <SelectItem value="Driver">Driver</SelectItem>
+                <SelectItem value="Gudang">Gudang</SelectItem>
+                <SelectItem value="Admin">Admin</SelectItem>
+                <SelectItem value="Manager">Manager</SelectItem>
+              </SelectContent>
+            </Select>
+          </FormField>
+        </div>
 
-            <div className="flex justify-end space-x-3 pt-4 border-t mt-6">
+        {/* Contact Row */}
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+          <FormField label="Nomor WhatsApp / HP" icon={Phone} required>
+            <Input
+              name="no_hp"
+              type="tel"
+              required
+              placeholder="0812xxxx"
+              className="h-12 bg-card border-border/50 focus-visible:ring-primary shadow-sm font-bold"
+              value={formData.no_hp}
+              onChange={(e) => handleChange("no_hp", e.target.value)}
+            />
+          </FormField>
+          <FormField label="Email Perusahaan / Personal" icon={Mail}>
+            <Input
+              name="email"
+              type="email"
+              placeholder="email@perusahaan.com"
+              className="h-12 bg-card border-border/50 focus-visible:ring-primary shadow-sm font-bold"
+              value={formData.email}
+              onChange={(e) => handleChange("email", e.target.value)}
+            />
+          </FormField>
+        </div>
+
+        {/* Date & Status Row */}
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+          <FormField label="Tanggal Bergabung" icon={Calendar}>
+            <Input
+              name="tanggal_bergabung"
+              type="date"
+              className="h-12 bg-card border-border/50 focus-visible:ring-primary shadow-sm font-bold"
+              value={formData.tanggal_bergabung}
+              onChange={(e) =>
+                handleChange("tanggal_bergabung", e.target.value)
+              }
+            />
+          </FormField>
+          <FormField label="Status Kepegawaian" icon={Activity}>
+            <div className="grid grid-cols-2 gap-3">
+              {["aktif", "non_aktif"].map((status) => (
                 <button
-                    type="button"
-                    onClick={onCancel}
-                    className="rounded-md border border-gray-300 bg-white px-4 py-2 text-sm font-medium text-gray-700 hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2 transition-colors"
-                    disabled={loading}
+                  key={status}
+                  type="button"
+                  onClick={() => handleChange("status_karyawan", status)}
+                  className={`h-12 rounded-xl border-2 transition-all text-[11px] font-black uppercase tracking-widest ${
+                    formData.status_karyawan === status
+                      ? "border-primary bg-primary/5 text-primary shadow-md"
+                      : "border-border/50 bg-card text-muted-foreground hover:bg-muted/50"
+                  }`}
                 >
-                    Batal
+                  {status.replace("_", "-")}
                 </button>
-                <button
-                    type="submit"
-                    className="flex justify-center rounded-md border border-transparent bg-indigo-600 px-4 py-2 text-sm font-medium text-white shadow-sm hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2 disabled:opacity-50 transition-colors"
-                    disabled={loading}
-                >
-                    {loading ? 'Menyimpan...' : (initialData ? 'Simpan Perubahan' : 'Tambah Karyawan')}
-                </button>
+              ))}
             </div>
-        </form>
-    );
+          </FormField>
+        </div>
+
+        {/* Address */}
+        <FormField label="Alamat Domisili" icon={MapPin}>
+          <Textarea
+            name="alamat_domisili"
+            className="bg-card border-border/50 focus-visible:ring-primary shadow-sm font-bold min-h-[100px] resize-none"
+            placeholder="Tulis alamat lengkap domisili saat ini..."
+            rows={3}
+            value={formData.alamat_domisili}
+            onChange={(e) => handleChange("alamat_domisili", e.target.value)}
+          />
+        </FormField>
+      </div>
+
+      <div className="flex items-center justify-end gap-3 pt-6 border-t font-bold">
+        <Button
+          type="button"
+          variant="ghost"
+          onClick={onCancel}
+          className="h-12 px-8 text-xs font-black uppercase tracking-widest text-muted-foreground hover:text-foreground"
+          disabled={loading}
+        >
+          <X className="mr-2 h-4 w-4" /> Batal
+        </Button>
+        <Button
+          type="submit"
+          disabled={loading}
+          className="h-12 px-10 text-xs font-black uppercase tracking-widest shadow-lg shadow-primary/20 bg-primary hover:bg-primary/90 text-white"
+        >
+          {loading ? (
+            <span className="flex items-center gap-2">
+              <div className="h-4 w-4 animate-spin rounded-full border-2 border-white border-t-transparent" />
+              Menyimpan...
+            </span>
+          ) : (
+            <span className="flex items-center gap-2">
+              <Save className="h-4 w-4" />
+              {isEdit ? "Simpan Perubahan" : "Tambah Karyawan Baru"}
+            </span>
+          )}
+        </Button>
+      </div>
+    </form>
+  );
 };
 
 export default EmployeeForm;

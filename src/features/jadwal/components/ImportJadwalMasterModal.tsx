@@ -1,283 +1,400 @@
-import React, { useState, useRef } from 'react';
-import { Upload, FileSpreadsheet, X, CheckCircle, AlertCircle, ChevronDown, ChevronUp } from 'lucide-react';
-import { Modal } from '../../../components/ui/Modal';
+import React, { useState, useRef } from "react";
+import {
+  Upload,
+  FileSpreadsheet,
+  X,
+  CheckCircle,
+  AlertCircle,
+  ChevronDown,
+  ChevronUp,
+  Info,
+} from "lucide-react";
+import { Modal } from "../../../components/ui/Modal";
+import { Button } from "@/components/ui/button";
+import { ScrollArea } from "@/components/ui/scroll-area";
 
 interface ImportJadwalMasterModalProps {
-    isOpen: boolean;
-    onClose: () => void;
-    onImport: (file: File) => Promise<{ 
-        success: boolean; 
-        message?: string; 
-        data?: {
-            message: string;
-            summary: { 
-                success: number; 
-                failed: number; 
-                total: number;
-                failures: Array<{ sheet: string; row: number; name: string; error: string }>;
-            };
-        } 
-    }>;
+  isOpen: boolean;
+  onClose: () => void;
+  onImport: (file: File) => Promise<{
+    success: boolean;
+    message?: string;
+    data?: {
+      message: string;
+      summary: {
+        success: number;
+        failed: number;
+        total: number;
+        failures: Array<{
+          sheet: string;
+          row: number;
+          name: string;
+          error: string;
+        }>;
+      };
+    };
+  }>;
 }
 
-const ImportJadwalMasterModal: React.FC<ImportJadwalMasterModalProps> = ({ isOpen, onClose, onImport }) => {
-    const [file, setFile] = useState<File | null>(null);
-    const [loading, setLoading] = useState(false);
-    const [error, setError] = useState<string | null>(null);
-    const [result, setResult] = useState<{
-        message: string;
-        summary: { 
-            success: number; 
-            failed: number; 
-            total: number;
-            failures: Array<{ sheet: string; row: number; name: string; error: string }>;
-        };
-    } | null>(null);
-    const [showFailures, setShowFailures] = useState(false);
-    const fileInputRef = useRef<HTMLInputElement>(null);
+const ImportJadwalMasterModal: React.FC<ImportJadwalMasterModalProps> = ({
+  isOpen,
+  onClose,
+  onImport,
+}) => {
+  const [file, setFile] = useState<File | null>(null);
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+  const [result, setResult] = useState<{
+    message: string;
+    summary: {
+      success: number;
+      failed: number;
+      total: number;
+      failures: Array<{
+        sheet: string;
+        row: number;
+        name: string;
+        error: string;
+      }>;
+    };
+  } | null>(null);
+  const [showFailures, setShowFailures] = useState(false);
+  const fileInputRef = useRef<HTMLInputElement>(null);
 
-    const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-        const selectedFile = e.target.files?.[0];
-        if (selectedFile) {
-            validateAndSetFile(selectedFile);
+  const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const selectedFile = e.target.files?.[0];
+    if (selectedFile) {
+      validateAndSetFile(selectedFile);
+    }
+  };
+
+  const validateAndSetFile = (file: File) => {
+    const validExtensions = [".xlsx", ".xls"];
+    const fileExtension = "." + file.name.split(".").pop()?.toLowerCase();
+
+    if (validExtensions.includes(fileExtension)) {
+      setFile(file);
+      setError(null);
+      setResult(null);
+    } else {
+      setFile(null);
+      setError(
+        "Format file tidak didukung. Harap gunakan format .xlsx atau .xls",
+      );
+    }
+  };
+
+  const handleDragOver = (e: React.DragEvent<HTMLDivElement>) => {
+    e.preventDefault();
+    e.stopPropagation();
+  };
+
+  const handleDrop = (e: React.DragEvent<HTMLDivElement>) => {
+    e.preventDefault();
+    e.stopPropagation();
+
+    const droppedFile = e.dataTransfer.files?.[0];
+    if (droppedFile) {
+      validateAndSetFile(droppedFile);
+    }
+  };
+
+  const handleImport = async () => {
+    if (!file) return;
+
+    setLoading(true);
+    setError(null);
+
+    try {
+      const res = await onImport(file);
+      if (res.success && res.data) {
+        setResult(res.data);
+        if (res.data.summary.failed === 0) {
+          setTimeout(() => {
+            handleClose();
+          }, 3000);
         }
-    };
+      } else {
+        setError(res.message || "Gagal mengimport data.");
+      }
+    } catch (err) {
+      setError("Terjadi kesalahan saat mengupload file.");
+      console.error(err);
+    } finally {
+      setLoading(false);
+    }
+  };
 
-    const validateAndSetFile = (file: File) => {
-        const validExtensions = ['.xlsx', '.xls'];
-        const fileExtension = '.' + file.name.split('.').pop()?.toLowerCase();
+  const handleClose = () => {
+    setFile(null);
+    setError(null);
+    setResult(null);
+    setLoading(false);
+    setShowFailures(false);
+    onClose();
+  };
 
-        if (validExtensions.includes(fileExtension)) {
-            setFile(file);
-            setError(null);
-            setResult(null);
-        } else {
-            setFile(null);
-            setError('Format file tidak didukung. Harap gunakan format .xlsx atau .xls');
-        }
-    };
-
-    const handleDragOver = (e: React.DragEvent<HTMLDivElement>) => {
-        e.preventDefault();
-        e.stopPropagation();
-    };
-
-    const handleDrop = (e: React.DragEvent<HTMLDivElement>) => {
-        e.preventDefault();
-        e.stopPropagation();
-        
-        const droppedFile = e.dataTransfer.files?.[0];
-        if (droppedFile) {
-            validateAndSetFile(droppedFile);
-        }
-    };
-
-    const handleImport = async () => {
-        if (!file) return;
-
-        setLoading(true);
-        setError(null);
-
-        try {
-            const res = await onImport(file);
-            if (res.success && res.data) {
-                setResult(res.data);
-                if (res.data.summary.failed === 0) {
-                   setTimeout(() => {
-                        handleClose();
-                   }, 3000);
-                }
-            } else {
-                setError(res.message || 'Gagal mengimport data.');
-            }
-        } catch (err) {
-            setError('Terjadi kesalahan saat mengupload file.');
-            console.error(err);
-        } finally {
-            setLoading(false);
-        }
-    };
-
-    const handleClose = () => {
-        setFile(null);
-        setError(null);
-        setResult(null);
-        setLoading(false);
-        setShowFailures(false);
-        onClose();
-    };
-
-    return (
-        <Modal
-            isOpen={isOpen}
-            onClose={handleClose}
-            title="Import Master Jadwal"
-            size="lg"
-        >
-            <div className="space-y-6">
-                {!result && (
-                    <div className="bg-blue-50 border border-blue-100 rounded-lg p-4">
-                        <h3 className="text-sm font-semibold text-blue-800 mb-2">Panduan Import Master Jadwal:</h3>
-                        <div className="text-sm text-blue-700 space-y-3">
-                            <div>
-                                <p className="font-bold underline">Sheet 1: RuteMingguan</p>
-                                <p className="mb-1 italic text-xs">Mendukung format Horizontal (Hari 1-7 sebagai kolom) atau Vertikal.</p>
-                                <ul className="list-disc list-inside ml-2">
-                                    <li>Kolom Wajib: <strong>nama_per_minggu</strong>.</li>
-                                    <li>Format Horizontal: Kolom <strong>1, 2, 3, 4, 5, 6, 7</strong> (isi dengan nama rute).</li>
-                                    <li>Format Vertikal: Kolom <strong>hari_ke</strong> dan <strong>nama_rute</strong>.</li>
-                                </ul>
-                            </div>
-                            <div>
-                                <p className="font-bold underline">Sheet 2: MingguanKaryawan</p>
-                                <p className="mb-1 italic text-xs">Mendukung format Horizontal (Minggu 1-4 sebagai kolom) atau Vertikal.</p>
-                                <ul className="list-disc list-inside ml-2">
-                                    <li>Kolom Wajib: <strong>kode_karyawan</strong>.</li>
-                                    <li>Format Horizontal: Kolom <strong>Minggu 1, Minggu 2, Minggu 3, Minggu 4</strong>.</li>
-                                    <li>Format Vertikal: Kolom <strong>minggu_ke</strong> dan <strong>WeeklyRouteName</strong>.</li>
-                                </ul>
-                            </div>
-                        </div>
-                    </div>
-                )}
-
-                {!file && !result ? (
-                    <div 
-                        className="border-2 border-dashed border-gray-300 rounded-xl p-8 flex flex-col items-center justify-center cursor-pointer hover:border-indigo-500 hover:bg-indigo-50 transition-all group"
-                        onClick={() => fileInputRef.current?.click()}
-                        onDragOver={handleDragOver}
-                        onDrop={handleDrop}
-                    >
-                        <div className="bg-indigo-100 p-4 rounded-full mb-4 group-hover:bg-indigo-200 transition-colors">
-                            <Upload className="w-8 h-8 text-indigo-600" />
-                        </div>
-                        <p className="text-gray-700 font-medium mb-1 text-center">Klik untuk upload atau drag & drop file Excel disini</p>
-                        <input 
-                            type="file" 
-                            className="hidden" 
-                            ref={fileInputRef} 
-                            accept=".xlsx, .xls" 
-                            onChange={handleFileChange}
-                        />
-                    </div>
-                ) : null}
-
-                {file && !result && (
-                    <div className="bg-white border rounded-lg p-4 flex items-center justify-between shadow-sm">
-                        <div className="flex items-center space-x-4">
-                            <div className="bg-green-100 p-3 rounded-lg">
-                                <FileSpreadsheet className="w-6 h-6 text-green-600" />
-                            </div>
-                            <div>
-                                <p className="text-sm font-medium text-gray-900">{file.name}</p>
-                                <p className="text-xs text-gray-500">{(file.size / 1024).toFixed(2)} KB</p>
-                            </div>
-                        </div>
-                        <button 
-                            onClick={() => setFile(null)}
-                            className="text-gray-400 hover:text-red-500 transition-colors p-1"
-                            disabled={loading}
-                        >
-                            <X className="w-5 h-5" />
-                        </button>
-                    </div>
-                )}
-
-                {result && (
-                    <div className="space-y-4 animate-in fade-in zoom-in-95">
-                        <div className={`rounded-xl p-6 border flex flex-col items-center text-center ${result.summary.failed > 0 ? 'bg-amber-50 border-amber-200' : 'bg-green-50 border-green-200'}`}>
-                            <div className={`p-3 rounded-full mb-3 ${result.summary.failed > 0 ? 'bg-amber-100' : 'bg-green-100'}`}>
-                                {result.summary.failed > 0 ? <AlertCircle className="w-8 h-8 text-amber-600" /> : <CheckCircle className="w-8 h-8 text-green-600" />}
-                            </div>
-                            <h3 className={`text-lg font-bold ${result.summary.failed > 0 ? 'text-amber-800' : 'text-green-800'}`}>
-                                {result.summary.failed > 0 ? 'Import Selesai dengan Catatan' : 'Import Berhasil Sempurna!'}
-                            </h3>
-                            
-                            <div className="grid grid-cols-3 gap-4 mt-6 w-full max-w-sm">
-                                <div className="bg-white p-3 rounded-lg border border-gray-100 shadow-sm">
-                                    <p className="text-xs text-gray-500 font-bold uppercase tracking-tight">Total Rows</p>
-                                    <p className="text-xl font-black text-gray-800">{result.summary.total}</p>
-                                </div>
-                                <div className="bg-white p-3 rounded-lg border border-gray-100 shadow-sm">
-                                    <p className="text-xs text-green-500 font-bold uppercase tracking-tight">Berhasil</p>
-                                    <p className="text-xl font-black text-green-600">{result.summary.success}</p>
-                                </div>
-                                <div className="bg-white p-3 rounded-lg border border-gray-100 shadow-sm">
-                                    <p className="text-xs text-red-500 font-bold uppercase tracking-tight">Gagal</p>
-                                    <p className="text-xl font-black text-red-600">{result.summary.failed}</p>
-                                </div>
-                            </div>
-                        </div>
-
-                        {result.summary.failures.length > 0 && (
-                            <div className="border rounded-xl overflow-hidden bg-white">
-                                <button 
-                                    onClick={() => setShowFailures(!showFailures)}
-                                    className="w-full flex items-center justify-between p-4 bg-gray-50 hover:bg-gray-100 transition-colors text-sm font-semibold text-gray-700"
-                                >
-                                    <div className="flex items-center">
-                                        <AlertCircle className="w-4 h-4 mr-2 text-red-500" />
-                                        Lihat Detail Kegagalan ({result.summary.failures.length})
-                                    </div>
-                                    {showFailures ? <ChevronUp className="w-4 h-4" /> : <ChevronDown className="w-4 h-4" />}
-                                </button>
-                                
-                                {showFailures && (
-                                    <div className="max-h-60 overflow-y-auto divide-y divide-gray-100">
-                                        {result.summary.failures.map((fail, idx) => (
-                                            <div key={idx} className="p-3 text-xs">
-                                                <div className="flex items-center justify-between mb-1">
-                                                    <span className="font-bold text-gray-900">
-                                                        [{fail.sheet}] Baris {fail.row}: {fail.name}
-                                                    </span>
-                                                </div>
-                                                <p className="text-red-600 font-medium">{fail.error}</p>
-                                            </div>
-                                        ))}
-                                    </div>
-                                )}
-                            </div>
-                        )}
-
-                        <div className="flex justify-center pt-2">
-                            <button 
-                                onClick={handleClose}
-                                className="px-6 py-2 bg-gray-800 text-white rounded-lg text-sm font-bold shadow-lg hover:bg-black transition-all active:scale-95"
-                            >
-                                Tutup
-                            </button>
-                        </div>
-                    </div>
-                )}
-
-                {error && (
-                    <div className="bg-red-50 border border-red-200 rounded-lg p-4 flex items-start space-x-3 animate-in slide-in-from-top-2">
-                        <AlertCircle className="w-5 h-5 text-red-600 mt-0.5 shrink-0" />
-                        <span className="text-sm text-red-700 font-medium">{error}</span>
-                    </div>
-                )}
-
-                {!result && (
-                    <div className="flex justify-end space-x-3 pt-4 border-t border-gray-100">
-                        <button
-                            onClick={handleClose}
-                            className="px-4 py-2 text-sm font-medium text-gray-700 bg-white border border-gray-300 rounded-lg hover:bg-gray-50 transition-all"
-                            disabled={loading}
-                        >
-                            Batal
-                        </button>
-                        <button
-                            onClick={handleImport}
-                            disabled={!file || loading}
-                            className="flex items-center px-4 py-2 text-sm font-bold text-white bg-indigo-600 rounded-lg hover:bg-indigo-700 disabled:opacity-50 disabled:cursor-not-allowed shadow-md transition-all active:scale-95"
-                        >
-                            {loading ? 'Memproses...' : 'Import Sekarang'}
-                        </button>
-                    </div>
-                )}
+  return (
+    <Modal
+      isOpen={isOpen}
+      onClose={handleClose}
+      title="Import Master Jadwal"
+      size="lg"
+    >
+      <div className="space-y-6">
+        {/* Instructions */}
+        {!result && (
+          <div className="bg-primary/5 border border-primary/10 rounded-2xl p-5 shadow-inner">
+            <div className="flex items-center gap-2 mb-3">
+              <Info className="h-4 w-4 text-primary" />
+              <h3 className="text-xs font-black uppercase tracking-widest text-primary">
+                Panduan Import:
+              </h3>
             </div>
-        </Modal>
-    );
+            <div className="text-[11px] text-muted-foreground font-bold uppercase tracking-tight space-y-4">
+              <div>
+                <p className="text-primary font-black mb-1">
+                  Sheet 1: RuteMingguan
+                </p>
+                <ul className="list-none space-y-1">
+                  <li className="flex items-start gap-2">
+                    <div className="h-1 w-1 rounded-full bg-primary mt-1.5 shrink-0" />
+                    Kolom Wajib:{" "}
+                    <span className="text-foreground">nama_per_minggu</span>
+                  </li>
+                  <li className="flex items-start gap-2">
+                    <div className="h-1 w-1 rounded-full bg-primary mt-1.5 shrink-0" />
+                    Kolom Hari (Horizontal):{" "}
+                    <span className="font-mono text-[9px] bg-primary/10 px-1 rounded">
+                      1, 2, 3, 4, 5, 6, 7
+                    </span>
+                  </li>
+                </ul>
+              </div>
+              <div>
+                <p className="text-primary font-black mb-1">
+                  Sheet 2: MingguanKaryawan
+                </p>
+                <ul className="list-none space-y-1">
+                  <li className="flex items-start gap-2">
+                    <div className="h-1 w-1 rounded-full bg-primary mt-1.5 shrink-0" />
+                    Kolom Wajib:{" "}
+                    <span className="text-foreground">kode_karyawan</span>
+                  </li>
+                  <li className="flex items-start gap-2">
+                    <div className="h-1 w-1 rounded-full bg-primary mt-1.5 shrink-0" />
+                    Kolom Minggu (Horizontal):{" "}
+                    <span className="font-mono text-[9px] bg-primary/10 px-1 rounded">
+                      Minggu 1, Minggu 2, Minggu 3, Minggu 4
+                    </span>
+                  </li>
+                </ul>
+              </div>
+            </div>
+          </div>
+        )}
+
+        {/* Dropzone */}
+        {!file && !result ? (
+          <div
+            className="border-2 border-dashed border-border/50 rounded-3xl p-12 flex flex-col items-center justify-center cursor-pointer hover:border-primary hover:bg-primary/5 transition-all group bg-card shadow-inner"
+            onClick={() => fileInputRef.current?.click()}
+            onDragOver={handleDragOver}
+            onDrop={handleDrop}
+          >
+            <div className="bg-primary/10 p-5 rounded-2xl mb-4 group-hover:scale-110 group-hover:bg-primary group-hover:text-white transition-all shadow-lg shadow-primary/5">
+              <Upload className="w-8 h-8 text-primary group-hover:text-white transition-colors" />
+            </div>
+            <p className="text-sm font-black uppercase tracking-tight text-foreground mb-1">
+              Upload Master Jadwal
+            </p>
+            <p className="text-muted-foreground text-[10px] font-bold uppercase tracking-widest italic opacity-50 text-center">
+              Drag & Drop file disini atau klik untuk memilih file
+            </p>
+            <input
+              type="file"
+              className="hidden"
+              ref={fileInputRef}
+              accept=".xlsx, .xls"
+              onChange={handleFileChange}
+            />
+          </div>
+        ) : null}
+
+        {/* Selected File State */}
+        {file && !result && (
+          <div className="bg-card border-2 border-primary/20 rounded-2xl p-5 flex items-center justify-between shadow-xl shadow-primary/5 animate-in zoom-in-95">
+            <div className="flex items-center space-x-4">
+              <div className="bg-primary/10 p-3 rounded-xl border border-primary/10">
+                <FileSpreadsheet className="w-6 h-6 text-primary" />
+              </div>
+              <div>
+                <p className="text-sm font-black text-foreground uppercase tracking-tight leading-none mb-1">
+                  {file.name}
+                </p>
+                <p className="text-[10px] font-bold text-muted-foreground uppercase opacity-60">
+                  {(file.size / 1024).toFixed(2)} KB • Siap Import
+                </p>
+              </div>
+            </div>
+            <Button
+              variant="ghost"
+              size="icon"
+              onClick={() => setFile(null)}
+              className="text-muted-foreground hover:text-destructive hover:bg-destructive/10 transition-colors h-10 w-10 rounded-xl"
+              disabled={loading}
+            >
+              <X className="w-5 h-5" />
+            </Button>
+          </div>
+        )}
+
+        {/* Result State */}
+        {result && (
+          <div className="space-y-4 animate-in fade-in zoom-in-95">
+            <div
+              className={`rounded-3xl p-8 border-2 flex flex-col items-center text-center shadow-xl ${result.summary.failed > 0 ? "bg-amber-500/5 border-amber-500/20" : "bg-green-500/5 border-green-500/20 shadow-green-500/5"}`}
+            >
+              <div
+                className={`p-4 rounded-2xl mb-4 shadow-lg ${result.summary.failed > 0 ? "bg-amber-500 text-white shadow-amber-500/30" : "bg-green-500 text-white shadow-green-500/30"}`}
+              >
+                {result.summary.failed > 0 ? (
+                  <AlertCircle className="w-8 h-8" />
+                ) : (
+                  <CheckCircle className="w-8 h-8" />
+                )}
+              </div>
+              <h3
+                className={`text-xl font-black uppercase tracking-tight ${result.summary.failed > 0 ? "text-amber-700" : "text-green-700"}`}
+              >
+                {result.summary.failed > 0
+                  ? "Import Selesai dengan Catatan"
+                  : "Import Berhasil Sempurna!"}
+              </h3>
+
+              <div className="grid grid-cols-3 gap-4 mt-8 w-full">
+                <div className="bg-card p-4 rounded-2xl border-2 border-border/50 shadow-sm">
+                  <p className="text-[10px] text-muted-foreground font-black uppercase tracking-widest mb-1">
+                    Total
+                  </p>
+                  <p className="text-2xl font-black text-foreground uppercase tracking-tighter leading-none">
+                    {result.summary.total}
+                  </p>
+                </div>
+                <div className="bg-green-500/5 p-4 rounded-2xl border-2 border-green-500/20 shadow-sm">
+                  <p className="text-[10px] text-green-600 font-black uppercase tracking-widest mb-1">
+                    Berhasil
+                  </p>
+                  <p className="text-2xl font-black text-green-600 uppercase tracking-tighter leading-none">
+                    {result.summary.success}
+                  </p>
+                </div>
+                <div className="bg-destructive/5 p-4 rounded-2xl border-2 border-destructive/20 shadow-sm">
+                  <p className="text-[10px] text-destructive font-black uppercase tracking-widest mb-1">
+                    Gagal
+                  </p>
+                  <p className="text-2xl font-black text-destructive uppercase tracking-tighter leading-none">
+                    {result.summary.failed}
+                  </p>
+                </div>
+              </div>
+            </div>
+
+            {/* Failures List */}
+            {result.summary.failures.length > 0 && (
+              <div className="border-2 border-border/50 rounded-2xl overflow-hidden bg-card shadow-sm">
+                <button
+                  onClick={() => setShowFailures(!showFailures)}
+                  className="w-full flex items-center justify-between p-4 bg-muted/30 hover:bg-muted/50 transition-colors text-[11px] font-black uppercase tracking-widest text-muted-foreground"
+                >
+                  <div className="flex items-center gap-2">
+                    <AlertCircle className="w-4 h-4 text-destructive" />
+                    Detail Kegagalan ({result.summary.failures.length})
+                  </div>
+                  {showFailures ? (
+                    <ChevronUp className="w-4 h-4" />
+                  ) : (
+                    <ChevronDown className="w-4 h-4" />
+                  )}
+                </button>
+
+                {showFailures && (
+                  <ScrollArea className="h-[250px]">
+                    <div className="divide-y divide-border/50 border-t border-border/50">
+                      {result.summary.failures.map((fail, idx) => (
+                        <div
+                          key={idx}
+                          className="p-4 hover:bg-muted/10 transition-colors"
+                        >
+                          <div className="flex items-center justify-between mb-1">
+                            <span className="text-xs font-black text-foreground uppercase tracking-tight">
+                              [{fail.sheet}] Baris {fail.row}: {fail.name}
+                            </span>
+                          </div>
+                          <p className="text-[11px] text-destructive font-bold uppercase tracking-tight leading-relaxed">
+                            {fail.error}
+                          </p>
+                        </div>
+                      ))}
+                    </div>
+                  </ScrollArea>
+                )}
+              </div>
+            )}
+
+            <div className="flex justify-center pt-2">
+              <Button
+                onClick={handleClose}
+                className="h-12 px-12 text-xs font-black uppercase tracking-widest shadow-xl shadow-foreground/10 bg-foreground text-background hover:bg-foreground/90"
+              >
+                Tutup Panel
+              </Button>
+            </div>
+          </div>
+        )}
+
+        {/* Error Message */}
+        {error && (
+          <div className="bg-destructive/5 border-2 border-destructive/20 rounded-2xl p-5 flex items-start space-x-3 animate-in slide-in-from-top-2 shadow-xl shadow-destructive/5">
+            <AlertCircle className="w-5 h-5 text-destructive mt-0.5 shrink-0" />
+            <span className="text-xs text-destructive font-black uppercase tracking-tight">
+              {error}
+            </span>
+          </div>
+        )}
+
+        {/* Action Buttons */}
+        {!result && (
+          <div className="flex items-center justify-end gap-3 pt-6 border-t font-bold">
+            <Button
+              variant="ghost"
+              onClick={handleClose}
+              className="h-12 px-8 text-xs font-black uppercase tracking-widest text-muted-foreground hover:text-foreground"
+              disabled={loading}
+            >
+              <X className="mr-2 h-4 w-4" /> Batal
+            </Button>
+            <Button
+              onClick={handleImport}
+              disabled={!file || loading}
+              className="h-12 px-10 text-xs font-black uppercase tracking-widest shadow-lg shadow-primary/20 bg-primary hover:bg-primary/90 text-white"
+            >
+              {loading ? (
+                <span className="flex items-center gap-2">
+                  <div className="h-4 w-4 animate-spin rounded-full border-2 border-white border-t-transparent" />
+                  Memproses...
+                </span>
+              ) : (
+                <span className="flex items-center gap-2">
+                  <Upload className="w-4 h-4" /> Import Sekarang
+                </span>
+              )}
+            </Button>
+          </div>
+        )}
+      </div>
+    </Modal>
+  );
 };
 
 export default ImportJadwalMasterModal;

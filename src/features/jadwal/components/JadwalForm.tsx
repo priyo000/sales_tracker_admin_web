@@ -1,122 +1,205 @@
-import React, { useState } from 'react';
-import { Jadwal, JadwalFormData, KaryawanOption, RuteOption } from '../types';
-import toast from 'react-hot-toast';
+import React, { useState } from "react";
+import { Jadwal, JadwalFormData, KaryawanOption, RuteOption } from "../types";
+import toast from "react-hot-toast";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
+import { Calendar, User, Navigation, LucideIcon, Save, X } from "lucide-react";
 
 interface JadwalFormProps {
-    onSubmit: (data: JadwalFormData) => void;
-    karyawanOptions: KaryawanOption[];
-    ruteOptions: RuteOption[];
-    initialDate?: string;
-    onCancel: () => void;
-    loading?: boolean;
-    initialData?: Jadwal;
-    existingJadwals?: Jadwal[];
-} 
+  onSubmit: (data: JadwalFormData) => void;
+  karyawanOptions: KaryawanOption[];
+  ruteOptions: RuteOption[];
+  initialDate?: string;
+  onCancel: () => void;
+  loading?: boolean;
+  initialData?: Jadwal;
+  existingJadwals?: Jadwal[];
+}
 
-const JadwalForm: React.FC<JadwalFormProps> = ({ 
-    onSubmit, 
-    karyawanOptions, 
-    ruteOptions, 
-    initialDate, 
-    onCancel,
-    loading,
-    initialData,
-    existingJadwals = []
+const FormField = ({
+  label,
+  required,
+  children,
+  icon: Icon,
+}: {
+  label: string;
+  required?: boolean;
+  children: React.ReactNode;
+  icon?: LucideIcon;
+}) => (
+  <div className="space-y-2">
+    <Label className="flex items-center gap-2 text-[11px] font-black uppercase tracking-widest text-muted-foreground/80">
+      {Icon && <Icon className="h-3 w-3 text-primary" />}
+      {label}
+      {required && <span className="text-destructive ml-0.5">*</span>}
+    </Label>
+    {children}
+  </div>
+);
+
+const JadwalForm: React.FC<JadwalFormProps> = ({
+  onSubmit,
+  karyawanOptions,
+  ruteOptions,
+  initialDate,
+  onCancel,
+  loading,
+  initialData,
+  existingJadwals = [],
 }) => {
-    const [formData, setFormData] = useState<JadwalFormData>({
-        id_karyawan: initialData?.id_karyawan.toString() || '',
-        id_rute: initialData?.id_rute.toString() || '',
-        tanggal: initialData?.tanggal || initialDate || new Date().toISOString().slice(0, 10),
-    });
+  const [formData, setFormData] = useState<JadwalFormData>({
+    id_karyawan: initialData?.id_karyawan.toString() || "",
+    id_rute: initialData?.id_rute.toString() || "",
+    tanggal:
+      initialData?.tanggal ||
+      initialDate ||
+      new Date().toISOString().slice(0, 10),
+  });
 
-    const handleSubmit = (e: React.FormEvent) => {
-        e.preventDefault();
-        
-        // Single Schedule Check
-        // Check if there is already a schedule for this sales on this date
-        // EXCLUDING the current schedule if we are editing
-        const isDuplicate = existingJadwals.some(j => 
-            j.id_karyawan === Number(formData.id_karyawan) && 
-            j.tanggal === formData.tanggal && 
-            j.id !== initialData?.id // Ignore self when editing
-        );
+  const handleSubmit = (e: React.FormEvent) => {
+    e.preventDefault();
 
-        if (isDuplicate) {
-            toast.error('Sales ini sudah memiliki jadwal pada tanggal tersebut.');
-            return;
-        }
+    if (!formData.id_karyawan || !formData.id_rute || !formData.tanggal) {
+      toast.error("Mohon lengkapi semua field required");
+      return;
+    }
 
-        onSubmit(formData);
-    };
-
-    return (
-        <form onSubmit={handleSubmit} className="space-y-4">
-            <div>
-                <label className="block text-sm font-medium text-gray-700">Tanggal</label>
-                <input
-                    type="date"
-                    required
-                    className="mt-1 block w-full rounded-md border border-gray-300 px-3 py-2 shadow-sm focus:border-indigo-500 focus:outline-none focus:ring-1 focus:ring-indigo-500 sm:text-sm transition-shadow"
-                    value={formData.tanggal}
-                    onChange={(e) => setFormData({ ...formData, tanggal: e.target.value })}
-                />
-            </div>
-            
-            <div>
-                <label className="block text-sm font-medium text-gray-700">Pilih Sales</label>
-                <select
-                    required
-                    className="mt-1 block w-full rounded-md border border-gray-300 bg-white px-3 py-2 shadow-sm focus:border-indigo-500 focus:outline-none focus:ring-1 focus:ring-indigo-500 sm:text-sm transition-shadow"
-                    value={formData.id_karyawan}
-                    onChange={(e) => setFormData({ ...formData, id_karyawan: e.target.value })}
-                >
-                    <option value="">-- Pilih Sales --</option>
-                    {karyawanOptions.map(k => (
-                        <option key={k.id} value={k.id}>{k.nama_lengkap}</option>
-                    ))}
-                </select>
-                {karyawanOptions.length === 0 && (
-                    <p className="text-xs text-amber-500 mt-1">Pastikan ada karyawan dengan role 'Sales'.</p>
-                )}
-            </div>
-
-            <div>
-                <label className="block text-sm font-medium text-gray-700">Pilih Rute</label>
-                <select
-                    required
-                    className="mt-1 block w-full rounded-md border border-gray-300 bg-white px-3 py-2 shadow-sm focus:border-indigo-500 focus:outline-none focus:ring-1 focus:ring-indigo-500 sm:text-sm transition-shadow"
-                    value={formData.id_rute}
-                    onChange={(e) => setFormData({ ...formData, id_rute: e.target.value })}
-                >
-                    <option value="">-- Pilih Rute --</option>
-                    {ruteOptions.map(r => (
-                        <option key={r.id} value={r.id}>{r.nama_rute}</option>
-                    ))}
-                </select>
-                {ruteOptions.length === 0 && (
-                    <p className="text-xs text-amber-500 mt-1">Belum ada rute tersedia.</p>
-                )}
-            </div>
-
-            <div className="flex justify-end space-x-3 pt-4 border-t mt-6">
-                <button
-                    type="button"
-                    onClick={onCancel}
-                    className="rounded-md border border-gray-300 bg-white px-4 py-2 text-sm font-medium text-gray-700 hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2 transition-colors"
-                    disabled={loading}
-                >
-                    Batal
-                </button>
-                <button
-                    type="submit"
-                    className="flex justify-center rounded-md border border-transparent bg-indigo-600 px-4 py-2 text-sm font-medium text-white shadow-sm hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2 disabled:opacity-50 transition-colors"
-                    disabled={loading}
-                >
-                    {loading ? 'Menyimpan...' : (initialData ? 'Update Jadwal' : 'Simpan Jadwal')}
-                </button>
-            </div>
-        </form>
+    const isDuplicate = existingJadwals.some(
+      (j) =>
+        j.id_karyawan === Number(formData.id_karyawan) &&
+        j.tanggal === formData.tanggal &&
+        j.id !== initialData?.id,
     );
-};
 
+    if (isDuplicate) {
+      toast.error("Sales ini sudah memiliki jadwal pada tanggal tersebut.");
+      return;
+    }
+
+    onSubmit(formData);
+  };
+
+  return (
+    <form onSubmit={handleSubmit} className="space-y-8 py-2">
+      <div className="space-y-6">
+        <FormField label="Tanggal Kunjungan" icon={Calendar} required>
+          <Input
+            id="tanggal"
+            type="date"
+            required
+            className="h-12 bg-card border-border/50 focus-visible:ring-primary shadow-sm font-bold text-sm"
+            value={formData.tanggal}
+            onChange={(e) =>
+              setFormData({ ...formData, tanggal: e.target.value })
+            }
+          />
+        </FormField>
+
+        <FormField label="Pilih Sales Representative" icon={User} required>
+          <Select
+            value={formData.id_karyawan}
+            onValueChange={(val) =>
+              setFormData({ ...formData, id_karyawan: val })
+            }
+            required
+          >
+            <SelectTrigger
+              id="sales"
+              className="h-12 bg-card border-border/50 shadow-sm text-sm"
+            >
+              <SelectValue placeholder="Pilih Sales..." />
+            </SelectTrigger>
+            <SelectContent>
+              {karyawanOptions.map((k) => (
+                <SelectItem key={k.id} value={k.id.toString()}>
+                  <div className="flex flex-col">
+                    <span className="font-bold">{k.nama_lengkap}</span>
+                    <span className="text-[10px] text-muted-foreground uppercase">
+                      {k.kode_karyawan}
+                    </span>
+                  </div>
+                </SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
+          {karyawanOptions.length === 0 && (
+            <div className="flex items-center gap-2 p-3 rounded-lg bg-amber-50 border border-amber-100 mt-2">
+              <div className="h-2 w-2 rounded-full bg-amber-500 animate-pulse" />
+              <p className="text-[10px] text-amber-700 font-bold uppercase tracking-tight">
+                Opps! Belum ada karyawan dengan role 'Sales'.
+              </p>
+            </div>
+          )}
+        </FormField>
+
+        <FormField label="Pilih Rute Tujuan" icon={Navigation} required>
+          <Select
+            value={formData.id_rute}
+            onValueChange={(val) => setFormData({ ...formData, id_rute: val })}
+            required
+          >
+            <SelectTrigger
+              id="rute"
+              className="h-12 bg-card border-border/50 shadow-sm text-sm"
+            >
+              <SelectValue placeholder="Pilih Rute..." />
+            </SelectTrigger>
+            <SelectContent>
+              {ruteOptions.map((r) => (
+                <SelectItem key={r.id} value={r.id.toString()}>
+                  {r.nama_rute}
+                </SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
+          {ruteOptions.length === 0 && (
+            <div className="flex items-center gap-2 p-3 rounded-lg bg-amber-50 border border-amber-100 mt-2">
+              <div className="h-2 w-2 rounded-full bg-amber-500 animate-pulse" />
+              <p className="text-[10px] text-amber-700 font-bold uppercase tracking-tight">
+                Opps! Belum ada rute tersedia.
+              </p>
+            </div>
+          )}
+        </FormField>
+      </div>
+
+      <div className="flex items-center justify-end gap-3 pt-6 border-t">
+        <Button
+          type="button"
+          variant="ghost"
+          onClick={onCancel}
+          className="h-11 px-6 text-xs font-black uppercase tracking-widest text-muted-foreground hover:text-foreground"
+          disabled={loading}
+        >
+          <X className="mr-2 h-4 w-4" /> Batal
+        </Button>
+        <Button
+          type="submit"
+          className="h-11 px-10 text-xs font-black uppercase tracking-widest shadow-lg shadow-primary/20 bg-primary hover:bg-primary/90 text-white"
+          disabled={loading}
+        >
+          {loading ? (
+            <span className="flex items-center gap-2">
+              <div className="h-4 w-4 animate-spin rounded-full border-2 border-white border-t-transparent" />
+              Menyimpan...
+            </span>
+          ) : (
+            <span className="flex items-center gap-2">
+              <Save className="h-4 w-4" />
+              {initialData ? "Update Jadwal" : "Simpan Jadwal"}
+            </span>
+          )}
+        </Button>
+      </div>
+    </form>
+  );
+};
 export default JadwalForm;

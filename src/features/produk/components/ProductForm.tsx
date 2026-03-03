@@ -1,8 +1,28 @@
 import React, { useEffect, useState } from "react";
-import { X, Upload } from "lucide-react";
+import {
+  X,
+  Upload,
+  Package,
+  Fingerprint,
+  Tag,
+  Banknote,
+  Database,
+  Ruler,
+} from "lucide-react";
 import { Produk, ProductFormData } from "../types";
 import { useKategoriProduk } from "../hooks/useKategoriProduk";
 import { BASE_URL } from "../../../services/api";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
+import { cn } from "@/lib/utils";
 
 interface ProductFormProps {
   initialData?: Produk | null;
@@ -73,31 +93,42 @@ const ProductForm: React.FC<ProductFormProps> = ({
   };
 
   return (
-    <form onSubmit={handleSubmit} className="space-y-4">
+    <form onSubmit={handleSubmit} className="space-y-6">
       {/* Image Upload */}
-      <div className="flex justify-center">
-        <div className="relative h-32 w-32 rounded-lg border-2 border-dashed border-gray-300 bg-gray-50 flex items-center justify-center overflow-hidden group hover:border-indigo-500 transition-colors">
+      <div className="flex flex-col items-center gap-4 py-2">
+        <div
+          className={cn(
+            "relative h-40 w-40 rounded-2xl border-2 border-dashed flex items-center justify-center overflow-hidden group transition-all duration-300 shadow-sm",
+            imagePreview
+              ? "border-primary/50"
+              : "border-muted-foreground/20 hover:border-primary/50 hover:bg-muted/50",
+          )}
+        >
           {imagePreview ? (
             <>
               <img
                 src={imagePreview}
                 alt="Preview"
-                className="h-full w-full object-cover"
+                className="h-full w-full object-cover transition-transform group-hover:scale-105"
               />
-              <div className="absolute inset-0 bg-black bg-opacity-40 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity">
-                <button
+              <div className="absolute inset-0 bg-black/60 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity">
+                <Button
                   type="button"
+                  variant="destructive"
+                  size="icon"
                   onClick={clearImage}
-                  className="text-white bg-red-500 rounded-full p-1"
+                  className="rounded-full h-8 w-8"
                 >
                   <X className="h-4 w-4" />
-                </button>
+                </Button>
               </div>
             </>
           ) : (
-            <label className="cursor-pointer flex flex-col items-center justify-center w-full h-full">
-              <Upload className="h-8 w-8 text-gray-400" />
-              <span className="text-xs text-gray-500 mt-1">Upload Foto</span>
+            <label className="cursor-pointer flex flex-col items-center justify-center w-full h-full p-6 text-center">
+              <Upload className="h-8 w-8 text-muted-foreground group-hover:text-primary transition-colors" />
+              <span className="text-xs font-bold text-muted-foreground mt-2 uppercase tracking-tight">
+                Upload Foto Produk
+              </span>
               <input
                 type="file"
                 className="hidden"
@@ -107,142 +138,168 @@ const ProductForm: React.FC<ProductFormProps> = ({
             </label>
           )}
         </div>
+        <p className="text-[10px] font-bold text-muted-foreground uppercase tracking-widest text-center">
+          {imagePreview
+            ? "Klik perbesar atau hapus foto"
+            : "Format: JPG, PNG, WEBP (Maks 2MB)"}
+        </p>
       </div>
 
       <div className="grid grid-cols-2 gap-4">
-        <div>
-          <label className="block text-sm font-medium text-gray-700">
-            Kode Barang
-          </label>
-          <input
-            type="text"
-            className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm border p-2"
+        <div className="space-y-2">
+          <Label htmlFor="kode_barang" className="flex items-center gap-2">
+            <Fingerprint className="h-3.5 w-3.5 text-primary" /> Kode Barang
+          </Label>
+          <Input
+            id="kode_barang"
+            className="h-11 bg-background border-border/50 focus-visible:ring-primary shadow-sm"
             value={formData.kode_barang}
             onChange={(e) =>
               setFormData({ ...formData, kode_barang: e.target.value })
             }
+            placeholder="Auto-generated if empty"
           />
         </div>
-        <div>
-          <label className="block text-sm font-medium text-gray-700">SKU</label>
-          <input
-            type="text"
+        <div className="space-y-2">
+          <Label htmlFor="sku" className="flex items-center gap-2">
+            <Package className="h-3.5 w-3.5 text-primary" /> SKU
+          </Label>
+          <Input
+            id="sku"
             required
-            className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm border p-2"
+            className="h-11 bg-background border-border/50 focus-visible:ring-primary shadow-sm"
             value={formData.sku}
             onChange={(e) => setFormData({ ...formData, sku: e.target.value })}
+            placeholder="SKU-XXXXX"
           />
         </div>
       </div>
 
       <div className="grid grid-cols-2 gap-4">
-        <div>
-          <label className="block text-sm font-medium text-gray-700">
-            Nama Produk
-          </label>
-          <input
-            type="text"
+        <div className="space-y-2">
+          <Label htmlFor="nama_produk" className="flex items-center gap-2">
+            <Tag className="h-3.5 w-3.5 text-primary" /> Nama Produk
+          </Label>
+          <Input
+            id="nama_produk"
             required
-            className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm border p-2"
+            className="h-11 bg-background border-border/50 focus-visible:ring-primary shadow-sm"
             value={formData.nama_produk}
             onChange={(e) =>
               setFormData({ ...formData, nama_produk: e.target.value })
             }
+            placeholder="Nama lengkap produk"
           />
         </div>
-        <div>
-          <label className="block text-sm font-medium text-gray-700">
-            Kategori
-          </label>
-          <select
-            className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm border p-2 bg-white"
+        <div className="space-y-2">
+          <Label htmlFor="kategori" className="flex items-center gap-2">
+            <Tag className="h-3.5 w-3.5 text-primary" /> Kategori
+          </Label>
+          <Select
             value={formData.id_kategori}
-            onChange={(e) =>
-              setFormData({ ...formData, id_kategori: e.target.value })
+            onValueChange={(val) =>
+              setFormData({ ...formData, id_kategori: val })
             }
           >
-            <option value="">-- Pilih Kategori --</option>
-            {kategoris.map((kat) => (
-              <option key={kat.id} value={kat.id.toString()}>
-                {kat.nama_kategori}
-              </option>
-            ))}
-          </select>
+            <SelectTrigger className="h-11 bg-background border-border/50 shadow-sm">
+              <SelectValue placeholder="Pilih Kategori" />
+            </SelectTrigger>
+            <SelectContent>
+              {kategoris.map((kat) => (
+                <SelectItem key={kat.id} value={kat.id.toString()}>
+                  {kat.nama_kategori}
+                </SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
         </div>
       </div>
 
-      <div className="grid grid-cols-2 gap-4">
-        <div className="col-span-2">
-          <label className="block text-sm font-medium text-gray-700">
-            Harga
-          </label>
-          <input
+      <div className="space-y-2">
+        <Label htmlFor="harga_jual" className="flex items-center gap-2">
+          <Banknote className="h-3.5 w-3.5 text-primary" /> Harga Jual (Open
+          Price)
+        </Label>
+        <div className="relative">
+          <span className="absolute left-3 top-1/2 -translate-y-1/2 text-sm font-black text-muted-foreground mr-2">
+            RP
+          </span>
+          <Input
+            id="harga_jual"
             type="number"
             required
-            className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm border p-2"
+            className="h-11 pl-10 bg-background border-border/50 focus-visible:ring-primary shadow-sm"
             value={formData.harga_jual}
             onChange={(e) =>
               setFormData({ ...formData, harga_jual: e.target.value })
             }
             placeholder="0"
           />
-          <p className="mt-1 text-xs text-gray-500">
-            Harga ini adalah Open Price (dapat diubah oleh Sales saat
-            transaksi).
-          </p>
         </div>
+        <p className="text-[10px] font-bold text-amber-500 uppercase tracking-tight italic">
+          * Harga dapat disesuaikan oleh sales saat transaksi berlangsung.
+        </p>
       </div>
 
       <div className="grid grid-cols-2 gap-4">
-        <div>
-          <label className="block text-sm font-medium text-gray-700">
-            Stok Awal
-          </label>
-          <input
+        <div className="space-y-2">
+          <Label htmlFor="stok_tersedia" className="flex items-center gap-2">
+            <Database className="h-3.5 w-3.5 text-primary" /> Stok Awal
+          </Label>
+          <Input
+            id="stok_tersedia"
             type="number"
             required
-            className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm border p-2"
+            className="h-11 bg-background border-border/50 focus-visible:ring-primary shadow-sm"
             value={formData.stok_tersedia}
             onChange={(e) =>
               setFormData({ ...formData, stok_tersedia: e.target.value })
             }
           />
         </div>
-        <div>
-          <label className="block text-sm font-medium text-gray-700">
-            Satuan
-          </label>
-          <input
-            type="text"
+        <div className="space-y-2">
+          <Label htmlFor="satuan" className="flex items-center gap-2">
+            <Ruler className="h-3.5 w-3.5 text-primary" /> Satuan
+          </Label>
+          <Input
+            id="satuan"
             required
-            className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm border p-2"
+            className="h-11 bg-background border-border/50 focus-visible:ring-primary shadow-sm"
             value={formData.satuan}
             onChange={(e) =>
               setFormData({ ...formData, satuan: e.target.value })
             }
+            placeholder="Pcs, Box, Pack"
           />
         </div>
       </div>
 
-      <div className="flex justify-end space-x-2 pt-4">
-        <button
+      <div className="flex items-center justify-end gap-3 pt-6 border-t font-bold">
+        <Button
           type="button"
+          variant="ghost"
           onClick={onCancel}
-          className="rounded-md border border-gray-300 bg-white px-4 py-2 text-sm font-medium text-gray-700 hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2"
           disabled={isLoading}
+          className="h-11 px-6 uppercase tracking-widest text-muted-foreground hover:text-foreground"
         >
           Batal
-        </button>
-        <button
+        </Button>
+        <Button
           type="submit"
-          className="rounded-md bg-indigo-600 px-4 py-2 text-sm font-medium text-white hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2 disabled:bg-indigo-400"
           disabled={isLoading}
+          className="h-11 px-8 uppercase tracking-widest font-black shadow-lg shadow-primary/20"
         >
-          {isLoading ? "Menyimpan..." : "Simpan"}
-        </button>
+          {isLoading ? (
+            <span className="flex items-center gap-2">
+              <div className="h-3.5 w-3.5 animate-spin rounded-full border-2 border-white border-t-transparent" />
+              MENYIMPAN...
+            </span>
+          ) : (
+            "Simpan Produk"
+          )}
+        </Button>
       </div>
     </form>
   );
 };
-
 export default ProductForm;

@@ -1,177 +1,184 @@
-import React, { useEffect, useState } from 'react';
-import { Plus, Search, Upload } from 'lucide-react';
-import toast from 'react-hot-toast';
-import { useKaryawan } from '../features/karyawan/hooks/useKaryawan';
-import EmployeeTable from '../features/karyawan/components/EmployeeTable';
-import EmployeeForm from '../features/karyawan/components/EmployeeForm';
-import ImportEmployeeModal from '../features/karyawan/components/ImportEmployeeModal';
-import { Modal, ConfirmModal } from '../components/ui/Modal';
-import { Karyawan, KaryawanFormData } from '../features/karyawan/types';
+import React, { useEffect, useState } from "react";
+import { Plus, Users, FileUp } from "lucide-react";
+import toast from "react-hot-toast";
+import { useKaryawan } from "../features/karyawan/hooks/useKaryawan";
+import { useDivisi } from "../features/divisi/hooks/useDivisi";
+import EmployeeTable from "../features/karyawan/components/EmployeeTable";
+import EmployeeForm from "../features/karyawan/components/EmployeeForm";
+import ImportKaryawanModal from "../features/karyawan/components/ImportEmployeeModal";
+import { Modal, ConfirmModal } from "../components/ui/Modal";
+import { Karyawan, KaryawanFormData } from "../features/karyawan/types";
+import { Button } from "@/components/ui/button";
 
 const KaryawanPage: React.FC = () => {
-    const { 
-        karyawans, 
-        divisiOptions,
-        loading, 
-        error, 
-        fetchKaryawans, 
-        fetchDivisiOptions,
-        createKaryawan, 
-        updateKaryawan, 
-        deleteKaryawan,
-        importKaryawan
-    } = useKaryawan();
+  const {
+    karyawans,
+    loading,
+    error: hookError,
+    fetchKaryawans,
+    createKaryawan,
+    updateKaryawan,
+    deleteKaryawan,
+    importKaryawan,
+  } = useKaryawan();
 
-    const [search, setSearch] = useState('');
-    const [isFormOpen, setIsFormOpen] = useState(false);
-    const [editingEmployee, setEditingEmployee] = useState<Karyawan | null>(null);
-    const [deletingId, setDeletingId] = useState<number | null>(null);
-    const [isImportModalOpen, setIsImportModalOpen] = useState(false);
+  const { divisis, fetchDivisis } = useDivisi();
 
-    // Initial Fetch (Divisions & Employees)
-    useEffect(() => {
-        fetchDivisiOptions();
-    }, [fetchDivisiOptions]);
+  const [searchTerm, setSearchTerm] = useState("");
+  const [isModalOpen, setIsModalOpen] = useState(false);
+  const [isImportModalOpen, setIsImportModalOpen] = useState(false);
+  const [editingEmployee, setEditingEmployee] = useState<Karyawan | null>(null);
+  const [deletingId, setDeletingId] = useState<number | null>(null);
 
-    useEffect(() => {
-        const timer = setTimeout(() => {
-            fetchKaryawans({ search });
-        }, 300);
-        return () => clearTimeout(timer);
-    }, [search, fetchKaryawans]);
+  useEffect(() => {
+    fetchDivisis();
+    const timer = setTimeout(() => {
+      fetchKaryawans({ search: searchTerm });
+    }, 500);
+    return () => clearTimeout(timer);
+  }, [searchTerm, fetchKaryawans, fetchDivisis]);
 
-    const handleCreate = () => {
-        setEditingEmployee(null);
-        setIsFormOpen(true);
-    };
+  const handleOpenModal = () => {
+    setEditingEmployee(null);
+    setIsModalOpen(true);
+  };
 
-    const handleEdit = (karyawan: Karyawan) => {
-        setEditingEmployee(karyawan);
-        setIsFormOpen(true);
-    };
+  const handleEditEmployee = (employee: Karyawan) => {
+    setEditingEmployee(employee);
+    setIsModalOpen(true);
+  };
 
-    const handleDeleteClick = (id: number) => {
-        setDeletingId(id);
-    };
+  const handleCreateOrUpdateEmployee = async (data: KaryawanFormData) => {
+    let result;
+    if (editingEmployee) {
+      result = await updateKaryawan(editingEmployee.id, data);
+    } else {
+      result = await createKaryawan(data);
+    }
 
-    const confirmDelete = async () => {
-        if (deletingId) {
-            const result = await deleteKaryawan(deletingId);
-            if (result.success) {
-                toast.success('Karyawan berhasil dihapus');
-                setDeletingId(null);
-            } else {
-                toast.error(result.message || 'Gagal menghapus karyawan');
-            }
-        }
-    };
+    if (result.success) {
+      toast.success(
+        editingEmployee
+          ? "Data karyawan diperbarui"
+          : "Karyawan baru ditambahkan",
+      );
+      setIsModalOpen(false);
+      setEditingEmployee(null);
+    } else {
+      toast.error(result.message || "Gagal menyimpan data karyawan");
+    }
+  };
 
-    const handleFormSubmit = async (data: KaryawanFormData) => {
-        let result;
-        if (editingEmployee) {
-            result = await updateKaryawan(editingEmployee.id, data);
-        } else {
-            result = await createKaryawan(data);
-        }
+  const handleDeleteEmployee = (id: number) => {
+    setDeletingId(id);
+  };
 
-        if (result.success) {
-            toast.success(editingEmployee ? 'Karyawan berhasil diperbarui' : 'Karyawan berhasil ditambahkan');
-            setIsFormOpen(false);
-        } else {
-            toast.error(result.message || 'Gagal menyimpan data karyawan');
-        }
-    };
+  const confirmDelete = async () => {
+    if (deletingId) {
+      const result = await deleteKaryawan(deletingId);
+      if (result.success) {
+        toast.success("Karyawan berhasil dihapus");
+        setDeletingId(null);
+      } else {
+        toast.error(result.message || "Gagal menghapus karyawan");
+      }
+    }
+  };
 
-    return (
-        <div className="space-y-6">
-            <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between space-y-4 sm:space-y-0">
-                <h1 className="text-2xl font-bold text-gray-800">Manajemen Karyawan</h1>
-                <div className="flex gap-2">
-                    <button 
-                         onClick={() => setIsImportModalOpen(true)}
-                        className="flex items-center justify-center rounded-lg bg-green-600 px-4 py-2.5 text-sm font-semibold text-white hover:bg-green-700 shadow-sm transition-all active:scale-95"
-                    >
-                         <Upload className="mr-2 h-4 w-4" /> Import Excel
-                    </button>
-                    <button 
-                        onClick={handleCreate}
-                        className="flex items-center justify-center rounded-lg bg-indigo-600 px-4 py-2.5 text-sm font-semibold text-white hover:bg-indigo-700 shadow-sm transition-all active:scale-95"
-                    >
-                        <Plus className="mr-2 h-4 w-4" /> Tambah Karyawan
-                    </button>
-                </div>
-            </div>
+  const handleImport = async (file: File) => {
+    const result = await importKaryawan(file);
+    if (result.success) {
+      toast.success("Data karyawan berhasil diimport");
+      setIsImportModalOpen(false);
+    } else {
+      toast.error(result.message || "Gagal mengimport data");
+    }
+    return result;
+  };
 
-            {/* Helper Text */}
-            <p className="text-sm text-gray-500 max-w-2xl">
-                Halaman ini digunakan untuk mengelola data seluruh karyawan. Anda dapat menambah, mengubah, atau menonaktifkan akun karyawan sesuai dengan divisi dan jabatan masing-masing.
+  return (
+    <div className="space-y-6">
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+        <div className="flex items-center gap-3">
+          <div className="p-2 bg-primary text-white rounded-lg shadow-lg shadow-primary/30">
+            <Users className="h-6 w-6" />
+          </div>
+          <div>
+            <h1 className="text-2xl font-bold tracking-tight text-foreground">
+              Data Karyawan
+            </h1>
+            <p className="text-sm text-muted-foreground">
+              Kelola data personil sales dan operasional.
             </p>
-
-            {/* Search Bar */}
-            <div className="relative max-w-md">
-                <div className="pointer-events-none absolute inset-y-0 left-0 flex items-center pl-3">
-                    <Search className="h-5 w-5 text-gray-400" />
-                </div>
-                <input
-                    type="text"
-                    className="block w-full rounded-lg border border-gray-300 bg-white py-2.5 pl-10 pr-3 leading-5 placeholder-gray-400 focus:border-indigo-500 focus:placeholder-gray-300 focus:outline-none focus:ring-1 focus:ring-indigo-500 sm:text-sm shadow-sm transition-all"
-                    placeholder="Cari berdasarkan Nama atau No HP..."
-                    value={search}
-                    onChange={(e) => setSearch(e.target.value)}
-                />
-            </div>
-
-            {/* Error Message */}
-            {error && (
-                <div className="rounded-lg bg-red-50 p-4 border border-red-200">
-                    <div className="text-sm text-red-700 font-medium">{error}</div>
-                </div>
-            )}
-
-            {/* Table */}
-            <EmployeeTable 
-                data={karyawans} 
-                loading={loading} 
-                onEdit={handleEdit} 
-                onDelete={handleDeleteClick} 
-            />
-
-            {/* Form Modal */}
-            <Modal
-                isOpen={isFormOpen}
-                onClose={() => setIsFormOpen(false)}
-                title={editingEmployee ? 'Edit Data Karyawan' : 'Tambah Karyawan Baru'}
-                size="lg"
-            >
-                <EmployeeForm 
-                    key={editingEmployee ? editingEmployee.id : 'create'}
-                    initialData={editingEmployee}
-                    divisiOptions={divisiOptions}
-                    onSubmit={handleFormSubmit}
-                    onCancel={() => setIsFormOpen(false)}
-                    loading={loading}
-                />
-            </Modal>
-
-            {/* Delete Confirmation */}
-            <ConfirmModal
-                isOpen={!!deletingId}
-                onClose={() => setDeletingId(null)}
-                onConfirm={confirmDelete}
-                title="Hapus Karyawan"
-                message="Apakah Anda yakin ingin menghapus data karyawan ini? Tindakan ini tidak dapat dibatalkan."
-                type="danger"
-                confirmText="Hapus"
-            />
-
-            {/* Import Modal */}
-            <ImportEmployeeModal
-                isOpen={isImportModalOpen}
-                onClose={() => setIsImportModalOpen(false)}
-                onImport={importKaryawan}
-            />
+          </div>
         </div>
-    );
+      </div>
+
+      {hookError && (
+        <div className="rounded-xl bg-destructive/10 p-4 border border-destructive/20 text-sm text-destructive font-medium">
+          {hookError}
+        </div>
+      )}
+
+      <EmployeeTable
+        data={karyawans}
+        loading={loading}
+        onEdit={handleEditEmployee}
+        onDelete={handleDeleteEmployee}
+        onSearchChange={setSearchTerm}
+        toolbar={
+          <div className="flex items-center gap-2">
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={() => setIsImportModalOpen(true)}
+              className="gap-2 border-primary/20 text-primary hover:bg-primary/5 h-9"
+            >
+              <FileUp className="h-4 w-4" /> Import
+            </Button>
+            <Button onClick={handleOpenModal} className="gap-2 shadow-md h-9">
+              <Plus className="h-4 w-4" /> Tambah Karyawan
+            </Button>
+          </div>
+        }
+      />
+
+      {/* Form Modal */}
+      <Modal
+        isOpen={isModalOpen}
+        onClose={() => setIsModalOpen(false)}
+        title={editingEmployee ? "Edit Data Karyawan" : "Tambah Karyawan Baru"}
+        size="4xl"
+        noPadding
+      >
+        <EmployeeForm
+          initialData={editingEmployee || undefined}
+          divisiOptions={divisis}
+          onSubmit={handleCreateOrUpdateEmployee}
+          onCancel={() => setIsModalOpen(false)}
+          loading={loading}
+        />
+      </Modal>
+
+      {/* Import Modal */}
+      <ImportKaryawanModal
+        isOpen={isImportModalOpen}
+        onClose={() => setIsImportModalOpen(false)}
+        onImport={handleImport}
+      />
+
+      {/* Delete Confirmation */}
+      <ConfirmModal
+        isOpen={!!deletingId}
+        onClose={() => setDeletingId(null)}
+        onConfirm={confirmDelete}
+        title="Hapus Data Karyawan"
+        message="Apakah Anda yakin ingin menghapus data karyawan ini? Tindakan ini tidak dapat dibatalkan."
+        type="danger"
+        confirmText="Hapus"
+      />
+    </div>
+  );
 };
 
 export default KaryawanPage;

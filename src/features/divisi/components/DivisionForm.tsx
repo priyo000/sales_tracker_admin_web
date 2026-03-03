@@ -1,128 +1,197 @@
-import React, { useState } from 'react';
-import { DivisiFormData } from '../types';
+import React, { useState } from "react";
+import { DivisiFormData } from "../types";
+import {
+  Building2,
+  LocateFixed,
+  Shield,
+  LucideIcon,
+  Save,
+  X,
+  User,
+  Users,
+  Globe,
+} from "lucide-react";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
 
 interface DivisionFormProps {
-    initialData?: DivisiFormData;
-    onSubmit: (data: DivisiFormData) => void;
-    onCancel: () => void;
-    loading?: boolean;
+  initialData?: DivisiFormData;
+  onSubmit: (data: DivisiFormData) => void;
+  onCancel: () => void;
+  loading?: boolean;
 }
 
-const DivisionForm: React.FC<DivisionFormProps> = ({ initialData, onSubmit, onCancel, loading }) => {
-    const [namaDivisi, setNamaDivisi] = useState(initialData?.nama_divisi || '');
-    const [radiusToleransi, setRadiusToleransi] = useState(initialData?.radius_toleransi || 100);
-    const [viewScope, setViewScope] = useState<'SELF' | 'DIVISION' | 'COMPANY'>(initialData?.view_scope || 'SELF');
+const FormField = ({
+  label,
+  required,
+  children,
+  icon: Icon,
+}: {
+  label: string;
+  required?: boolean;
+  children: React.ReactNode;
+  icon?: LucideIcon;
+}) => (
+  <div className="space-y-2">
+    <Label className="flex items-center gap-2 text-[11px] font-black uppercase tracking-widest text-muted-foreground/80">
+      {Icon && <Icon className="h-3 w-3 text-primary" />}
+      {label}
+      {required && <span className="text-destructive ml-0.5">*</span>}
+    </Label>
+    {children}
+  </div>
+);
 
-    const handleSubmit = (e: React.FormEvent) => {
-        e.preventDefault();
-        onSubmit({ 
-            nama_divisi: namaDivisi,
-            radius_toleransi: radiusToleransi,
-            view_scope: viewScope
-        });
-    };
+const DivisionForm: React.FC<DivisionFormProps> = ({
+  initialData,
+  onSubmit,
+  onCancel,
+  loading,
+}) => {
+  const [namaDivisi, setNamaDivisi] = useState(initialData?.nama_divisi || "");
+  const [radiusToleransi, setRadiusToleransi] = useState(
+    initialData?.radius_toleransi || 100,
+  );
+  const [viewScope, setViewScope] = useState<"SELF" | "DIVISION" | "COMPANY">(
+    initialData?.view_scope || "SELF",
+  );
 
-    return (
-        <form onSubmit={handleSubmit} className="space-y-4">
-            <div>
-                <label className="block text-sm font-semibold text-gray-700 mb-1">Nama Divisi</label>
-                <input
-                    type="text"
-                    required
-                    className="block w-full rounded-lg border border-gray-300 p-2.5 shadow-sm focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500 sm:text-sm transition-all"
-                    placeholder="Contoh: Sales & Marketing, Gudang, Logistik..."
-                    value={namaDivisi}
-                    onChange={(e) => setNamaDivisi(e.target.value)}
-                />
+  const handleSubmit = (e: React.FormEvent) => {
+    e.preventDefault();
+    onSubmit({
+      nama_divisi: namaDivisi,
+      radius_toleransi: radiusToleransi,
+      view_scope: viewScope,
+    });
+  };
+
+  return (
+    <form onSubmit={handleSubmit} className="space-y-8 py-2">
+      <div className="space-y-6">
+        <FormField label="Nama Divisi" icon={Building2} required>
+          <Input
+            type="text"
+            required
+            className="h-12 bg-card border-border/50 focus-visible:ring-primary shadow-sm font-bold"
+            placeholder="Contoh: Sales & Marketing, Gudang, Logistik..."
+            value={namaDivisi}
+            onChange={(e) => setNamaDivisi(e.target.value)}
+          />
+        </FormField>
+
+        <FormField label="Radiu Toleransi Check-in" icon={LocateFixed} required>
+          <div className="relative">
+            <Input
+              type="number"
+              min="0"
+              required
+              className="h-12 bg-card border-border/50 focus-visible:ring-primary shadow-sm font-bold pr-16"
+              placeholder="Contoh: 100"
+              value={radiusToleransi}
+              onChange={(e) => setRadiusToleransi(Number(e.target.value))}
+            />
+            <div className="absolute inset-y-0 right-0 flex items-center pr-4 pointer-events-none">
+              <span className="text-[10px] font-black uppercase text-muted-foreground">
+                meter
+              </span>
             </div>
+          </div>
+          <p className="text-[10px] text-muted-foreground font-medium italic mt-1 uppercase tracking-tight">
+            * Maksimal jarak yang diperbolehkan saat sales check-in di lokasi
+            toko.
+          </p>
+        </FormField>
 
-            <div>
-                <label className="block text-sm font-semibold text-gray-700 mb-1">Jarak Toleransi Check-in (Meter)</label>
-                <div className="relative">
-                    <input
-                        type="number"
-                        min="0"
-                        className="block w-full rounded-lg border border-gray-300 p-2.5 shadow-sm focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500 sm:text-sm transition-all pr-12"
-                        placeholder="Contoh: 100"
-                        value={radiusToleransi}
-                        onChange={(e) => setRadiusToleransi(Number(e.target.value))}
-                    />
-                    <div className="pointer-events-none absolute inset-y-0 right-0 flex items-center pr-3">
-                        <span className="text-gray-500 sm:text-sm">meter</span>
-                    </div>
-                </div>
-                <p className="mt-1 text-xs text-gray-500">Maksimal jarak yang diperbolehkan saat sales check-in di toko.</p>
-            </div>
-
-            <div>
-                <label className="block text-sm font-semibold text-gray-700 mb-1">Jangkauan Data Pelanggan</label>
-                <div className="grid grid-cols-1 gap-2">
-                    <label className={`flex items-start p-3 border rounded-lg cursor-pointer transition-all ${viewScope === 'SELF' ? 'bg-indigo-50 border-indigo-500' : 'hover:bg-gray-50 border-gray-200'}`}>
-                        <input
-                            type="radio"
-                            name="view_scope"
-                            value="SELF"
-                            checked={viewScope === 'SELF'}
-                            onChange={() => setViewScope('SELF')}
-                            className="mt-1 h-4 w-4 text-indigo-600 border-gray-300 focus:ring-indigo-500"
-                        />
-                        <div className="ml-3">
-                            <span className="block text-sm font-medium text-gray-900">Hanya Diri Sendiri</span>
-                            <span className="block text-xs text-gray-500">Sales hanya dapat melihat pelanggan yang dibuat oleh dirinya sendiri.</span>
-                        </div>
-                    </label>
-
-                    <label className={`flex items-start p-3 border rounded-lg cursor-pointer transition-all ${viewScope === 'DIVISION' ? 'bg-indigo-50 border-indigo-500' : 'hover:bg-gray-50 border-gray-200'}`}>
-                        <input
-                            type="radio"
-                            name="view_scope"
-                            value="DIVISION"
-                            checked={viewScope === 'DIVISION'}
-                            onChange={() => setViewScope('DIVISION')}
-                            className="mt-1 h-4 w-4 text-indigo-600 border-gray-300 focus:ring-indigo-500"
-                        />
-                        <div className="ml-3">
-                            <span className="block text-sm font-medium text-gray-900">Satu Divisi</span>
-                            <span className="block text-xs text-gray-500">Sales dapat melihat pelanggan milik semua sales dalam satu divisi yang sama.</span>
-                        </div>
-                    </label>
-
-                    <label className={`flex items-start p-3 border rounded-lg cursor-pointer transition-all ${viewScope === 'COMPANY' ? 'bg-indigo-50 border-indigo-500' : 'hover:bg-gray-50 border-gray-200'}`}>
-                        <input
-                            type="radio"
-                            name="view_scope"
-                            value="COMPANY"
-                            checked={viewScope === 'COMPANY'}
-                            onChange={() => setViewScope('COMPANY')}
-                            className="mt-1 h-4 w-4 text-indigo-600 border-gray-300 focus:ring-indigo-500"
-                        />
-                        <div className="ml-3">
-                            <span className="block text-sm font-medium text-gray-900">Satu Perusahaan</span>
-                            <span className="block text-xs text-gray-500">Sales dapat melihat semua data pelanggan dalam perusahaan ini.</span>
-                        </div>
-                    </label>
-                </div>
-            </div>
-
-            <div className="flex justify-end space-x-3 pt-6 border-t mt-6">
-                <button
-                    type="button"
-                    onClick={onCancel}
-                    className="rounded-lg border border-gray-300 bg-white px-4 py-2 text-sm font-semibold text-gray-700 hover:bg-gray-50 focus:outline-none transition-colors"
-                    disabled={loading}
+        <FormField
+          label="Jangkauan Data Pelanggan (View Scope)"
+          icon={Shield}
+          required
+        >
+          <div className="grid grid-cols-1 gap-3">
+            {[
+              {
+                id: "SELF",
+                label: "Hanya Diri Sendiri",
+                desc: "Sales hanya melihat pelanggan miliknya sendiri.",
+                icon: User,
+              },
+              {
+                id: "DIVISION",
+                label: "Satu Divisi",
+                desc: "Sales melihat semua pelanggan dalam satu divisi.",
+                icon: Users,
+              },
+              {
+                id: "COMPANY",
+                label: "Satu Perusahaan",
+                desc: "Sales melihat semua data pelanggan perusahaan.",
+                icon: Globe,
+              },
+            ].map((opt) => (
+              <button
+                key={opt.id}
+                type="button"
+                onClick={() =>
+                  setViewScope(opt.id as "SELF" | "DIVISION" | "COMPANY")
+                }
+                className={`flex items-start gap-4 p-4 rounded-2xl border-2 transition-all text-left ${
+                  viewScope === opt.id
+                    ? "border-primary bg-primary/5 shadow-md"
+                    : "border-border/50 bg-card hover:bg-muted/50"
+                }`}
+              >
+                <div
+                  className={`p-2.5 rounded-xl ${viewScope === opt.id ? "bg-primary text-white" : "bg-muted text-muted-foreground"}`}
                 >
-                    Batal
-                </button>
-                <button
-                    type="submit"
-                    className="flex justify-center rounded-lg border border-transparent bg-indigo-600 px-6 py-2 text-sm font-semibold text-white shadow-sm hover:bg-indigo-700 focus:outline-none disabled:opacity-50 transition-all active:scale-95"
-                    disabled={loading}
-                >
-                    {loading ? 'Menyimpan...' : (initialData ? 'Simpan Perubahan' : 'Tambah Divisi')}
-                </button>
-            </div>
-        </form>
-    );
+                  <opt.icon className="h-4 w-4" />
+                </div>
+                <div>
+                  <span
+                    className={`block text-xs font-black uppercase tracking-tight ${viewScope === opt.id ? "text-primary" : "text-foreground"}`}
+                  >
+                    {opt.label}
+                  </span>
+                  <span className="block text-[10px] text-muted-foreground font-medium mt-0.5">
+                    {opt.desc}
+                  </span>
+                </div>
+              </button>
+            ))}
+          </div>
+        </FormField>
+      </div>
+
+      <div className="flex items-center justify-end gap-3 pt-6 border-t font-bold">
+        <Button
+          type="button"
+          variant="ghost"
+          onClick={onCancel}
+          className="h-12 px-8 text-xs font-black uppercase tracking-widest text-muted-foreground hover:text-foreground"
+          disabled={loading}
+        >
+          <X className="mr-2 h-4 w-4" /> Batal
+        </Button>
+        <Button
+          type="submit"
+          disabled={loading}
+          className="h-12 px-10 text-xs font-black uppercase tracking-widest shadow-lg shadow-primary/20 bg-primary hover:bg-primary/90 text-white"
+        >
+          {loading ? (
+            <span className="flex items-center gap-2">
+              <div className="h-4 w-4 animate-spin rounded-full border-2 border-white border-t-transparent" />
+              Menyimpan...
+            </span>
+          ) : (
+            <span className="flex items-center gap-2">
+              <Save className="h-4 w-4" />
+              {initialData ? "Simpan Perubahan" : "Tambah Divisi Sekarang"}
+            </span>
+          )}
+        </Button>
+      </div>
+    </form>
+  );
 };
 
 export default DivisionForm;

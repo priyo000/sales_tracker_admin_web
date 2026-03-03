@@ -1,15 +1,25 @@
-import React, { useEffect, useState } from "react";
-import { Search } from "lucide-react";
-import { cn } from "@/lib/utils";
-import toast from "react-hot-toast";
+import React, { useEffect, useState, useMemo } from "react";
+import {
+  ShoppingCart,
+  Calendar as CalendarIcon,
+  Download,
+  SlidersHorizontal,
+} from "lucide-react";
 import { usePesanan } from "../features/pesanan/hooks/usePesanan";
 import OrderTable from "../features/pesanan/components/OrderTable";
 import OrderDetail from "../features/pesanan/components/OrderDetail";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
+import { Input } from "@/components/ui/input";
+import { Button } from "@/components/ui/button";
 import { Modal } from "../components/ui/Modal";
-import { Pesanan, UpdatePesananData } from "../features/pesanan/types";
-import { FileDown, Calendar, Filter } from "lucide-react";
-import { useAuth } from "../hooks/useAuth";
-import { useDivisi } from "../features/divisi/hooks/useDivisi";
+import api from "@/services/api";
+import toast from "react-hot-toast";
 
 const PesananPage: React.FC = () => {
   const {
@@ -17,242 +27,203 @@ const PesananPage: React.FC = () => {
     loading,
     error,
     fetchPesanans,
-    getPesananDetail,
     updateStatus,
     updatePesanan,
-    exportPesanan,
   } = usePesanan();
-
-  const { user } = useAuth();
-  const { divisis, fetchDivisis } = useDivisi();
-
-  const [search, setSearch] = useState("");
-  const [statusFilter, setStatusFilter] = useState("");
-  const [startDate, setStartDate] = useState(
-    new Date().toISOString().split("T")[0],
-  );
-  const [endDate, setEndDate] = useState(
-    new Date().toISOString().split("T")[0],
-  );
-  const [idDivisi, setIdDivisi] = useState("");
-  const [selectedPesanan, setSelectedPesanan] = useState<Pesanan | null>(null);
-  const [isDetailOpen, setIsDetailOpen] = useState(false);
+  const [searchTerm, setSearchTerm] = useState("");
+  const [statusFilter, setStatusFilter] = useState("all");
+  const [selectedOrderId, setSelectedOrderId] = useState<number | null>(null);
   const [isExporting, setIsExporting] = useState(false);
 
-  const isHighLevelAdmin =
-    user?.peran === "super_admin" || user?.peran === "admin_perusahaan";
+  const [startDate, setStartDate] = useState("");
+  const [endDate, setEndDate] = useState("");
 
   useEffect(() => {
-    if (isHighLevelAdmin) {
-      fetchDivisis();
-    }
-  }, [isHighLevelAdmin, fetchDivisis]);
+    fetchPesanans();
+  }, [fetchPesanans]);
 
-  // Initial Fetch & Search Debounce
-  useEffect(() => {
-    const timer = setTimeout(() => {
-      fetchPesanans({
-        search,
-        status: statusFilter,
-        start_date: startDate,
-        end_date: endDate,
-        id_divisi: idDivisi || undefined,
-      });
-    }, 300);
-    return () => clearTimeout(timer);
-  }, [search, statusFilter, startDate, endDate, idDivisi, fetchPesanans]);
+  const filteredOrders = useMemo(() => {
+    return pesanans.filter((order) => {
+      const matchesSearch =
+        order.no_pesanan.toLowerCase().includes(searchTerm.toLowerCase()) ||
+        order.pelanggan?.nama_toko
+          .toLowerCase()
+          .includes(searchTerm.toLowerCase()) ||
+        order.karyawan?.nama_lengkap
+          .toLowerCase()
+          .includes(searchTerm.toLowerCase());
 
-  const handleViewDetail = async (id: number) => {
-    const result = await getPesananDetail(id);
-    if (result.success && result.data) {
-      setSelectedPesanan(result.data);
-      setIsDetailOpen(true);
-    } else {
-      toast.error(result.message || "Gagal memuat detail pesanan");
-    }
-  };
+      const matchesStatus =
+        statusFilter === "all" ||
+        order.status.toLowerCase() === statusFilter.toLowerCase();
 
-  const handleUpdatePesanan = async (id: number, data: UpdatePesananData) => {
-    const result = await updatePesanan(id, data);
-    if (result.success) {
-      toast.success("Pesanan berhasil diperbarui");
-      if (selectedPesanan && selectedPesanan.id === id) {
-        // Fetch fresh detail to show updated items
-        const fresh = await getPesananDetail(id);
-        if (fresh.success) setSelectedPesanan(fresh.data || null);
+      let matchesDate = true;
+      if (startDate || endDate) {
+        const orderDate = new Date(order.tanggal_transaksi)
+          .toISOString()
+          .split("T")[0];
+        if (startDate && orderDate < startDate) matchesDate = false;
+        if (endDate && orderDate > endDate) matchesDate = false;
       }
-    } else {
-      toast.error(result.message || "Gagal memperbarui pesanan");
-    }
-    return result;
-  };
 
-  const handleStatusChange = async (id: number, newStatus: string) => {
-    const result = await updateStatus(id, newStatus);
-    if (result.success) {
-      toast.success("Status pesanan berhasil diperbarui");
-      if (selectedPesanan && selectedPesanan.id === id) {
-        setSelectedPesanan({ ...selectedPesanan, status: newStatus });
-      }
-    } else {
-      toast.error(result.message || "Gagal mengubah status");
-    }
-  };
+      return matchesSearch && matchesStatus && matchesDate;
+    });
+  }, [pesanans, searchTerm, statusFilter, startDate, endDate]);
 
-  const handleCloseDetail = () => {
-    setIsDetailOpen(false);
-    setSelectedPesanan(null);
-  };
+  const selectedOrder = useMemo(
+    () => pesanans.find((p) => p.id === selectedOrderId),
+    [pesanans, selectedOrderId],
+  );
 
   const handleExport = async () => {
     setIsExporting(true);
     try {
-      await exportPesanan({
-        start_date: startDate,
-        end_date: endDate,
-        status: statusFilter || undefined,
-        id_divisi: idDivisi || undefined,
+      const response = await api.get("/pesanan/export", {
+        params: { start_date: startDate, end_date: endDate },
+        responseType: "blob",
       });
+      const url = window.URL.createObjectURL(new Blob([response.data]));
+      const link = document.createElement("a");
+      link.href = url;
+      link.setAttribute(
+        "download",
+        `Laporan_Pesanan_${new Date().toISOString().split("T")[0]}.xlsx`,
+      );
+      document.body.appendChild(link);
+      link.click();
+      link.remove();
       toast.success("Laporan berhasil diunduh");
     } catch {
-      toast.error("Gagal mengeksport laporan");
+      toast.error("Gagal mengeksport data pesanan.");
     } finally {
       setIsExporting(false);
     }
   };
 
+  const handleStatusChange = async (id: number, status: string) => {
+    await updateStatus(id, status);
+  };
+
   return (
     <div className="space-y-6">
-      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between space-y-4 sm:space-y-0">
-        <h1 className="text-2xl font-bold text-gray-800">Daftar Pesanan</h1>
-        <div className="flex space-x-2 overflow-x-auto pb-2 sm:pb-0">
-          {["", "PENDING", "PROSES", "DIKIRIM", "SUKSES", "BATAL"].map((s) => (
-            <button
-              key={s || "ALL"}
-              onClick={() => setStatusFilter(s)}
-              className={cn(
-                "rounded-md px-3 py-1.5 text-xs font-medium uppercase transition-colors border whitespace-nowrap",
-                statusFilter === s
-                  ? "bg-indigo-50 border-indigo-200 text-indigo-700 shadow-sm"
-                  : "bg-white border-gray-200 text-gray-600 hover:bg-gray-50",
-              )}
-            >
-              {s || "Semua"}
-            </button>
-          ))}
-        </div>
-      </div>
-
-      {/* Helper Text */}
-      <p className="text-sm text-gray-500">
-        Pantau dan kelola pesanan masuk dari sales lapangan secara real-time.
-      </p>
-
-      {/* Filters Section */}
-      <div className="bg-white p-4 rounded-xl border border-gray-200 shadow-sm space-y-4">
-        <div className="flex flex-wrap items-end gap-4">
-          <div className="flex-1 min-w-[240px]">
-            <label className="flex items-center text-xs font-semibold text-gray-500 uppercase mb-1.5">
-              <Search className="w-3 h-3 mr-1" /> Cari Pesanan
-            </label>
-            <div className="relative">
-              <input
-                type="text"
-                className="block w-full rounded-lg border-gray-300 bg-gray-50/50 py-2.5 pl-3 pr-10 text-sm focus:border-indigo-500 focus:ring-indigo-500 transition-all"
-                placeholder="Cari No Pesanan / Toko..."
-                value={search}
-                onChange={(e) => setSearch(e.target.value)}
-              />
-            </div>
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+        <div className="flex items-center gap-3">
+          <div className="p-2 bg-primary text-white rounded-lg shadow-lg shadow-primary/30">
+            <ShoppingCart className="h-6 w-6" />
           </div>
-
-          <div className="w-full sm:w-auto">
-            <label className="flex items-center text-xs font-semibold text-gray-500 uppercase mb-1.5">
-              <Calendar className="w-3 h-3 mr-1" /> Mulai
-            </label>
-            <input
-              type="date"
-              className="block w-full rounded-lg border-gray-300 bg-gray-50/50 py-2 text-sm focus:border-indigo-500 focus:ring-indigo-500"
-              value={startDate}
-              onChange={(e) => setStartDate(e.target.value)}
-            />
-          </div>
-
-          <div className="w-full sm:w-auto">
-            <label className="flex items-center text-xs font-semibold text-gray-500 uppercase mb-1.5">
-              <Calendar className="w-3 h-3 mr-1" /> Selesai
-            </label>
-            <input
-              type="date"
-              className="block w-full rounded-lg border-gray-300 bg-gray-50/50 py-2 text-sm focus:border-indigo-500 focus:ring-indigo-500"
-              value={endDate}
-              onChange={(e) => setEndDate(e.target.value)}
-            />
-          </div>
-
-          {isHighLevelAdmin && (
-            <div className="w-full sm:w-48">
-              <label className="flex items-center text-xs font-semibold text-gray-500 uppercase mb-1.5">
-                <Filter className="w-3 h-3 mr-1" /> Divisi
-              </label>
-              <select
-                className="block w-full rounded-lg border-gray-300 bg-gray-50/50 py-2 text-sm focus:border-indigo-500 focus:ring-indigo-500"
-                value={idDivisi}
-                onChange={(e) => setIdDivisi(e.target.value)}
-              >
-                <option value="">Semua Divisi</option>
-                {divisis.map((d) => (
-                  <option key={d.id} value={d.id}>
-                    {d.nama_divisi}
-                  </option>
-                ))}
-              </select>
-            </div>
-          )}
-
-          <div className="w-full sm:w-auto">
-            <button
-              onClick={handleExport}
-              disabled={isExporting}
-              className="flex items-center justify-center w-full sm:w-auto px-6 py-2.5 bg-green-600 hover:bg-green-700 text-white text-sm font-semibold rounded-lg shadow-sm transition-all active:scale-95 disabled:opacity-50"
-            >
-              <FileDown className="w-4 h-4 mr-2" />
-              {isExporting ? "Mengekspor..." : "Export Excel"}
-            </button>
+          <div>
+            <h1 className="text-2xl font-bold tracking-tight text-foreground">
+              Daftar Pesanan
+            </h1>
+            <p className="text-sm text-muted-foreground mt-1">
+              Monitor semua transaksi pesanan dari sales.
+            </p>
           </div>
         </div>
       </div>
 
-      {/* Error Message */}
       {error && (
-        <div className="rounded-md bg-red-50 p-4 border border-red-200">
-          <div className="text-sm text-red-700">{error}</div>
+        <div className="rounded-xl bg-destructive/10 p-4 border border-destructive/20 text-sm text-destructive font-medium">
+          {error}
         </div>
       )}
 
-      {/* Table */}
       <OrderTable
-        data={pesanans}
+        data={filteredOrders}
         loading={loading}
-        onViewDetail={handleViewDetail}
+        onViewDetail={(id) => setSelectedOrderId(id)}
+        onSearchChange={setSearchTerm}
+        toolbar={
+          <div className="flex flex-wrap items-center gap-3">
+            <div className="w-[180px]">
+              <Select value={statusFilter} onValueChange={setStatusFilter}>
+                <SelectTrigger
+                  size="sm"
+                  className="w-full bg-background shadow-sm h-9"
+                >
+                  <div className="flex items-center gap-2">
+                    <SlidersHorizontal className="h-3.5 w-3.5 text-muted-foreground" />
+                    <SelectValue placeholder="Status" />
+                  </div>
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="all">Semua Status</SelectItem>
+                  <SelectItem value="pending">Pending</SelectItem>
+                  <SelectItem value="proses">Proses</SelectItem>
+                  <SelectItem value="dikirim">Dikirim</SelectItem>
+                  <SelectItem value="sukses">Sukses</SelectItem>
+                  <SelectItem value="batal">Batal</SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
+
+            <div className="flex items-center gap-1.5 bg-background px-3 rounded-lg border shadow-sm h-9">
+              <div className="flex items-center gap-2">
+                <CalendarIcon className="h-3.5 w-3.5 text-muted-foreground" />
+                <Input
+                  type="date"
+                  className="h-full w-32 border-none bg-transparent p-0 focus-visible:ring-0 shadow-none text-xs font-medium"
+                  value={startDate}
+                  onChange={(e) => setStartDate(e.target.value)}
+                />
+                <span className="text-muted-foreground opacity-30 px-1">→</span>
+                <Input
+                  type="date"
+                  className="h-full w-32 border-none bg-transparent p-0 focus-visible:ring-0 shadow-none text-xs font-medium"
+                  value={endDate}
+                  onChange={(e) => setEndDate(e.target.value)}
+                />
+              </div>
+            </div>
+
+            {(searchTerm || statusFilter !== "all" || startDate || endDate) && (
+              <Button
+                variant="ghost"
+                size="sm"
+                className="text-destructive h-9 px-3 hover:bg-destructive/10 text-xs font-medium"
+                onClick={() => {
+                  setSearchTerm("");
+                  setStatusFilter("all");
+                  setStartDate("");
+                  setEndDate("");
+                }}
+              >
+                Reset Filter
+              </Button>
+            )}
+
+            <div className="ml-auto flex items-center gap-2">
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={handleExport}
+                disabled={isExporting}
+                className="gap-2 border-primary/20 text-primary hover:bg-primary/5 shadow-sm h-9"
+              >
+                <Download className="h-4 w-4" />{" "}
+                {isExporting ? "Memproses..." : "Export Excel"}
+              </Button>
+            </div>
+          </div>
+        }
       />
 
       {/* Detail Modal */}
-      <Modal
-        isOpen={isDetailOpen && !!selectedPesanan}
-        onClose={handleCloseDetail}
-        title={`Detail Pesanan: ${selectedPesanan?.no_pesanan || ""}`}
-        size="4xl"
-      >
-        {selectedPesanan && (
+      {selectedOrder && (
+        <Modal
+          isOpen={!!selectedOrderId}
+          onClose={() => setSelectedOrderId(null)}
+          title={`Detail Pesanan: ${selectedOrder.no_pesanan}`}
+          size="5xl"
+        >
           <OrderDetail
-            pesanan={selectedPesanan}
+            pesanan={selectedOrder}
             onStatusChange={handleStatusChange}
-            onUpdatePesanan={handleUpdatePesanan}
-            onClose={handleCloseDetail}
+            onUpdatePesanan={updatePesanan}
+            onClose={() => setSelectedOrderId(null)}
           />
-        )}
-      </Modal>
+        </Modal>
+      )}
     </div>
   );
 };

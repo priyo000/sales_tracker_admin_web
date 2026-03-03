@@ -1,110 +1,140 @@
-import React from 'react';
-import { Eye, Clock } from 'lucide-react';
-import { Pesanan } from '../types';
+import React from "react";
+import { Eye, Clock } from "lucide-react";
+import { Pesanan } from "../types";
+import { DataTable, type ColumnDef } from "@/components/ui/data-table";
+import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
 
 interface OrderTableProps {
-    data: Pesanan[];
-    loading: boolean;
-    onViewDetail: (id: number) => void;
+  data: Pesanan[];
+  loading: boolean;
+  onViewDetail: (id: number) => void;
+  toolbar?: React.ReactNode;
+  onSearchChange?: (value: string) => void;
 }
 
-const getStatusColor = (status: string) => {
-    switch (status.toLowerCase()) {
-        case 'sukses': return 'bg-green-100 text-green-800';
-        case 'pending': return 'bg-yellow-100 text-yellow-800';
-        case 'batal': return 'bg-red-100 text-red-800';
-        case 'proses': return 'bg-blue-100 text-blue-800';
-        case 'dikirim': return 'bg-indigo-100 text-indigo-800';
-        default: return 'bg-gray-100 text-gray-800';
-    }
+const STATUS_VARIANT: Record<
+  string,
+  "success" | "warning" | "destructive" | "info" | "secondary"
+> = {
+  sukses: "success",
+  pending: "warning",
+  batal: "destructive",
+  proses: "info",
+  dikirim: "secondary",
 };
 
-const OrderTable: React.FC<OrderTableProps> = ({ data, loading, onViewDetail }) => {
-    return (
-        <div className="overflow-hidden rounded-lg bg-white shadow ring-1 ring-black/5">
-            <table className="min-w-full divide-y divide-gray-200">
-                <thead className="bg-gray-50">
-                    <tr>
-                        <th className="px-6 py-3 text-left text-xs font-medium uppercase tracking-wider text-gray-500">
-                            Pesanan
-                        </th>
-                        <th className="px-6 py-3 text-left text-xs font-medium uppercase tracking-wider text-gray-500">
-                            Toko & Sales
-                        </th>
-                        <th className="px-6 py-3 text-center text-xs font-medium uppercase tracking-wider text-gray-500">
-                            Items
-                        </th>
-                        <th className="px-6 py-3 text-right text-xs font-medium uppercase tracking-wider text-gray-500">
-                            Total
-                        </th>
-                        <th className="px-6 py-3 text-center text-xs font-medium uppercase tracking-wider text-gray-500">
-                            Status
-                        </th>
-                        <th className="px-6 py-3 text-right text-xs font-medium uppercase tracking-wider text-gray-500">
-                            Aksi
-                        </th>
-                    </tr>
-                </thead>
-                <tbody className="divide-y divide-gray-200 bg-white">
-                    {loading ? (
-                        <tr>
-                            <td colSpan={5} className="px-6 py-12 text-center text-sm text-gray-500">
-                                <div className="flex flex-col items-center justify-center">
-                                    <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-indigo-600 mb-2"></div>
-                                    Memuat pesanan...
-                                </div>
-                            </td>
-                        </tr>
-                    ) : data.length === 0 ? (
-                        <tr>
-                            <td colSpan={5} className="px-6 py-12 text-center text-sm text-gray-500">
-                                Belum ada pesanan.
-                            </td>
-                        </tr>
-                    ) : (
-                        data.map((p) => (
-                            <tr key={p.id} className="hover:bg-gray-50 transition-colors">
-                                <td className="px-6 py-4">
-                                    <div className="text-sm font-bold text-gray-900">{p.no_pesanan}</div>
-                                    <div className="flex items-center text-xs text-gray-500 mt-1">
-                                        <Clock className="mr-1 h-3 w-3" /> {new Date(p.tanggal_transaksi).toLocaleString('id-ID', { day: 'numeric', month: 'long', year: 'numeric', hour: '2-digit', minute: '2-digit' })}
-                                    </div>
-                                </td>
-                                <td className="px-6 py-4">
-                                    <div className="text-sm font-medium text-gray-900">{p.pelanggan?.nama_toko || 'N/A'}</div>
-                                    <div className="text-xs text-gray-500 mt-0.5">{p.karyawan?.nama_lengkap || 'Unknown Sales'}</div>
-                                </td>
-                                <td className="px-6 py-4 text-center">
-                                    <span className="inline-flex items-center rounded-md bg-gray-50 px-2 py-1 text-xs font-medium text-gray-600 ring-1 ring-inset ring-gray-500/10">
-                                        {p.items?.length || 0}
-                                    </span>
-                                </td>
-                                <td className="px-6 py-4 text-right whitespace-nowrap">
-                                    <div className="text-sm font-bold text-gray-900">
-                                        Rp {(Number(p.total_tagihan) || 0).toLocaleString('id-ID')}
-                                    </div>
-                                </td>
-                                <td className="px-6 py-4 text-center whitespace-nowrap">
-                                    <span className={`inline-flex rounded-full px-2.5 py-0.5 text-xs font-medium ${getStatusColor(p.status || '')}`}>
-                                        {p.status}
-                                    </span>
-                                </td>
-                                <td className="px-6 py-4 text-right whitespace-nowrap">
-                                    <button 
-                                        onClick={() => onViewDetail(p.id)}
-                                        className="text-indigo-600 hover:text-indigo-900 p-1 hover:bg-indigo-50 rounded transition-colors"
-                                        title="Lihat Detail"
-                                    >
-                                        <Eye className="h-5 w-5" />
-                                    </button>
-                                </td>
-                            </tr>
-                        ))
-                    )}
-                </tbody>
-            </table>
+const OrderTable: React.FC<OrderTableProps> = ({
+  data,
+  loading,
+  onViewDetail,
+  toolbar,
+  onSearchChange,
+}) => {
+  const columns: ColumnDef<Pesanan>[] = [
+    {
+      key: "no_pesanan",
+      header: "No. Pesanan",
+      sortable: true,
+      cell: (row) => (
+        <div>
+          <div className="font-semibold text-foreground text-sm">
+            {row.no_pesanan}
+          </div>
+          <div className="flex items-center gap-1 text-xs text-muted-foreground mt-0.5">
+            <Clock className="h-3 w-3" />
+            {new Date(row.tanggal_transaksi).toLocaleDateString("id-ID", {
+              day: "numeric",
+              month: "short",
+              year: "numeric",
+            })}
+          </div>
         </div>
-    );
+      ),
+    },
+    {
+      key: "pelanggan.nama_toko",
+      header: "Toko",
+      sortable: true,
+      cell: (row) => (
+        <div>
+          <div className="font-medium text-sm">
+            {row.pelanggan?.nama_toko || "N/A"}
+          </div>
+          <div className="text-xs text-muted-foreground font-mono">
+            {row.pelanggan?.kode_pelanggan || ""}
+          </div>
+        </div>
+      ),
+    },
+    {
+      key: "karyawan.nama_lengkap",
+      header: "Sales",
+      sortable: true,
+      cell: (row) => (
+        <div className="text-sm">{row.karyawan?.nama_lengkap || "—"}</div>
+      ),
+    },
+    {
+      key: "items",
+      header: "Items",
+      cell: (row) => (
+        <Badge variant="secondary" className="tabular-nums">
+          {row.items?.length ?? 0} item
+        </Badge>
+      ),
+    },
+    {
+      key: "total_tagihan",
+      header: "Total",
+      sortable: true,
+      className: "text-right",
+      cell: (row) => (
+        <div className="font-semibold text-sm text-right tabular-nums">
+          Rp {(Number(row.total_tagihan) || 0).toLocaleString("id-ID")}
+        </div>
+      ),
+    },
+    {
+      key: "status",
+      header: "Status",
+      sortable: true,
+      cell: (row) => (
+        <Badge
+          variant={STATUS_VARIANT[row.status?.toLowerCase() ?? ""] ?? "outline"}
+        >
+          {row.status}
+        </Badge>
+      ),
+    },
+    {
+      key: "id",
+      header: "",
+      cell: (row) => (
+        <Button
+          variant="ghost"
+          size="sm"
+          onClick={() => onViewDetail(row.id)}
+          className="h-8 w-8 p-0"
+        >
+          <Eye className="h-4 w-4" />
+        </Button>
+      ),
+    },
+  ];
+
+  return (
+    <DataTable
+      data={data}
+      columns={columns}
+      loading={loading}
+      searchPlaceholder="Cari no pesanan / toko..."
+      rowKey={(r) => r.id}
+      emptyMessage="Belum ada pesanan"
+      toolbar={toolbar}
+      onSearchChange={onSearchChange}
+    />
+  );
 };
 
 export default OrderTable;
