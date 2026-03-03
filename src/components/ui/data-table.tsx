@@ -46,6 +46,7 @@ interface DataTableProps<T> {
   emptyMessage?: string;
   toolbar?: React.ReactNode;
   onSearchChange?: (value: string) => void;
+  onSortChange?: (key: string, direction: SortDirection) => void;
   // Server-side pagination (optional)
   serverPagination?: {
     total: number;
@@ -77,6 +78,7 @@ export function DataTable<T>({
   emptyMessage = "Tidak ada data",
   toolbar,
   onSearchChange,
+  onSortChange,
   serverPagination,
 }: DataTableProps<T>) {
   const [sortKey, setSortKey] = useState<string | null>(null);
@@ -88,23 +90,31 @@ export function DataTable<T>({
   );
 
   const handleSort = (key: string) => {
+    let newDir: SortDirection = "asc";
+    let newKey: string | null = key;
+
     if (sortKey === key) {
-      setSortDir((d) => (d === "asc" ? "desc" : d === "desc" ? null : "asc"));
-      if (sortDir === "desc") setSortKey(null);
-    } else {
-      setSortKey(key);
-      setSortDir("asc");
+      if (sortDir === "asc") newDir = "desc";
+      else if (sortDir === "desc") {
+        newDir = null;
+        newKey = null;
+      }
+    }
+
+    setSortKey(newKey);
+    setSortDir(newDir);
+
+    if (onSortChange) {
+      onSortChange(newKey || "", newDir);
     }
   };
 
   // Client-side filter + sort + paginate
   const processed = useMemo(() => {
-    if (serverPagination) return data; // Server handles it
-
     let result = [...data];
 
-    // Global search
-    if (globalSearch && search.trim()) {
+    // Global search (ONLY if NOT handled by server)
+    if (!onSearchChange && globalSearch && search.trim()) {
       const q = search.toLowerCase();
       result = result.filter((row) =>
         columns.some((col) => {
@@ -116,20 +126,44 @@ export function DataTable<T>({
       );
     }
 
-    // Sort
+    // Sort (Always apply locally as a fallback)
     if (sortKey && sortDir) {
       result.sort((a, b) => {
         const va = getValue(a, sortKey);
         const vb = getValue(b, sortKey);
+
+        // Numeric sort if both are numbers or numeric strings
+        if (
+          !isNaN(Number(va)) &&
+          !isNaN(Number(vb)) &&
+          va !== "" &&
+          vb !== "" &&
+          va !== null &&
+          vb !== null
+        ) {
+          return sortDir === "asc"
+            ? Number(va) - Number(vb)
+            : Number(vb) - Number(va);
+        }
+
         const cmp = String(va ?? "").localeCompare(String(vb ?? ""), "id", {
           numeric: true,
+          sensitivity: "base",
         });
         return sortDir === "asc" ? cmp : -cmp;
       });
     }
 
     return result;
-  }, [data, search, sortKey, sortDir, columns, globalSearch, serverPagination]);
+  }, [
+    data,
+    search,
+    sortKey,
+    sortDir,
+    columns,
+    globalSearch,
+    onSearchChange,
+  ]);
 
   // Client-side pagination
   const totalClient = processed.length;
