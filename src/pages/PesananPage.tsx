@@ -175,7 +175,6 @@ const PesananPage: React.FC = () => {
                 }}
               >
                 <SelectTrigger
-                  size="sm"
                   className="w-full bg-background shadow-sm h-9"
                 >
                   <div className="flex items-center gap-2">

@@ -52,17 +52,7 @@ const ProdukPage: React.FC = () => {
     setIsModalOpen(true);
   };
 
-  const handleCreateOrUpdateProduct = async (data: Record<string, any>) => {
-    // We expect data to be FormData from ProductForm if it handles images,
-    // or a plain object if we convert it here.
-    // Assuming ProductForm returns typical values, we convert to FormData.
-    const formData = new FormData();
-    Object.keys(data).forEach((key) => {
-      if (data[key] !== null && data[key] !== undefined) {
-        formData.append(key, data[key]);
-      }
-    });
-
+  const handleCreateOrUpdateProduct = async (formData: FormData) => {
     let result;
     if (editingProduct) {
       result = await updateProduk(editingProduct.id, formData);
