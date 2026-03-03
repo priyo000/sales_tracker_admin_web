@@ -1,112 +1,191 @@
-import React, { useState } from 'react';
-import { Perusahaan, PerusahaanFormData } from '../types';
+import React, { useState } from "react";
+import { Perusahaan, PerusahaanFormData } from "../types";
+import {
+  Building2,
+  Mail,
+  Phone,
+  Activity,
+  Calendar,
+  MapPin,
+  Save,
+  X,
+  LucideIcon,
+} from "lucide-react";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import { Textarea } from "@/components/ui/textarea";
 
 interface PerusahaanFormProps {
-    initialData?: Perusahaan | null;
-    onSubmit: (data: PerusahaanFormData) => Promise<void>;
-    onCancel: () => void;
-    isLoading?: boolean;
+  initialData?: Perusahaan | null;
+  onSubmit: (data: PerusahaanFormData) => Promise<void>;
+  onCancel: () => void;
+  isLoading?: boolean;
 }
 
-const PerusahaanForm: React.FC<PerusahaanFormProps> = ({ initialData, onSubmit, onCancel, isLoading }) => {
-    const [formData, setFormData] = useState<PerusahaanFormData>({
-        nama_perusahaan: initialData?.nama_perusahaan || '',
-        alamat: initialData?.alamat || '',
-        email_kontak: initialData?.email_kontak || '',
-        no_telp: initialData?.no_telp || '',
-        status_langganan: initialData?.status_langganan || 'aktif',
-        tanggal_bergabung: initialData?.tanggal_bergabung || '',
-    });
+const FormField = ({
+  label,
+  required,
+  children,
+  icon: Icon,
+}: {
+  label: string;
+  required?: boolean;
+  children: React.ReactNode;
+  icon?: LucideIcon;
+}) => (
+  <div className="space-y-2">
+    <Label className="flex items-center gap-2 text-[11px] font-black uppercase tracking-widest text-muted-foreground/80">
+      {Icon && <Icon className="h-3 w-3 text-primary" />}
+      {label}
+      {required && <span className="text-destructive ml-0.5">*</span>}
+    </Label>
+    {children}
+  </div>
+);
 
-    const handleSubmit = async (e: React.FormEvent) => {
-        e.preventDefault();
-        await onSubmit(formData);
-    };
+const PerusahaanForm: React.FC<PerusahaanFormProps> = ({
+  initialData,
+  onSubmit,
+  onCancel,
+  isLoading,
+}) => {
+  const [formData, setFormData] = useState<PerusahaanFormData>({
+    nama_perusahaan: initialData?.nama_perusahaan || "",
+    alamat: initialData?.alamat || "",
+    email_kontak: initialData?.email_kontak || "",
+    no_telp: initialData?.no_telp || "",
+    status_langganan: initialData?.status_langganan || "aktif",
+    tanggal_bergabung: initialData?.tanggal_bergabung || "",
+  });
 
-    return (
-        <form onSubmit={handleSubmit} className="space-y-4">
-            <div>
-                <label className="block text-sm font-medium text-gray-700">Nama Perusahaan</label>
-                <input
-                    type="text"
-                    required
-                    className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm border p-2"
-                    value={formData.nama_perusahaan}
-                    onChange={(e) => setFormData({ ...formData, nama_perusahaan: e.target.value })}
-                />
-            </div>
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    await onSubmit(formData);
+  };
 
-            <div>
-                <label className="block text-sm font-medium text-gray-700">Email Kontak</label>
-                <input
-                    type="email"
-                    className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm border p-2"
-                    value={formData.email_kontak}
-                    onChange={(e) => setFormData({ ...formData, email_kontak: e.target.value })}
-                />
-            </div>
+  return (
+    <form onSubmit={handleSubmit} className="space-y-8 py-2">
+      <div className="space-y-6">
+        <FormField label="Nama Perusahaan" icon={Building2} required>
+          <Input
+            type="text"
+            required
+            className="h-12 bg-card border-border/50 focus-visible:ring-primary shadow-sm font-bold"
+            placeholder="Contoh: PT. Maju Jaya Bersama"
+            value={formData.nama_perusahaan}
+            onChange={(e) =>
+              setFormData({ ...formData, nama_perusahaan: e.target.value })
+            }
+          />
+        </FormField>
 
-            <div>
-                <label className="block text-sm font-medium text-gray-700">No. Telepon</label>
-                <input
-                    type="text"
-                    className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm border p-2"
-                    value={formData.no_telp}
-                    onChange={(e) => setFormData({ ...formData, no_telp: e.target.value })}
-                />
-            </div>
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+          <FormField label="Email Kontak" icon={Mail} required>
+            <Input
+              type="email"
+              required
+              className="h-12 bg-card border-border/50 focus-visible:ring-primary shadow-sm font-bold"
+              placeholder="email@perusahaan.com"
+              value={formData.email_kontak}
+              onChange={(e) =>
+                setFormData({ ...formData, email_kontak: e.target.value })
+              }
+            />
+          </FormField>
+          <FormField label="Nomor Telepon Kantor" icon={Phone} required>
+            <Input
+              type="text"
+              required
+              className="h-12 bg-card border-border/50 focus-visible:ring-primary shadow-sm font-bold"
+              placeholder="021-xxxx"
+              value={formData.no_telp}
+              onChange={(e) =>
+                setFormData({ ...formData, no_telp: e.target.value })
+              }
+            />
+          </FormField>
+        </div>
 
-            <div>
-                <label className="block text-sm font-medium text-gray-700">Status Langganan</label>
-                <select
-                    className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm border p-2"
-                    value={formData.status_langganan}
-                    onChange={(e) => setFormData({ ...formData, status_langganan: e.target.value as 'aktif' | 'non_aktif' })}
-                >
-                    <option value="aktif">Aktif</option>
-                    <option value="non_aktif">Non Aktif</option>
-                </select>
-            </div>
-
-            <div>
-                <label className="block text-sm font-medium text-gray-700">Tanggal Bergabung</label>
-                <input
-                    type="date"
-                    className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm border p-2"
-                    value={formData.tanggal_bergabung || ''}
-                    onChange={(e) => setFormData({ ...formData, tanggal_bergabung: e.target.value })}
-                />
-            </div>
-
-            <div>
-                <label className="block text-sm font-medium text-gray-700">Alamat</label>
-                <textarea
-                    rows={3}
-                    className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm border p-2"
-                    value={formData.alamat}
-                    onChange={(e) => setFormData({ ...formData, alamat: e.target.value })}
-                />
-            </div>
-
-            <div className="flex justify-end space-x-2 pt-4">
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+          <FormField label="Status Langganan" icon={Activity} required>
+            <div className="grid grid-cols-2 gap-3">
+              {["aktif", "non_aktif"].map((status) => (
                 <button
-                    type="button"
-                    onClick={onCancel}
-                    className="rounded-md border border-gray-300 bg-white px-4 py-2 text-sm font-medium text-gray-700 hover:bg-gray-50"
-                    disabled={isLoading}
+                  key={status}
+                  type="button"
+                  onClick={() =>
+                    setFormData({
+                      ...formData,
+                      status_langganan: status as "aktif" | "non_aktif",
+                    })
+                  }
+                  className={`h-12 rounded-xl border-2 transition-all text-[11px] font-black uppercase tracking-widest ${
+                    formData.status_langganan === status
+                      ? "border-primary bg-primary/5 text-primary shadow-md"
+                      : "border-border/50 bg-card text-muted-foreground hover:bg-muted/50"
+                  }`}
                 >
-                    Batal
+                  {status.replace("_", " ")}
                 </button>
-                <button
-                    type="submit"
-                    className="rounded-md bg-indigo-600 px-4 py-2 text-sm font-medium text-white hover:bg-indigo-700 disabled:bg-indigo-400"
-                    disabled={isLoading}
-                >
-                    {isLoading ? 'Menyimpan...' : 'Simpan'}
-                </button>
+              ))}
             </div>
-        </form>
-    );
+          </FormField>
+          <FormField label="Tanggal Bergabung" icon={Calendar}>
+            <Input
+              type="date"
+              className="h-12 bg-card border-border/50 focus-visible:ring-primary shadow-sm font-bold"
+              value={formData.tanggal_bergabung || ""}
+              onChange={(e) =>
+                setFormData({ ...formData, tanggal_bergabung: e.target.value })
+              }
+            />
+          </FormField>
+        </div>
+
+        <FormField label="Alamat Kantor Pusat" icon={MapPin}>
+          <Textarea
+            rows={3}
+            placeholder="Tulis alamat lengkap kantor..."
+            className="bg-card border-border/50 focus-visible:ring-primary shadow-sm font-bold min-h-[100px] resize-none"
+            value={formData.alamat}
+            onChange={(e) =>
+              setFormData({ ...formData, alamat: e.target.value })
+            }
+          />
+        </FormField>
+      </div>
+
+      <div className="flex items-center justify-end gap-3 pt-6 border-t font-bold">
+        <Button
+          type="button"
+          variant="ghost"
+          onClick={onCancel}
+          className="h-12 px-8 text-xs font-black uppercase tracking-widest text-muted-foreground hover:text-foreground"
+          disabled={isLoading}
+        >
+          <X className="mr-2 h-4 w-4" /> Batal
+        </Button>
+        <Button
+          type="submit"
+          disabled={isLoading}
+          className="h-12 px-10 text-xs font-black uppercase tracking-widest shadow-lg shadow-primary/20 bg-primary hover:bg-primary/90 text-white"
+        >
+          {isLoading ? (
+            <span className="flex items-center gap-2">
+              <div className="h-4 w-4 animate-spin rounded-full border-2 border-white border-t-transparent" />
+              Menyimpan...
+            </span>
+          ) : (
+            <span className="flex items-center gap-2">
+              <Save className="h-4 w-4" />
+              {initialData ? "Simpan Perubahan" : "Tambah Perusahaan"}
+            </span>
+          )}
+        </Button>
+      </div>
+    </form>
+  );
 };
 
 export default PerusahaanForm;

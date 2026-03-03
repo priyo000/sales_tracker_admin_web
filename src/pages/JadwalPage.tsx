@@ -137,17 +137,25 @@ const JadwalPage: React.FC = () => {
             </p>
           </div>
         </div>
+        <div className="flex items-center gap-2">
+          <Button
+            onClick={handleOpenModal}
+            className="gap-2 shadow-md h-10 px-5"
+          >
+            <Plus className="h-4 w-4" /> Tambah Manual
+          </Button>
+        </div>
       </div>
 
       {/* Tabs */}
-      <div className="flex border-b">
+      <div className="flex p-1 bg-muted/50 rounded-xl w-fit border border-border/50">
         <button
           onClick={() => setActiveTab("daily")}
           className={cn(
-            "px-6 py-3 text-sm font-semibold transition-all border-b-2 -mb-px",
+            "px-6 py-2 text-xs font-black uppercase tracking-widest transition-all rounded-lg",
             activeTab === "daily"
-              ? "border-primary text-primary"
-              : "border-transparent text-muted-foreground hover:text-foreground",
+              ? "bg-primary text-white shadow-md shadow-primary/20"
+              : "text-muted-foreground hover:text-foreground hover:bg-muted",
           )}
         >
           Jadwal Harian
@@ -155,10 +163,10 @@ const JadwalPage: React.FC = () => {
         <button
           onClick={() => setActiveTab("recurring")}
           className={cn(
-            "px-6 py-3 text-sm font-semibold transition-all border-b-2 -mb-px",
+            "px-6 py-2 text-xs font-black uppercase tracking-widest transition-all rounded-lg",
             activeTab === "recurring"
-              ? "border-primary text-primary"
-              : "border-transparent text-muted-foreground hover:text-foreground",
+              ? "bg-primary text-white shadow-md shadow-primary/20"
+              : "text-muted-foreground hover:text-foreground hover:bg-muted",
           )}
         >
           Master Jadwal (Recurring)
@@ -180,22 +188,22 @@ const JadwalPage: React.FC = () => {
             onDelete={handleDeleteJadwal}
             onSearchChange={setSearchTerm}
             toolbar={
-              <div className="flex flex-wrap items-center gap-2 w-full sm:w-auto">
-                <div className="flex items-center gap-1.5 bg-background px-3 rounded-lg border shadow-sm h-9">
+              <div className="flex flex-wrap items-center gap-3 w-full">
+                <div className="flex items-center gap-1.5 bg-background px-3 rounded-xl border border-border/50 shadow-sm h-10">
                   <div className="flex items-center gap-2">
-                    <CalendarIcon className="h-3.5 w-3.5 text-muted-foreground" />
+                    <CalendarIcon className="h-4 w-4 text-primary" />
                     <Input
                       type="date"
-                      className="h-full w-32 border-none bg-transparent p-0 focus-visible:ring-0 shadow-none text-xs font-medium"
+                      className="h-full w-32 border-none bg-transparent p-0 focus-visible:ring-0 shadow-none text-xs font-bold"
                       value={startDate}
                       onChange={(e) => setStartDate(e.target.value)}
                     />
-                    <span className="text-muted-foreground opacity-30 px-1">
+                    <span className="text-muted-foreground/30 px-1 font-bold">
                       →
                     </span>
                     <Input
                       type="date"
-                      className="h-full w-32 border-none bg-transparent p-0 focus-visible:ring-0 shadow-none text-xs font-medium"
+                      className="h-full w-32 border-none bg-transparent p-0 focus-visible:ring-0 shadow-none text-xs font-bold"
                       value={endDate}
                       onChange={(e) => setEndDate(e.target.value)}
                     />
@@ -213,21 +221,11 @@ const JadwalPage: React.FC = () => {
                       setEndDate(todayStr);
                       setSearchTerm("");
                     }}
-                    className="text-destructive h-9 px-3 hover:bg-destructive/10 text-xs font-medium"
+                    className="text-destructive h-10 px-4 hover:bg-destructive/10 text-xs font-black uppercase tracking-widest"
                   >
-                    Reset
+                    Reset Filter
                   </Button>
                 )}
-
-                <div className="ml-auto flex items-center gap-2">
-                  <Button
-                    onClick={handleOpenModal}
-                    size="sm"
-                    className="gap-2 shadow-md h-9"
-                  >
-                    <Plus className="h-4 w-4" /> Tambah Manual
-                  </Button>
-                </div>
               </div>
             }
           />

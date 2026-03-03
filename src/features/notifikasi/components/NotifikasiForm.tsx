@@ -1,176 +1,265 @@
-import React, { useState, useEffect } from 'react';
-import { NotifikasiFormData } from '../types';
-import { useKaryawan } from '@/features/karyawan/hooks/useKaryawan';
-import { useDivisi } from '@/features/divisi/hooks/useDivisi';
-import { Karyawan } from '@/features/karyawan/types';
-import { Divisi } from '@/features/divisi/types';
+import React, { useState, useEffect } from "react";
+import {
+  Users,
+  User,
+  Building2,
+  Send,
+  Type,
+  MessageSquare,
+  AlertCircle,
+  Trophy,
+  Info,
+  CheckCircle2,
+  LucideIcon,
+} from "lucide-react";
+import { NotifikasiFormData } from "../types";
+import { useKaryawan } from "@/features/karyawan/hooks/useKaryawan";
+import { useDivisi } from "@/features/divisi/hooks/useDivisi";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import { Textarea } from "@/components/ui/textarea";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 
 interface NotifikasiFormProps {
-    onSubmit: (data: NotifikasiFormData) => void;
-    onCancel: () => void;
-    loading?: boolean;
+  onSubmit: (data: NotifikasiFormData) => void;
+  onCancel: () => void;
+  loading?: boolean;
 }
 
-const NotifikasiForm: React.FC<NotifikasiFormProps> = ({ onSubmit, onCancel, loading }) => {
-    const { karyawans, fetchKaryawans } = useKaryawan();
-    const { divisis, fetchDivisis } = useDivisi();
+const FormField = ({
+  label,
+  required,
+  children,
+  icon: Icon,
+}: {
+  label: string;
+  required?: boolean;
+  children: React.ReactNode;
+  icon?: LucideIcon;
+}) => (
+  <div className="space-y-2">
+    <Label className="flex items-center gap-2 text-[11px] font-black uppercase tracking-widest text-muted-foreground/80">
+      {Icon && <Icon className="h-3 w-3 text-primary" />}
+      {label}
+      {required && <span className="text-destructive ml-0.5">*</span>}
+    </Label>
+    {children}
+  </div>
+);
 
-    const [targetType, setTargetType] = useState<'specific' | 'all' | 'division'>('all');
-    const [idKaryawan, setIdKaryawan] = useState<number | undefined>(undefined);
-    const [idDivisi, setIdDivisi] = useState<number | undefined>(undefined);
-    const [judul, setJudul] = useState('');
-    const [pesan, setPesan] = useState('');
-    const [jenis, setJenis] = useState('info');
+const NotifikasiForm: React.FC<NotifikasiFormProps> = ({
+  onSubmit,
+  onCancel,
+  loading,
+}) => {
+  const { karyawans, fetchKaryawans } = useKaryawan();
+  const { divisis, fetchDivisis } = useDivisi();
 
-    useEffect(() => {
-        fetchKaryawans();
-        fetchDivisis();
-    }, [fetchKaryawans, fetchDivisis]);
+  const [targetType, setTargetType] = useState<"specific" | "all" | "division">(
+    "all",
+  );
+  const [idKaryawan, setIdKaryawan] = useState<number | undefined>(undefined);
+  const [idDivisi, setIdDivisi] = useState<number | undefined>(undefined);
+  const [judul, setJudul] = useState("");
+  const [pesan, setPesan] = useState("");
+  const [jenis, setJenis] = useState("info");
 
-    const handleSubmit = (e: React.FormEvent) => {
-        e.preventDefault();
-        onSubmit({
-            target_type: targetType,
-            id_karyawan: targetType === 'specific' ? idKaryawan : undefined,
-            id_divisi: targetType === 'division' ? idDivisi : undefined,
-            judul,
-            pesan,
-            jenis,
-        });
-    };
+  useEffect(() => {
+    fetchKaryawans();
+    fetchDivisis();
+  }, [fetchKaryawans, fetchDivisis]);
 
-    return (
-        <form onSubmit={handleSubmit} className="space-y-4">
-            <div className="grid grid-cols-2 gap-4">
-                <div className="col-span-2 text-left">
-                    <label className="block text-sm font-semibold text-gray-700 mb-2">Target Penerima</label>
-                    <div className="flex flex-wrap gap-4 p-3 bg-slate-50 rounded-lg border border-slate-200">
-                        <label className="flex items-center space-x-2 cursor-pointer">
-                            <input
-                                type="radio"
-                                value="all"
-                                checked={targetType === 'all'}
-                                onChange={() => setTargetType('all')}
-                                className="h-4 w-4 text-indigo-600 focus:ring-indigo-500 border-gray-300"
-                            />
-                            <span className="text-sm font-medium text-slate-700">Semua Karyawan</span>
-                        </label>
-                        <label className="flex items-center space-x-2 cursor-pointer">
-                            <input
-                                type="radio"
-                                value="division"
-                                checked={targetType === 'division'}
-                                onChange={() => setTargetType('division')}
-                                className="h-4 w-4 text-indigo-600 focus:ring-indigo-500 border-gray-300"
-                            />
-                            <span className="text-sm font-medium text-slate-700">Per Divisi</span>
-                        </label>
-                        <label className="flex items-center space-x-2 cursor-pointer">
-                            <input
-                                type="radio"
-                                value="specific"
-                                checked={targetType === 'specific'}
-                                onChange={() => setTargetType('specific')}
-                                className="h-4 w-4 text-indigo-600 focus:ring-indigo-500 border-gray-300"
-                            />
-                            <span className="text-sm font-medium text-slate-700">Karyawan Tertentu</span>
-                        </label>
-                    </div>
-                </div>
+  const handleSubmit = (e: React.FormEvent) => {
+    e.preventDefault();
+    onSubmit({
+      target_type: targetType,
+      id_karyawan: targetType === "specific" ? idKaryawan : undefined,
+      id_divisi: targetType === "division" ? idDivisi : undefined,
+      judul,
+      pesan,
+      jenis,
+    });
+  };
 
-                {targetType === 'division' && (
-                    <div className="col-span-2 text-left">
-                        <label className="block text-sm font-semibold text-gray-700 mb-1">Pilih Divisi</label>
-                        <select
-                            required
-                            className="block w-full rounded-lg border border-gray-300 p-2.5 shadow-sm focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500 sm:text-sm transition-all"
-                            value={idDivisi || ''}
-                            onChange={(e) => setIdDivisi(Number(e.target.value))}
-                        >
-                            <option value="">Pilih Divisi...</option>
-                            {divisis.map((d: Divisi) => (
-                                <option key={d.id} value={d.id}>{d.nama_divisi}</option>
-                            ))}
-                        </select>
-                    </div>
-                )}
+  const getJenisIcon = (type: string) => {
+    switch (type) {
+      case "order":
+        return CheckCircle2;
+      case "gamifikasi":
+        return Trophy;
+      case "reminder":
+        return AlertCircle;
+      case "broadcast":
+        return Send;
+      default:
+        return Info;
+    }
+  };
 
-                {targetType === 'specific' && (
-                    <div className="col-span-2 text-left">
-                        <label className="block text-sm font-semibold text-gray-700 mb-1">Pilih Karyawan</label>
-                        <select
-                            required
-                            className="block w-full rounded-lg border border-gray-300 p-2.5 shadow-sm focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500 sm:text-sm transition-all"
-                            value={idKaryawan || ''}
-                            onChange={(e) => setIdKaryawan(Number(e.target.value))}
-                        >
-                            <option value="">Pilih Karyawan...</option>
-                            {karyawans.map((k: Karyawan) => (
-                                <option key={k.id} value={k.id}>{k.nama_lengkap} ({k.kode_karyawan})</option>
-                            ))}
-                        </select>
-                    </div>
-                )}
-
-                <div className="col-span-2 text-left">
-                    <label className="block text-sm font-semibold text-gray-700 mb-1">Tipe</label>
-                    <select
-                        className="block w-full rounded-lg border border-gray-300 p-2.5 shadow-sm focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500 sm:text-sm transition-all"
-                        value={jenis}
-                        onChange={(e) => setJenis(e.target.value)}
-                    >
-                        <option value="info">Informasi</option>
-                        <option value="broadcast">Pengumuman (Broadcast)</option>
-                        <option value="reminder">Pengingat (Reminder)</option>
-                        <option value="gamifikasi">Reward / Gamification</option>
-                    </select>
-                </div>
-
-                <div className="col-span-2 text-left">
-                    <label className="block text-sm font-semibold text-gray-700 mb-1">Judul</label>
-                    <input
-                        type="text"
-                        required
-                        maxLength={255}
-                        className="block w-full rounded-lg border border-gray-300 p-2.5 shadow-sm focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500 sm:text-sm transition-all"
-                        placeholder="Contoh: Pengumuman Rapat Mingguan"
-                        value={judul}
-                        onChange={(e) => setJudul(e.target.value)}
-                    />
-                </div>
-
-                <div className="col-span-2 text-left">
-                    <label className="block text-sm font-semibold text-gray-700 mb-1">Pesan</label>
-                    <textarea
-                        required
-                        rows={4}
-                        className="block w-full rounded-lg border border-gray-300 p-2.5 shadow-sm focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500 sm:text-sm transition-all"
-                        placeholder="Tulis detail pesan di sini..."
-                        value={pesan}
-                        onChange={(e) => setPesan(e.target.value)}
-                    />
-                </div>
-            </div>
-
-            <div className="flex justify-end space-x-3 pt-6 border-t mt-6">
-                <button
-                    type="button"
-                    onClick={onCancel}
-                    className="rounded-lg border border-gray-300 bg-white px-4 py-2 text-sm font-semibold text-gray-700 hover:bg-gray-50 focus:outline-none transition-colors"
-                    disabled={loading}
+  return (
+    <form onSubmit={handleSubmit} className="space-y-8 py-4">
+      <div className="space-y-6">
+        <FormField label="Siapa Target Penerima?" icon={Users}>
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+            {[
+              { id: "all", label: "Semua", icon: Users },
+              { id: "division", label: "Divisi", icon: Building2 },
+              { id: "specific", label: "Karyawan", icon: User },
+            ].map((option) => (
+              <button
+                key={option.id}
+                type="button"
+                onClick={() =>
+                  setTargetType(option.id as "all" | "division" | "specific")
+                }
+                className={`flex items-center gap-3 p-4 rounded-xl border-2 transition-all text-left ${
+                  targetType === option.id
+                    ? "border-primary bg-primary/5 shadow-md"
+                    : "border-border/50 bg-card hover:bg-muted/50"
+                }`}
+              >
+                <div
+                  className={`p-2 rounded-lg ${targetType === option.id ? "bg-primary text-white" : "bg-muted text-muted-foreground"}`}
                 >
-                    Batal
-                </button>
-                <button
-                    type="submit"
-                    className="flex justify-center rounded-lg border border-transparent bg-indigo-600 px-6 py-2 text-sm font-semibold text-white shadow-sm hover:bg-indigo-700 focus:outline-none disabled:opacity-50 transition-all active:scale-95"
-                    disabled={loading}
-                >
-                    {loading ? 'Mengirim...' : 'Kirim Notifikasi'}
-                </button>
-            </div>
-        </form>
-    );
+                  <option.icon className="h-4 w-4" />
+                </div>
+                <span className="text-xs font-bold uppercase tracking-tight">
+                  {option.label}
+                </span>
+              </button>
+            ))}
+          </div>
+        </FormField>
+
+        {targetType === "division" && (
+          <div className="animate-in fade-in slide-in-from-top-2 duration-300">
+            <FormField label="Pilih Divisi" icon={Building2} required>
+              <Select
+                value={idDivisi?.toString() || ""}
+                onValueChange={(val) => setIdDivisi(Number(val))}
+                required
+              >
+                <SelectTrigger className="h-11 bg-card border-border/50">
+                  <SelectValue placeholder="Pilih Divisi Penerima..." />
+                </SelectTrigger>
+                <SelectContent>
+                  {divisis.map((d) => (
+                    <SelectItem key={d.id} value={d.id.toString()}>
+                      {d.nama_divisi}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </FormField>
+          </div>
+        )}
+
+        {targetType === "specific" && (
+          <div className="animate-in fade-in slide-in-from-top-2 duration-300">
+            <FormField label="Pilih Karyawan" icon={User} required>
+              <Select
+                value={idKaryawan?.toString() || ""}
+                onValueChange={(val) => setIdKaryawan(Number(val))}
+                required
+              >
+                <SelectTrigger className="h-11 bg-card border-border/50">
+                  <SelectValue placeholder="Pilih Karyawan Penerima..." />
+                </SelectTrigger>
+                <SelectContent>
+                  {karyawans.map((k) => (
+                    <SelectItem key={k.id} value={k.id.toString()}>
+                      {k.nama_lengkap} ({k.kode_karyawan})
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </FormField>
+          </div>
+        )}
+
+        <div className="grid grid-cols-1 md:grid-cols-12 gap-6">
+          <div className="md:col-span-4">
+            <FormField label="Tipe Notifikasi" icon={getJenisIcon(jenis)}>
+              <Select value={jenis} onValueChange={(val) => setJenis(val)}>
+                <SelectTrigger className="h-11 bg-card border-border/50">
+                  <SelectValue />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="info">Informasi Umum</SelectItem>
+                  <SelectItem value="broadcast">
+                    Pengumuman (Broadcast)
+                  </SelectItem>
+                  <SelectItem value="reminder">Pengingat (Reminder)</SelectItem>
+                  <SelectItem value="gamifikasi">
+                    Reward / Gamifikasi
+                  </SelectItem>
+                </SelectContent>
+              </Select>
+            </FormField>
+          </div>
+
+          <div className="md:col-span-8">
+            <FormField label="Judul Notifikasi" icon={Type} required>
+              <Input
+                required
+                maxLength={255}
+                placeholder="Contoh: Pengumuman Rapat Mingguan"
+                value={judul}
+                onChange={(e) => setJudul(e.target.value)}
+                className="h-11 bg-card border-border/50 focus-visible:ring-primary shadow-sm"
+              />
+            </FormField>
+          </div>
+        </div>
+
+        <FormField label="Isi Pesan Notifikasi" icon={MessageSquare} required>
+          <Textarea
+            required
+            rows={5}
+            placeholder="Tulis detail pesan di sini. Usahakan singkat dan jelas agar mudah dibaca di notifikasi HP."
+            value={pesan}
+            onChange={(e) => setPesan(e.target.value)}
+            className="bg-card border-border/50 focus-visible:ring-primary shadow-sm resize-none"
+          />
+        </FormField>
+      </div>
+
+      <div className="flex items-center justify-end gap-3 pt-6 border-t">
+        <Button
+          type="button"
+          variant="ghost"
+          onClick={onCancel}
+          disabled={loading}
+          className="h-11 px-6 text-xs font-black uppercase tracking-widest text-muted-foreground hover:text-foreground"
+        >
+          Batal
+        </Button>
+        <Button
+          type="submit"
+          disabled={loading}
+          className="h-11 px-10 text-xs font-black uppercase tracking-widest shadow-lg shadow-primary/20 bg-primary hover:bg-primary/90"
+        >
+          {loading ? (
+            <span className="flex items-center gap-2">
+              <div className="h-4 w-4 animate-spin rounded-full border-2 border-white border-t-transparent" />
+              Mengirim...
+            </span>
+          ) : (
+            <span className="flex items-center gap-2">
+              <Send className="h-4 w-4" /> Kirim Sekarang
+            </span>
+          )}
+        </Button>
+      </div>
+    </form>
+  );
 };
 
 export default NotifikasiForm;
