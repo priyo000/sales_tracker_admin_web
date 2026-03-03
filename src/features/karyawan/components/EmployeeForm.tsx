@@ -15,6 +15,8 @@ import {
   Save,
   X,
 } from "lucide-react";
+import { parse, format } from "date-fns";
+import { DatePicker } from "@/components/ui/date-picker";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -198,14 +200,13 @@ const EmployeeForm: React.FC<EmployeeFormProps> = ({
         {/* Date & Status Row */}
         <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
           <FormField label="Tanggal Bergabung" icon={Calendar}>
-            <Input
-              name="tanggal_bergabung"
-              type="date"
-              className="h-12 bg-card border-border/50 focus-visible:ring-primary shadow-sm font-bold"
-              value={formData.tanggal_bergabung}
-              onChange={(e) =>
-                handleChange("tanggal_bergabung", e.target.value)
+            <DatePicker
+              date={formData.tanggal_bergabung ? parse(formData.tanggal_bergabung, "yyyy-MM-dd", new Date()) : undefined}
+              onChange={(date) => 
+                handleChange("tanggal_bergabung", date ? format(date, "yyyy-MM-dd") : "")
               }
+              className="w-full h-12 bg-card border-border/50 shadow-sm font-bold"
+              placeholder="Pilih Tanggal Bergabung"
             />
           </FormField>
           <FormField label="Status Kepegawaian" icon={Activity}>

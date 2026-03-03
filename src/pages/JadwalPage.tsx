@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useState, useMemo } from "react";
 import { Plus, Calendar as CalendarIcon } from "lucide-react";
 import toast from "react-hot-toast";
 import { cn } from "@/lib/utils";
@@ -9,7 +9,9 @@ import DailyScheduleTable from "../features/jadwal/components/DailyScheduleTable
 import { Modal, ConfirmModal } from "../components/ui/Modal";
 import { Jadwal, JadwalFormData } from "../features/jadwal/types";
 import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
+import { DateRange } from "react-day-picker";
+import { format as formatFile } from "date-fns";
+import { DatePickerWithRange } from "@/components/ui/date-range-picker";
 
 const JadwalPage: React.FC = () => {
   const {
@@ -34,8 +36,20 @@ const JadwalPage: React.FC = () => {
   const dd = String(today.getDate()).padStart(2, "0");
   const todayStr = `${yyyy}-${mm}-${dd}`;
 
-  const [startDate, setStartDate] = useState(todayStr);
-  const [endDate, setEndDate] = useState(todayStr);
+  const [dateRange, setDateRange] = useState<DateRange | undefined>({
+    from: today,
+    to: today,
+  });
+
+  const startDate = useMemo(() => 
+    dateRange?.from ? formatFile(dateRange.from, "yyyy-MM-dd") : "", 
+    [dateRange]
+  );
+  
+  const endDate = useMemo(() => 
+    dateRange?.to ? formatFile(dateRange.to, "yyyy-MM-dd") : "", 
+    [dateRange]
+  );
   const [searchTerm, setSearchTerm] = useState("");
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [editingJadwal, setEditingJadwal] = useState<Jadwal | null>(null);
@@ -189,25 +203,11 @@ const JadwalPage: React.FC = () => {
             onSearchChange={setSearchTerm}
             toolbar={
               <div className="flex flex-wrap items-center gap-3 w-full">
-                <div className="flex items-center gap-1.5 bg-background px-3 rounded-xl border border-border/50 shadow-sm h-10">
-                  <div className="flex items-center gap-2">
-                    <CalendarIcon className="h-4 w-4 text-primary" />
-                    <Input
-                      type="date"
-                      className="h-full w-32 border-none bg-transparent p-0 focus-visible:ring-0 shadow-none text-xs font-bold"
-                      value={startDate}
-                      onChange={(e) => setStartDate(e.target.value)}
-                    />
-                    <span className="text-muted-foreground/30 px-1 font-bold">
-                      →
-                    </span>
-                    <Input
-                      type="date"
-                      className="h-full w-32 border-none bg-transparent p-0 focus-visible:ring-0 shadow-none text-xs font-bold"
-                      value={endDate}
-                      onChange={(e) => setEndDate(e.target.value)}
-                    />
-                  </div>
+                <div className="flex items-center gap-1.5 min-w-[260px]">
+                  <DatePickerWithRange
+                    date={dateRange}
+                    onChange={setDateRange}
+                  />
                 </div>
 
                 {(startDate !== todayStr ||
@@ -217,8 +217,7 @@ const JadwalPage: React.FC = () => {
                     variant="ghost"
                     size="sm"
                     onClick={() => {
-                      setStartDate(todayStr);
-                      setEndDate(todayStr);
+                      setDateRange({ from: today, to: today });
                       setSearchTerm("");
                     }}
                     className="text-destructive h-10 px-4 hover:bg-destructive/10 text-xs font-black uppercase tracking-widest"

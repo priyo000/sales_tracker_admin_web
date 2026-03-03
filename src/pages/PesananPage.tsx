@@ -1,10 +1,12 @@
 import React, { useEffect, useState, useMemo } from "react";
 import {
   ShoppingCart,
-  Calendar as CalendarIcon,
   Download,
   SlidersHorizontal,
 } from "lucide-react";
+import { DateRange } from "react-day-picker";
+import { format as formatFile } from "date-fns";
+import { DatePickerWithRange } from "@/components/ui/date-range-picker";
 import { usePesanan } from "../features/pesanan/hooks/usePesanan";
 import OrderTable from "../features/pesanan/components/OrderTable";
 import OrderDetail from "../features/pesanan/components/OrderDetail";
@@ -15,7 +17,6 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Modal } from "../components/ui/Modal";
 import api from "@/services/api";
@@ -36,8 +37,20 @@ const PesananPage: React.FC = () => {
   const [selectedOrderId, setSelectedOrderId] = useState<number | null>(null);
   const [isExporting, setIsExporting] = useState(false);
 
-  const [startDate, setStartDate] = useState("");
-  const [endDate, setEndDate] = useState("");
+  const [dateRange, setDateRange] = useState<DateRange | undefined>({
+    from: undefined,
+    to: undefined,
+  });
+
+  const startDate = useMemo(() => 
+    dateRange?.from ? formatFile(dateRange.from, "yyyy-MM-dd") : "", 
+    [dateRange?.from]
+  );
+  
+  const endDate = useMemo(() => 
+    dateRange?.to ? formatFile(dateRange.to, "yyyy-MM-dd") : "", 
+    [dateRange?.to]
+  );
   const [perPage, setPerPage] = useState(20);
 
   useEffect(() => {
@@ -181,29 +194,14 @@ const PesananPage: React.FC = () => {
               </Select>
             </div>
 
-            <div className="flex items-center gap-1.5 bg-background px-3 rounded-lg border shadow-sm h-9">
-              <div className="flex items-center gap-2">
-                <CalendarIcon className="h-3.5 w-3.5 text-muted-foreground" />
-                <Input
-                  type="date"
-                  className="h-full w-32 border-none bg-transparent p-0 focus-visible:ring-0 shadow-none text-xs font-medium"
-                  value={startDate}
-                  onChange={(e) => {
-                    setStartDate(e.target.value);
-                    handlePageChange(1);
-                  }}
-                />
-                <span className="text-muted-foreground opacity-30 px-1">→</span>
-                <Input
-                  type="date"
-                  className="h-full w-32 border-none bg-transparent p-0 focus-visible:ring-0 shadow-none text-xs font-medium"
-                  value={endDate}
-                  onChange={(e) => {
-                    setEndDate(e.target.value);
-                    handlePageChange(1);
-                  }}
-                />
-              </div>
+            <div className="flex items-center gap-1.5 min-w-[260px]">
+              <DatePickerWithRange
+                date={dateRange}
+                onChange={(range) => {
+                  setDateRange(range);
+                  handlePageChange(1);
+                }}
+              />
             </div>
 
             {(searchTerm || statusFilter !== "all" || startDate || endDate) && (
@@ -214,8 +212,7 @@ const PesananPage: React.FC = () => {
                 onClick={() => {
                   setSearchTerm("");
                   setStatusFilter("all");
-                  setStartDate("");
-                  setEndDate("");
+                  setDateRange(undefined);
                   handlePageChange(1);
                 }}
               >

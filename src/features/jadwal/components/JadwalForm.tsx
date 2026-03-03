@@ -2,7 +2,6 @@ import React, { useState } from "react";
 import { Jadwal, JadwalFormData, KaryawanOption, RuteOption } from "../types";
 import toast from "react-hot-toast";
 import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import {
   Select,
@@ -11,7 +10,9 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { Calendar, User, Navigation, LucideIcon, Save, X } from "lucide-react";
+import { Calendar as CalendarIcon, User, Navigation, LucideIcon, Save, X } from "lucide-react";
+import { DatePicker } from "@/components/ui/date-picker";
+import { parse, format } from "date-fns";
 
 interface JadwalFormProps {
   onSubmit: (data: JadwalFormData) => void;
@@ -90,16 +91,16 @@ const JadwalForm: React.FC<JadwalFormProps> = ({
   return (
     <form onSubmit={handleSubmit} className="space-y-8 py-2">
       <div className="space-y-6">
-        <FormField label="Tanggal Kunjungan" icon={Calendar} required>
-          <Input
-            id="tanggal"
-            type="date"
-            required
-            className="h-12 bg-card border-border/50 focus-visible:ring-primary shadow-sm font-bold text-sm"
-            value={formData.tanggal}
-            onChange={(e) =>
-              setFormData({ ...formData, tanggal: e.target.value })
+        <FormField label="Tanggal Kunjungan" icon={CalendarIcon} required>
+          <DatePicker
+            date={formData.tanggal ? parse(formData.tanggal, "yyyy-MM-dd", new Date()) : undefined}
+            onChange={(date) => 
+              setFormData({ 
+                ...formData, 
+                tanggal: date ? format(date, "yyyy-MM-dd") : "" 
+              })
             }
+            className="w-full h-12 bg-card border-border/50 text-sm font-bold"
           />
         </FormField>
 

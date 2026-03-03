@@ -6,6 +6,9 @@ import RouteCustomerMap from './RouteCustomerMap';
 import { Search, Map as MapIcon, Info, CheckCircle2, User as UserIcon } from 'lucide-react';
 import api from '../../../services/api';
 import { cn } from '@/lib/utils';
+import { Input } from '@/components/ui/input';
+import { Button } from '@/components/ui/button';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 
 interface RouteFormProps {
     initialData?: Rute | null;
@@ -153,20 +156,20 @@ const RouteForm: React.FC<RouteFormProps> = ({ initialData, onSubmit, onCancel, 
 
                     <div className="space-y-3">
                          <div>
-                            <input
+                            <Input
                                 name="nama_rute"
                                 type="text"
                                 required
-                                className="block w-full rounded-lg border-gray-200 bg-gray-50 px-3 py-2 text-sm focus:border-indigo-500 focus:bg-white focus:ring-1 focus:ring-indigo-500 transition-all font-medium placeholder:font-normal"
+                                className="block w-full rounded-lg border-gray-200 bg-gray-50 px-3 py-2 text-sm focus:border-indigo-500 focus:bg-white focus:ring-1 focus:ring-indigo-500 transition-all font-medium placeholder:font-normal h-11"
                                 value={namaRute}
                                 onChange={(e) => setNamaRute(e.target.value)}
                                 placeholder="Nama Rute (Ex: Rute Senin Barat)"
                             />
                         </div>
                          <div>
-                            <input
+                            <Input
                                 name="deskripsi"
-                                className="block w-full rounded-lg border-gray-200 bg-gray-50 px-3 py-2 text-sm focus:border-indigo-500 focus:bg-white focus:ring-1 focus:ring-indigo-500 transition-all placeholder:font-normal"
+                                className="block w-full rounded-lg border-gray-200 bg-gray-50 px-3 py-2 text-sm focus:border-indigo-500 focus:bg-white focus:ring-1 focus:ring-indigo-500 transition-all placeholder:font-normal h-11"
                                 value={deskripsi}
                                 onChange={(e) => setDeskripsi(e.target.value)}
                                 placeholder="Keterangan / Deskripsi..."
@@ -178,30 +181,34 @@ const RouteForm: React.FC<RouteFormProps> = ({ initialData, onSubmit, onCancel, 
                 {/* Search & List Header */}
                 <div className="px-4 py-3 bg-gray-50/80 border-b border-gray-200 backdrop-blur-sm sticky top-0 z-20 space-y-2">
                     <div className="relative">
-                        <Search className="absolute left-3 top-2.5 h-4 w-4 text-gray-400" />
-                        <input 
+                        <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-gray-400 z-10" />
+                        <Input 
                             type="text"
                             placeholder="Cari Toko atau Alamat..."
-                            className="w-full pl-9 pr-3 py-2 text-sm border-gray-200 rounded-lg focus:border-indigo-500 focus:ring-indigo-500 shadow-sm"
+                            className="w-full pl-9 pr-3 py-2 text-sm border-gray-200 rounded-lg focus:border-indigo-500 focus:ring-indigo-500 shadow-sm bg-white h-10"
                             value={searchQuery}
                             onChange={(e) => setSearchQuery(e.target.value)}
                         />
                     </div>
                     
                     <div className="relative">
-                        <UserIcon className="absolute left-3 top-2.5 h-4 w-4 text-gray-400" />
-                        <select
-                            className="w-full pl-9 pr-3 py-2 text-sm border-gray-200 rounded-lg focus:border-indigo-500 focus:ring-indigo-500 shadow-sm bg-white"
-                            value={selectedKaryawanId}
-                            onChange={(e) => setSelectedKaryawanId(e.target.value === 'all' ? 'all' : Number(e.target.value))}
+                        <Select
+                            value={selectedKaryawanId.toString()}
+                            onValueChange={(val) => setSelectedKaryawanId(val === 'all' ? 'all' : Number(val))}
                         >
-                            <option value="all">Semua Sales (Karyawan)</option>
-                            {filterOptions.map(opt => (
-                                <option key={opt.id} value={opt.id}>
-                                    {opt.nama_lengkap} {!opt.has_account ? '(No Account)' : ''} {opt.has_data ? '✓' : ''}
-                                </option>
-                            ))}
-                        </select>
+                            <SelectTrigger className="w-full pl-9 bg-white border-gray-200 h-10">
+                                <UserIcon className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-gray-400" />
+                                <SelectValue placeholder="Semua Sales (Karyawan)" />
+                            </SelectTrigger>
+                            <SelectContent>
+                                <SelectItem value="all">Semua Sales (Karyawan)</SelectItem>
+                                {filterOptions.map(opt => (
+                                    <SelectItem key={opt.id} value={opt.id.toString()}>
+                                        {opt.nama_lengkap} {!opt.has_account ? '(No Account)' : ''} {opt.has_data ? '✓' : ''}
+                                    </SelectItem>
+                                ))}
+                            </SelectContent>
+                        </Select>
                     </div>
                     <div className="flex items-center justify-between text-xs text-gray-500 px-1">
                         <span>Menampilkan {filteredCustomers.length} pelanggan</span>
@@ -238,21 +245,22 @@ const RouteForm: React.FC<RouteFormProps> = ({ initialData, onSubmit, onCancel, 
                         <span className="font-bold text-gray-800">{selectedCount} Stop Points</span>
                     </div>
                     <div className="grid grid-cols-2 gap-3">
-                        <button
+                        <Button
                             type="button"
+                            variant="outline"
                             onClick={onCancel}
                             disabled={isLoading}
-                            className="w-full py-2.5 rounded-lg border border-gray-200 text-gray-600 font-semibold text-sm hover:bg-gray-50 hover:text-gray-800 transition-colors"
+                            className="w-full py-2.5 rounded-lg border border-gray-200 text-gray-600 font-semibold text-sm hover:bg-gray-50 hover:text-gray-800 transition-colors h-11"
                         >
                             Batal
-                        </button>
-                        <button
+                        </Button>
+                        <Button
                             type="submit"
                             disabled={isLoading}
-                            className="w-full py-2.5 rounded-lg bg-indigo-600 text-white font-semibold text-sm hover:bg-indigo-700 shadow-md shadow-indigo-200 disabled:opacity-70 disabled:shadow-none transition-all active:scale-[0.98]"
+                            className="w-full py-2.5 rounded-lg bg-indigo-600 text-white font-semibold text-sm hover:bg-indigo-700 shadow-md shadow-indigo-200 disabled:opacity-70 disabled:shadow-none transition-all active:scale-[0.98] h-11"
                         >
                             {isLoading ? 'Menyimpan...' : 'Simpan Rute'}
-                        </button>
+                        </Button>
                     </div>
                 </div>
             </div>

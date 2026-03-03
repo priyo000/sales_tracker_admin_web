@@ -16,6 +16,8 @@ import {
   Info,
   Map as MapIcon,
 } from "lucide-react";
+import { parse, format } from "date-fns";
+import { DatePicker } from "@/components/ui/date-picker";
 import { Pelanggan, PelangganFormData } from "../types";
 import MapPicker from "./MapPicker";
 import { getImageUrl } from "@/lib/utils";
@@ -339,17 +341,13 @@ const CustomerForm: React.FC<CustomerFormProps> = ({
                         </FormField>
 
                         <FormField label="Tanggal Lahir" icon={Calendar}>
-                          <Input
-                            type="date"
-                            name="tanggal_lahir_pemilik"
-                            value={formData.tanggal_lahir_pemilik}
-                            onChange={(e) =>
-                              handleChange(
-                                "tanggal_lahir_pemilik",
-                                e.target.value,
-                              )
+                          <DatePicker
+                            date={formData.tanggal_lahir_pemilik ? parse(formData.tanggal_lahir_pemilik, "yyyy-MM-dd", new Date()) : undefined}
+                            onChange={(date) => 
+                              handleChange("tanggal_lahir_pemilik", date ? format(date, "yyyy-MM-dd") : "")
                             }
-                            className="h-11 bg-card border-border/50 focus-visible:ring-primary shadow-sm"
+                            className="w-full h-11 bg-card border-border/50 shadow-sm"
+                            placeholder="Pilih Tanggal Lahir"
                           />
                         </FormField>
 

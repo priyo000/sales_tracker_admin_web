@@ -5,12 +5,14 @@ import {
   Mail,
   Phone,
   Activity,
-  Calendar,
   MapPin,
   Save,
   X,
   LucideIcon,
+  Calendar as CalendarIcon,
 } from "lucide-react";
+import { parse, format } from "date-fns";
+import { DatePicker } from "@/components/ui/date-picker";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -131,14 +133,14 @@ const PerusahaanForm: React.FC<PerusahaanFormProps> = ({
               ))}
             </div>
           </FormField>
-          <FormField label="Tanggal Bergabung" icon={Calendar}>
-            <Input
-              type="date"
-              className="h-12 bg-card border-border/50 focus-visible:ring-primary shadow-sm font-bold"
-              value={formData.tanggal_bergabung || ""}
-              onChange={(e) =>
-                setFormData({ ...formData, tanggal_bergabung: e.target.value })
+          <FormField label="Tanggal Bergabung" icon={CalendarIcon}>
+            <DatePicker
+              date={formData.tanggal_bergabung ? parse(formData.tanggal_bergabung, "yyyy-MM-dd", new Date()) : undefined}
+              onChange={(date) => 
+                setFormData({ ...formData, tanggal_bergabung: date ? format(date, "yyyy-MM-dd") : "" })
               }
+              className="w-full h-12 bg-card border-border/50 shadow-sm font-bold text-left"
+              placeholder="Pilih Tanggal"
             />
           </FormField>
         </div>

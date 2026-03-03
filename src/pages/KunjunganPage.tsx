@@ -6,7 +6,8 @@ import { KunjunganMap } from "../features/monitoring/components/KunjunganMap";
 import { Calendar as CalendarIcon, Loader2, MapPin, X } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { VisitPoint } from "../features/monitoring/types";
-import { Input } from "@/components/ui/input";
+import { DatePicker } from "@/components/ui/date-picker";
+import { parse, format } from "date-fns";
 
 const KunjunganPage = () => {
   // Current Date
@@ -77,12 +78,14 @@ const KunjunganPage = () => {
   }, [selectedCustomerPoint, selectedEmployeeId, selectedEmployeePoints]);
 
   // Handle Date Change
-  const handleDateChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const newDate = e.target.value;
-    setSelectedDate(newDate);
-    setSelectedEmployeeId(null);
-    setSelectedCustomerPoint(null);
-    setIsRightSidebarOpen(false);
+  const handleDateSelect = (date: Date | undefined) => {
+    if (date) {
+      const newDateStr = format(date, "yyyy-MM-dd");
+      setSelectedDate(newDateStr);
+      setSelectedEmployeeId(null);
+      setSelectedCustomerPoint(null);
+      setIsRightSidebarOpen(false);
+    }
   };
 
   // Handle Employee Click
@@ -191,11 +194,10 @@ const KunjunganPage = () => {
               <span className="text-[9px] uppercase font-black text-muted-foreground/60 leading-none mb-0.5 tracking-tighter">
                 Periode Monitoring
               </span>
-              <Input
-                type="date"
-                value={selectedDate}
-                onChange={handleDateChange}
-                className="bg-transparent border-none p-0 text-xs font-black text-foreground focus-visible:ring-0 cursor-pointer w-[110px] shadow-none h-auto min-h-0"
+              <DatePicker
+                date={parse(selectedDate, "yyyy-MM-dd", new Date())}
+                onChange={handleDateSelect}
+                className="bg-transparent border-none p-0 text-xs font-black text-foreground focus-visible:ring-0 cursor-pointer w-auto shadow-none h-auto min-h-0 hover:bg-transparent"
               />
             </div>
           </div>
