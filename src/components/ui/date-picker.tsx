@@ -43,6 +43,7 @@ export function DatePicker({ date, onChange, placeholder = "Pilih tanggal", clas
           onSelect={onChange}
           initialFocus
           locale={id}
+          numberOfMonths={1}
         />
       </PopoverContent>
     </Popover>
