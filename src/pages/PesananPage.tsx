@@ -21,6 +21,7 @@ import { Button } from "@/components/ui/button";
 import { Modal } from "../components/ui/Modal";
 import api from "@/services/api";
 import toast from "react-hot-toast";
+import { ExportOrderModal } from "../features/pesanan/components/ExportOrderModal";
 
 const PesananPage: React.FC = () => {
   const {
@@ -36,6 +37,7 @@ const PesananPage: React.FC = () => {
   const [statusFilter, setStatusFilter] = useState("all");
   const [selectedOrderId, setSelectedOrderId] = useState<number | null>(null);
   const [isExporting, setIsExporting] = useState(false);
+  const [isExportModalOpen, setIsExportModalOpen] = useState(false);
 
   const [dateRange, setDateRange] = useState<DateRange | undefined>({
     from: undefined,
@@ -103,14 +105,14 @@ const PesananPage: React.FC = () => {
     [pesanans, selectedOrderId],
   );
 
-  const handleExport = async () => {
+  const handleExport = async (statuses: string[]) => {
     setIsExporting(true);
     try {
       const response = await api.get("/pesanan/export", {
         params: {
           start_date: startDate || undefined,
           end_date: endDate || undefined,
-          status: statusFilter !== "all" ? statusFilter : undefined,
+          status: statuses.length > 0 ? statuses.join(",") : undefined,
         },
         responseType: "blob",
       });
@@ -125,6 +127,7 @@ const PesananPage: React.FC = () => {
       link.click();
       link.remove();
       toast.success("Laporan berhasil diunduh");
+      setIsExportModalOpen(false);
     } catch {
       toast.error("Gagal mengeksport data pesanan.");
     } finally {
@@ -227,20 +230,24 @@ const PesananPage: React.FC = () => {
               <Button
                 variant="outline"
                 size="sm"
-                onClick={handleExport}
+                onClick={() => setIsExportModalOpen(true)}
                 disabled={isExporting}
                 className="gap-2 border-primary/20 text-primary hover:bg-primary/5 shadow-sm h-9"
               >
                 <Download className="h-4 w-4" />{" "}
-                {isExporting
-                  ? "Memproses..."
-                  : statusFilter !== "all"
-                    ? `Export (${statusFilter})`
-                    : "Export Excel"}
+                Export Excel
               </Button>
             </div>
           </div>
         }
+      />
+
+      {/* Export Modal */}
+      <ExportOrderModal
+        isOpen={isExportModalOpen}
+        onClose={() => setIsExportModalOpen(false)}
+        isLoading={isExporting}
+        onExport={handleExport}
       />
 
       {/* Detail Modal */}
