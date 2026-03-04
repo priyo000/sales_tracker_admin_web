@@ -2,7 +2,7 @@ import React, { useState } from "react";
 import { Modal } from "../../../components/ui/Modal";
 import { Button } from "@/components/ui/button";
 import { Checkbox } from "@/components/ui/checkbox";
-import { Download, AlertCircle, CalendarRange } from "lucide-react";
+import { Download, AlertCircle } from "lucide-react";
 import { DateRange } from "react-day-picker";
 import { format as formatFile } from "date-fns";
 import { DatePickerWithRange } from "@/components/ui/date-range-picker";
@@ -67,7 +67,7 @@ export const ExportOrderModal: React.FC<ExportOrderModalProps> = ({
               <p className="text-sm text-muted-foreground mt-1 mb-3">
                 Pilih rentang tanggal transaksi yang ingin diexport.
               </p>
-              <DatePickerWithRange date={dateRange} setDate={setDateRange} />
+              <DatePickerWithRange date={dateRange} onChange={setDateRange} />
             </div>
             
             <div className="pt-4 border-t">
