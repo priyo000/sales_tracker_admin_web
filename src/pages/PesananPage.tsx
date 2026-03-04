@@ -107,7 +107,11 @@ const PesananPage: React.FC = () => {
     setIsExporting(true);
     try {
       const response = await api.get("/pesanan/export", {
-        params: { start_date: startDate, end_date: endDate },
+        params: {
+          start_date: startDate || undefined,
+          end_date: endDate || undefined,
+          status: statusFilter !== "all" ? statusFilter : undefined,
+        },
         responseType: "blob",
       });
       const url = window.URL.createObjectURL(new Blob([response.data]));
@@ -228,7 +232,11 @@ const PesananPage: React.FC = () => {
                 className="gap-2 border-primary/20 text-primary hover:bg-primary/5 shadow-sm h-9"
               >
                 <Download className="h-4 w-4" />{" "}
-                {isExporting ? "Memproses..." : "Export Excel"}
+                {isExporting
+                  ? "Memproses..."
+                  : statusFilter !== "all"
+                    ? `Export (${statusFilter})`
+                    : "Export Excel"}
               </Button>
             </div>
           </div>
