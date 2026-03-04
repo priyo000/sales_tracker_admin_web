@@ -60,55 +60,53 @@ export const ExportOrderModal: React.FC<ExportOrderModalProps> = ({
   return (
     <Modal isOpen={isOpen} onClose={onClose} title="Export Pesanan ke Excel" size="md">
       <div className="space-y-6">
-        <div className="space-y-4">
-          <div className="flex items-center justify-between">
-            <div>
-              <h3 className="text-sm font-medium leading-none">Pilih Tanggal Transaksi</h3>
-              <p className="text-sm text-muted-foreground mt-1 mb-3">
-                Pilih rentang tanggal transaksi yang ingin diexport.
-              </p>
-              <DatePickerWithRange date={dateRange} onChange={setDateRange} />
-            </div>
-            
-            <div className="pt-4 border-t">
-              <h3 className="text-sm font-medium leading-none">Pilih Status</h3>
-              <p className="text-sm text-muted-foreground mt-1">
-                Pilih satu atau lebih status pesanan yang ingin Anda export. Kosongkan untuk mengekspor semua status.
-              </p>
-            </div>
+        <div className="space-y-5">
+          <div>
+            <h3 className="text-sm font-medium leading-none">Pilih Tanggal Transaksi</h3>
+            <p className="text-sm text-muted-foreground mt-1 mb-3">
+              Pilih rentang tanggal transaksi yang ingin diexport.
+            </p>
+            <DatePickerWithRange date={dateRange} onChange={setDateRange} />
           </div>
+          
+          <div className="pt-2">
+            <h3 className="text-sm font-medium leading-none">Pilih Status</h3>
+            <p className="text-sm text-muted-foreground mt-1 mb-3">
+              Pilih satu atau lebih status pesanan yang ingin Anda export. Kosongkan untuk mengekspor semua status.
+            </p>
 
-          <div className="rounded-lg border bg-card/50 p-4 space-y-3">
-            <div className="flex items-center space-x-2 pb-3 border-b border-border/50">
-              <Checkbox
-                id="select-all"
-                checked={selectedStatuses.length === STATUS_OPTIONS.length}
-                onCheckedChange={toggleAll}
-              />
-              <label
-                htmlFor="select-all"
-                className="text-sm font-bold leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70 cursor-pointer"
-              >
-                Pilih Semua
-              </label>
-            </div>
-            
-            <div className="grid grid-cols-2 gap-3 pt-1">
-              {STATUS_OPTIONS.map((status) => (
-                <div key={status.id} className="flex items-center space-x-2">
-                  <Checkbox
-                    id={`status-${status.id}`}
-                    checked={selectedStatuses.includes(status.id)}
-                    onCheckedChange={() => toggleStatus(status.id)}
-                  />
-                  <label
-                    htmlFor={`status-${status.id}`}
-                    className="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70 cursor-pointer"
-                  >
-                    {status.label}
-                  </label>
-                </div>
-              ))}
+            <div className="rounded-lg border bg-card/50 p-4 space-y-3">
+              <div className="flex items-center space-x-2 pb-3 border-b border-border/50">
+                <Checkbox
+                  id="select-all"
+                  checked={selectedStatuses.length === STATUS_OPTIONS.length}
+                  onCheckedChange={toggleAll}
+                />
+                <label
+                  htmlFor="select-all"
+                  className="text-sm font-bold leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70 cursor-pointer"
+                >
+                  Pilih Semua
+                </label>
+              </div>
+              
+              <div className="grid grid-cols-2 gap-3 pt-1">
+                {STATUS_OPTIONS.map((status) => (
+                  <div key={status.id} className="flex items-center space-x-2">
+                    <Checkbox
+                      id={`status-${status.id}`}
+                      checked={selectedStatuses.includes(status.id)}
+                      onCheckedChange={() => toggleStatus(status.id)}
+                    />
+                    <label
+                      htmlFor={`status-${status.id}`}
+                      className="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70 cursor-pointer"
+                    >
+                      {status.label}
+                    </label>
+                  </div>
+                ))}
+              </div>
             </div>
           </div>
         </div>
