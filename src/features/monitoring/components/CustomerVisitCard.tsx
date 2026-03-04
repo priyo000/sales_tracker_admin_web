@@ -160,31 +160,88 @@ export const CustomerVisitCard = ({
         </div>
 
         {visit && (
-          <div className="space-y-3">
-            {images.length > 0 && (
-              <div className="flex flex-wrap gap-1.5">
-                {images.map((img, idx) => (
-                  <div
-                    key={idx}
-                    onClick={(e) => {
-                      e.stopPropagation();
-                      setSelectedImage(img as string);
-                      setIsImageModalOpen(true);
-                    }}
-                    className="relative h-12 w-12 rounded-md overflow-hidden border border-border hover:border-primary transition-all cursor-zoom-in"
-                  >
-                    <img
-                      src={img as string}
-                      alt={`Bukti ${idx + 1}`}
-                      className="object-cover w-full h-full"
-                    />
-                    <div className="absolute inset-0 bg-black/5 group-hover:bg-transparent transition-colors" />
-                  </div>
-                ))}
-              </div>
-            )}
+        <div className="space-y-3">
+        {images.length > 0 && (
+        <div className="flex flex-wrap gap-1.5">
+        {images.map((img, idx) => (
+        <div
+        key={idx}
+        onClick={(e) => {
+        e.stopPropagation();
+        setSelectedImage(img as string);
+        setIsImageModalOpen(true);
+        }}
+        className="relative h-12 w-12 rounded-md overflow-hidden border border-border hover:border-primary transition-all cursor-zoom-in"
+        >
+        <img
+        src={img as string}
+        alt={`Bukti ${idx + 1}`}
+        className="object-cover w-full h-full"
+        />
+        <div className="absolute inset-0 bg-black/5 group-hover:bg-transparent transition-colors" />
+        </div>
+        ))}
+        </div>
+        )}
 
-            {visit.pesanan ? (
+        {/* Tampilkan pesanan_summary (multiple orders) jika ada */}
+        {visit.pesanan_summary ? (
+        <div className="bg-green-500/5 text-green-700 dark:text-green-400 p-3 rounded-xl text-xs border border-green-500/10 shadow-sm">
+        <div className="flex items-center gap-2 mb-2 font-bold border-b border-green-500/10 pb-2 uppercase tracking-tight text-[10px]">
+        <BadgeCheck className="h-4 w-4" />
+          <span>Detail Transaksi</span>
+          {visit.pesanan_summary.count > 1 && (
+          <span className="ml-auto bg-green-500/20 text-green-700 px-1.5 py-0.5 rounded text-[9px] font-black">
+          {visit.pesanan_summary.count} ORDER
+        </span>
+        )}
+        </div>
+        {/* Jika hanya 1 pesanan, tampilkan ringkas */}
+        {visit.pesanan_summary.count === 1 ? (
+        <div className="flex justify-between items-end">
+          <div>
+          <span className="text-[10px] text-muted-foreground block uppercase tracking-wider mb-0.5">
+            Total Order
+            </span>
+          <span className="font-bold text-sm text-green-600 dark:text-green-500 tabular-nums leading-none">
+              {formatCurrency(visit.pesanan_summary.total_tagihan)}
+              </span>
+              </div>
+                <Badge variant="success" className="h-5 text-[10px] py-0 px-1.5 font-bold">
+                {visit.pesanan_summary.items_count} ITEMS
+            </Badge>
+        </div>
+        ) : (
+        /* Jika 2+ pesanan, tampilkan list per pesanan */
+        <div className="space-y-1.5">
+            {visit.pesanan_summary.list.map((p, idx) => (
+                <div key={p.id} className="flex justify-between items-center py-1 border-b border-green-500/10 last:border-0">
+                    <span className="text-[10px] text-muted-foreground font-mono">
+                          #{idx + 1} {p.no_pesanan}
+                        </span>
+                        <div className="flex items-center gap-2">
+                          <span className="text-[10px] text-green-700 font-bold tabular-nums">
+                            {formatCurrency(p.total_tagihan)}
+                          </span>
+                          <Badge variant="success" className="h-4 text-[9px] py-0 px-1 font-bold">
+                            {p.items_count} item
+                          </Badge>
+                        </div>
+                      </div>
+                    ))}
+                    <div className="flex justify-between items-center pt-1">
+                      <span className="text-[10px] font-black uppercase tracking-wider text-green-800">
+                        Total
+                      </span>
+                      <span className="font-black text-sm text-green-700 tabular-nums">
+                        {formatCurrency(visit.pesanan_summary.total_tagihan)}
+                      </span>
+                    </div>
+                  </div>
+                )}
+              </div>
+            ) : visit.pesanan ? (
+              // Fallback: legacy single pesanan
               <div className="bg-green-500/5 text-green-700 dark:text-green-400 p-3 rounded-xl text-xs border border-green-500/10 shadow-sm">
                 <div className="flex items-center gap-2 mb-2 font-bold border-b border-green-500/10 pb-2 uppercase tracking-tight text-[10px]">
                   <BadgeCheck className="h-4 w-4" />
@@ -199,10 +256,7 @@ export const CustomerVisitCard = ({
                       {formatCurrency(visit.pesanan.total_tagihan || 0)}
                     </span>
                   </div>
-                  <Badge
-                    variant="success"
-                    className="h-5 text-[10px] py-0 px-1.5 font-bold"
-                  >
+                  <Badge variant="success" className="h-5 text-[10px] py-0 px-1.5 font-bold">
                     {visit.pesanan.items_count || 0} ITEMS
                   </Badge>
                 </div>

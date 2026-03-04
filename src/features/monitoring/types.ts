@@ -39,12 +39,26 @@ export interface VisitPoint {
         batas_jarak?: number;
         is_valid_distance?: boolean;
         status_kunjungan: string;
-        status_transaksi: boolean;
+        status_transaksi: boolean; // true = ada pesanan aktif (exclude cancelled)
         catatan?: string;
         foto_1_url?: string;
         foto_2_url?: string;
         foto_3_url?: string;
         foto_4_url?: string;
+        // Summary agregat semua pesanan aktif dalam kunjungan ini
+        pesanan_summary?: {
+            count: number;
+            total_tagihan: number;
+            items_count: number;
+            list: {
+                id: number;
+                no_pesanan: string;
+                total_tagihan: number;
+                items_count: number;
+                status: string;
+            }[];
+        };
+        // Legacy: single pesanan (kept for backward compatibility)
         pesanan?: {
             id: number;
             total_tagihan: number;
