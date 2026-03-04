@@ -2,12 +2,15 @@ import React, { useState } from "react";
 import { Modal } from "../../../components/ui/Modal";
 import { Button } from "@/components/ui/button";
 import { Checkbox } from "@/components/ui/checkbox";
-import { Download, AlertCircle } from "lucide-react";
+import { Download, AlertCircle, CalendarRange } from "lucide-react";
+import { DateRange } from "react-day-picker";
+import { format as formatFile } from "date-fns";
+import { DatePickerWithRange } from "@/components/ui/date-range-picker";
 
 interface ExportOrderModalProps {
   isOpen: boolean;
   onClose: () => void;
-  onExport: (statuses: string[]) => void;
+  onExport: (statuses: string[], dateRange: {startDate: string, endDate: string}) => void;
   isLoading: boolean;
 }
 
@@ -26,6 +29,10 @@ export const ExportOrderModal: React.FC<ExportOrderModalProps> = ({
   isLoading,
 }) => {
   const [selectedStatuses, setSelectedStatuses] = useState<string[]>([]);
+  const [dateRange, setDateRange] = useState<DateRange | undefined>({
+    from: undefined,
+    to: undefined,
+  });
 
   const toggleStatus = (statusId: string) => {
     setSelectedStatuses((prev) =>
@@ -44,7 +51,10 @@ export const ExportOrderModal: React.FC<ExportOrderModalProps> = ({
   };
 
   const handleExport = () => {
-    onExport(selectedStatuses);
+    const startDate = dateRange?.from ? formatFile(dateRange.from, "yyyy-MM-dd") : "";
+    const endDate = dateRange?.to ? formatFile(dateRange.to, "yyyy-MM-dd") : "";
+    
+    onExport(selectedStatuses, { startDate, endDate });
   };
 
   return (
@@ -53,6 +63,14 @@ export const ExportOrderModal: React.FC<ExportOrderModalProps> = ({
         <div className="space-y-4">
           <div className="flex items-center justify-between">
             <div>
+              <h3 className="text-sm font-medium leading-none">Pilih Tanggal Transaksi</h3>
+              <p className="text-sm text-muted-foreground mt-1 mb-3">
+                Pilih rentang tanggal transaksi yang ingin diexport.
+              </p>
+              <DatePickerWithRange date={dateRange} setDate={setDateRange} />
+            </div>
+            
+            <div className="pt-4 border-t">
               <h3 className="text-sm font-medium leading-none">Pilih Status</h3>
               <p className="text-sm text-muted-foreground mt-1">
                 Pilih satu atau lebih status pesanan yang ingin Anda export. Kosongkan untuk mengekspor semua status.

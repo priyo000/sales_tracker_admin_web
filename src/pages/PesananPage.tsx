@@ -105,13 +105,13 @@ const PesananPage: React.FC = () => {
     [pesanans, selectedOrderId],
   );
 
-  const handleExport = async (statuses: string[]) => {
+  const handleExport = async (statuses: string[], dateRange: {startDate: string, endDate: string}) => {
     setIsExporting(true);
     try {
       const response = await api.get("/pesanan/export", {
         params: {
-          start_date: startDate || undefined,
-          end_date: endDate || undefined,
+          start_date: dateRange.startDate || undefined,
+          end_date: dateRange.endDate || undefined,
           status: statuses.length > 0 ? statuses.join(",") : undefined,
         },
         responseType: "blob",
