@@ -9,10 +9,8 @@ import {
     Activity,
     Truck,
     DollarSign,
-    Star,
     ArrowUpRight,
-    ArrowDownRight,
-    Trophy
+    ArrowDownRight
 } from 'lucide-react';
 
 
@@ -20,6 +18,7 @@ import toast from 'react-hot-toast';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { ScrollArea } from '@/components/ui/scroll-area';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip as RechartsTooltip, ResponsiveContainer } from 'recharts';
 
 interface SalesChartData {
@@ -71,11 +70,18 @@ interface DashboardStats {
 const Dashboard: React.FC = () => {
     const [stats, setStats] = useState<DashboardStats | null>(null);
     const [loading, setLoading] = useState(true);
+    const [productFilter, setProductFilter] = useState('all_time');
+    const [salesmanFilter, setSalesmanFilter] = useState('all_time');
 
     useEffect(() => {
         const fetchStats = async () => {
             try {
-                const response = await api.get('/admin/dashboard');
+                const response = await api.get('/admin/dashboard', {
+                    params: {
+                        product_filter: productFilter,
+                        salesman_filter: salesmanFilter
+                    }
+                });
                 setStats(response.data.data);
             } catch (error) {
                 console.error("Failed to fetch dashboard stats", error);
@@ -86,7 +92,7 @@ const Dashboard: React.FC = () => {
         };
 
         fetchStats();
-    }, []);
+    }, [productFilter, salesmanFilter]);
 
     if (loading) {
         return (
@@ -366,10 +372,16 @@ const Dashboard: React.FC = () => {
                         <CardHeader className="pb-3 border-b">
                             <CardTitle className="text-base flex justify-between items-center">
                                 Produk Terlaris
-                                <Badge variant="outline" className="font-normal text-xs bg-amber-50 text-amber-600 border-amber-200">
-                                    <Star className="w-3 h-3 mr-1 fill-amber-500 text-amber-500" />
-                                    Top 5
-                                </Badge>
+                                <Select value={productFilter} onValueChange={setProductFilter}>
+                                    <SelectTrigger className="h-7 w-[115px] text-xs">
+                                        <SelectValue placeholder="Periode" />
+                                    </SelectTrigger>
+                                    <SelectContent>
+                                        <SelectItem value="all_time" className="text-xs">Semua Waktu</SelectItem>
+                                        <SelectItem value="this_year" className="text-xs">Tahun Ini</SelectItem>
+                                        <SelectItem value="this_month" className="text-xs">Bulan Ini</SelectItem>
+                                    </SelectContent>
+                                </Select>
                             </CardTitle>
                         </CardHeader>
                         <CardContent className="px-0 py-0">
@@ -410,10 +422,16 @@ const Dashboard: React.FC = () => {
                         <CardHeader className="pb-3 border-b">
                             <CardTitle className="text-base flex justify-between items-center">
                                 Top Salesman
-                                <Badge variant="outline" className="font-normal text-xs bg-indigo-50 text-indigo-600 border-indigo-200">
-                                    <Trophy className="w-3 h-3 mr-1 fill-indigo-200" />
-                                    Omset Tertinggi
-                                </Badge>
+                                <Select value={salesmanFilter} onValueChange={setSalesmanFilter}>
+                                    <SelectTrigger className="h-7 w-[115px] text-xs">
+                                        <SelectValue placeholder="Periode" />
+                                    </SelectTrigger>
+                                    <SelectContent>
+                                        <SelectItem value="all_time" className="text-xs">Semua Waktu</SelectItem>
+                                        <SelectItem value="this_year" className="text-xs">Tahun Ini</SelectItem>
+                                        <SelectItem value="this_month" className="text-xs">Bulan Ini</SelectItem>
+                                    </SelectContent>
+                                </Select>
                             </CardTitle>
                         </CardHeader>
                         <CardContent className="px-0 py-0">
