@@ -282,16 +282,17 @@ const Dashboard: React.FC = () => {
                     </Card>
 
                     {/* Recent Orders List */}
-                    <Card>
+                    <Card className="flex-1 flex flex-col">
                         <CardHeader className="pb-3 border-b">
                             <CardTitle className="text-base flex justify-between items-center">
                                 Pesanan Terbaru
                                 <Badge variant="secondary" className="font-normal text-xs">{stats.recent_orders?.length || 0} recent</Badge>
                             </CardTitle>
                         </CardHeader>
-                        <CardContent className="px-0 py-0">
-                            <ScrollArea className="h-[350px]">
-                                {stats.recent_orders.length === 0 ? (
+                        <CardContent className="px-0 py-0 flex-1 relative min-h-[300px]">
+                            <div className="absolute inset-0">
+                                <ScrollArea className="h-full">
+                                    {stats.recent_orders.length === 0 ? (
                                     <div className="flex h-[200px] items-center justify-center text-sm text-muted-foreground">
                                         Belum ada pesanan terbaru.
                                     </div>
@@ -304,30 +305,31 @@ const Dashboard: React.FC = () => {
                                                 </div>
                                                 <div className="flex flex-col flex-1 min-w-0 pr-2">
                                                     <div className="flex items-center justify-between mb-1">
-                                                        <span className="text-sm font-semibold truncate text-foreground pr-2">
-                                                            {order.nama_toko || 'Toko tidak diketahui'}
-                                                        </span>
-                                                        <span className="text-xs text-muted-foreground whitespace-nowrap">
+                                                        <div className="flex items-center gap-2 pr-2 min-w-0">
+                                                            <span className="text-sm font-semibold truncate text-foreground">
+                                                                {order.nama_toko || 'Toko tidak diketahui'}
+                                                            </span>
+                                                            <Badge variant={getStatusVariant(order.status)} className="text-[9px] px-1.5 py-0 h-4 uppercase tracking-wider shrink-0">
+                                                                {order.status}
+                                                            </Badge>
+                                                        </div>
+                                                        <span className="text-xs text-muted-foreground whitespace-nowrap shrink-0">
                                                             {order.tanggal}
                                                         </span>
                                                     </div>
-                                                    <div className="flex items-center justify-between text-xs text-muted-foreground mb-1.5">
+                                                    <div className="flex items-center justify-between text-xs text-muted-foreground">
                                                         <span className="truncate">{order.no_pesanan}</span>
                                                         {order.total_tagihan !== undefined && order.total_tagihan > 0 ? (
                                                             <span className="font-semibold text-foreground">{formatCurrency(order.total_tagihan)}</span>
                                                         ) : null}
-                                                    </div>
-                                                    <div className="flex">
-                                                        <Badge variant={getStatusVariant(order.status)} className="text-[10px] px-2 py-0 h-4 uppercase tracking-wider">
-                                                            {order.status}
-                                                        </Badge>
                                                     </div>
                                                 </div>
                                             </div>
                                         ))}
                                     </div>
                                 )}
-                            </ScrollArea>
+                                </ScrollArea>
+                            </div>
                         </CardContent>
                     </Card>
                 </div>
@@ -373,7 +375,7 @@ const Dashboard: React.FC = () => {
                             <CardTitle className="text-base flex justify-between items-center">
                                 Produk Terlaris
                                 <Select value={productFilter} onValueChange={setProductFilter}>
-                                    <SelectTrigger className="h-7 w-[115px] text-xs">
+                                    <SelectTrigger className="h-7 w-[130px] pr-2 text-xs">
                                         <SelectValue placeholder="Periode" />
                                     </SelectTrigger>
                                     <SelectContent>
@@ -418,12 +420,12 @@ const Dashboard: React.FC = () => {
                     </Card>
                     
                     {/* Top Salesman List */}
-                    <Card>
+                    <Card className="flex-1 flex flex-col">
                         <CardHeader className="pb-3 border-b">
                             <CardTitle className="text-base flex justify-between items-center">
                                 Top Salesman
                                 <Select value={salesmanFilter} onValueChange={setSalesmanFilter}>
-                                    <SelectTrigger className="h-7 w-[115px] text-xs">
+                                    <SelectTrigger className="h-7 w-[130px] pr-2 text-xs">
                                         <SelectValue placeholder="Periode" />
                                     </SelectTrigger>
                                     <SelectContent>
@@ -434,9 +436,10 @@ const Dashboard: React.FC = () => {
                                 </Select>
                             </CardTitle>
                         </CardHeader>
-                        <CardContent className="px-0 py-0">
-                            <ScrollArea className="h-[260px]">
-                                {!stats.top_salesman || stats.top_salesman.length === 0 ? (
+                        <CardContent className="px-0 py-0 flex-1 relative min-h-[300px]">
+                            <div className="absolute inset-0">
+                                <ScrollArea className="h-full">
+                                    {!stats.top_salesman || stats.top_salesman.length === 0 ? (
                                     <div className="flex h-[200px] items-center justify-center text-sm text-muted-foreground">
                                         Belum ada data sales.
                                     </div>
@@ -468,7 +471,8 @@ const Dashboard: React.FC = () => {
                                         ))}
                                     </div>
                                 )}
-                            </ScrollArea>
+                                </ScrollArea>
+                            </div>
                         </CardContent>
                     </Card>
                 </div>
