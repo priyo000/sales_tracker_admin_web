@@ -14,6 +14,11 @@ import { Pesanan, ItemPesanan, UpdatePesananData } from "../types";
 import { ConfirmModal } from "../../../components/ui/Modal";
 import { useProduk } from "../../produk/hooks/useProduk";
 import { Produk } from "../../produk/types";
+import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
+import { Card, CardContent } from "@/components/ui/card";
+import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
+import { ScrollArea } from "@/components/ui/scroll-area";
 
 interface OrderDetailProps {
   pesanan: Pesanan;
@@ -28,15 +33,15 @@ interface OrderDetailProps {
 const getStatusColor = (status: string) => {
   switch (status.toLowerCase()) {
     case "sukses":
-      return "bg-green-100 text-green-800";
+      return "bg-green-500/10 text-green-600 border-green-200/50";
     case "pending":
-      return "bg-yellow-100 text-yellow-800";
+      return "bg-amber-500/10 text-amber-600 border-amber-200/50";
     case "batal":
-      return "bg-red-100 text-red-800";
+      return "bg-destructive/10 text-destructive border-destructive/20";
     case "proses":
-      return "bg-blue-100 text-blue-800";
+      return "bg-blue-500/10 text-blue-600 border-blue-200/50";
     default:
-      return "bg-gray-100 text-gray-800";
+      return "bg-slate-500/10 text-slate-600 border-slate-200/50";
   }
 };
 
@@ -111,7 +116,6 @@ const OrderDetail: React.FC<OrderDetailProps> = ({
 
   const handleAddProduct = (produk: Produk) => {
     if (editedItems.find((item) => item.id_produk === produk.id)) {
-      // Already added
       setShowProductSearch(false);
       return;
     }
@@ -159,450 +163,333 @@ const OrderDetail: React.FC<OrderDetailProps> = ({
       setStatusToConfirm(null);
     }
   };
-  return (
-    <div className="space-y-6">
-      <div className="bg-gray-50 p-4 rounded-lg border border-gray-200">
-        <div className="flex justify-between items-start mb-4">
-          <h3 className="text-sm font-semibold text-gray-500 uppercase tracking-wider">
-            Informasi Pesanan
-          </h3>
-          {!isEditing && pesanan.status === "PENDING" && (
-            <button
-              onClick={() => setIsEditing(true)}
-              className="flex items-center text-xs font-medium text-indigo-600 hover:text-indigo-800"
-            >
-              <Edit3 className="mr-1 h-3 w-3" /> Edit Pesanan
-            </button>
-          )}
-        </div>
-        <div className="grid grid-cols-2 gap-4 text-sm">
-          <div>
-            <p className="text-gray-500 mb-1">No. PO</p>
-            <p className="font-bold text-indigo-700">{pesanan.no_pesanan}</p>
-          </div>
-          <div>
-            <p className="text-gray-500 mb-1">Pelanggan</p>
-            <p className="font-semibold text-gray-900">
-              {pesanan.pelanggan?.nama_toko || "N/A"}
-            </p>
-          </div>
-          <div>
-            <p className="text-gray-500 mb-1">Sales</p>
-            <p className="font-semibold text-gray-900">
-              {pesanan.karyawan?.nama_lengkap || "Unknown"}
-            </p>
-          </div>
-          <div>
-            <p className="text-gray-500 mb-1">Tanggal Pesanan</p>
-            <p className="font-medium text-gray-700">
-              {new Date(pesanan.tanggal_transaksi).toLocaleString("id-ID", {
-                day: "numeric",
-                month: "long",
-                year: "numeric",
-                hour: "2-digit",
-                minute: "2-digit",
-              })}
-            </p>
-          </div>
-          <div>
-            <p className="text-gray-500 mb-1">Status Saat Ini</p>
-            <span
-              className={`inline-flex rounded-full px-2.5 py-0.5 text-xs font-semibold ${getStatusColor(pesanan.status || "")}`}
-            >
-              {pesanan.status}
-            </span>
-          </div>
-          {pesanan.pelanggan && (
-            <div className="col-span-2 pt-2 border-t border-gray-100 mt-1">
-              <div className="flex justify-between items-center">
-                <span className="text-xs text-gray-500">
-                  Limit Kredit Berjalan Pelanggan:
-                </span>
-                <span
-                  className={`text-sm font-bold ${Number(pesanan.pelanggan.limit_kredit_berjalan) < 0 ? "text-red-500" : "text-green-600"}`}
-                >
-                  Rp{" "}
-                  {(
-                    Number(pesanan.pelanggan.limit_kredit_berjalan) || 0
-                  ).toLocaleString("id-ID", { maximumFractionDigits: 0 })}
-                </span>
-              </div>
-            </div>
-          )}
-        </div>
-        {/* Status Tracking Timeline */}
-        <div className="mt-4 border-t border-gray-100 pt-3">
-          <h4 className="text-xs font-semibold text-gray-500 uppercase tracking-wider mb-2">
-            Riwayat Status
-          </h4>
-          <div className="space-y-2 text-sm">
-            {pesanan.waktu_proses && (
-              <div className="flex justify-between">
-                <span className="text-gray-500">Diproses:</span>
-                <span className="font-medium text-gray-900">
-                  {new Date(pesanan.waktu_proses).toLocaleString("id-ID")}
-                </span>
-              </div>
-            )}
-            {pesanan.waktu_kirim && (
-              <div className="flex justify-between">
-                <span className="text-gray-500">Dikirim:</span>
-                <span className="font-medium text-gray-900">
-                  {new Date(pesanan.waktu_kirim).toLocaleString("id-ID")}
-                </span>
-              </div>
-            )}
-            {pesanan.waktu_selesai && (
-              <div className="flex justify-between">
-                <span className="text-gray-500">Selesai:</span>
-                <span className="font-medium text-green-600">
-                  {new Date(pesanan.waktu_selesai).toLocaleString("id-ID")}
-                </span>
-              </div>
-            )}
-            {pesanan.waktu_batal && (
-              <div className="flex justify-between">
-                <span className="text-gray-500">Dibatalkan:</span>
-                <span className="font-medium text-red-600">
-                  {new Date(pesanan.waktu_batal).toLocaleString("id-ID")}
-                </span>
-              </div>
-            )}
-            {!pesanan.waktu_proses &&
-              !pesanan.waktu_kirim &&
-              !pesanan.waktu_selesai &&
-              !pesanan.waktu_batal && (
-                <span className="text-gray-400 italic">
-                  Belum ada riwayat status.
-                </span>
-              )}
-          </div>
-        </div>
-      </div>
 
-      <div>
-        <div className="flex justify-between items-center mb-3">
-          <h4 className="text-sm font-semibold text-gray-900 uppercase tracking-wider">
-            Item Pesanan
+  return (
+    <div className="space-y-4 animate-in fade-in duration-500">
+      <Card className="border border-border/60 shadow-sm overflow-hidden rounded-xl">
+        <div className="h-1 bg-primary/20" />
+        <CardContent className="p-4 space-y-4">
+          <div className="flex justify-between items-center border-b border-border/40 pb-3 mb-1">
+            <h3 className="text-[10px] font-bold text-muted-foreground uppercase tracking-wider">
+              Informasi Pesanan
+            </h3>
+            {!isEditing && pesanan.status === "PENDING" && (
+              <Button
+                variant="ghost"
+                size="sm"
+                onClick={() => setIsEditing(true)}
+                className="h-7 text-[10px] font-bold uppercase tracking-wider text-primary hover:text-primary hover:bg-primary/10 gap-1.5"
+              >
+                <Edit3 className="h-3 w-3" /> Edit Pesanan
+              </Button>
+            )}
+          </div>
+          
+          <div className="grid grid-cols-2 gap-x-6 gap-y-3 text-xs">
+            <div>
+              <p className="text-[9px] text-muted-foreground font-bold uppercase tracking-widest mb-0.5">No. PO / Pesanan</p>
+              <p className="font-bold text-primary tracking-tight">{pesanan.no_pesanan}</p>
+            </div>
+            <div>
+              <p className="text-[9px] text-muted-foreground font-bold uppercase tracking-widest mb-0.5">Nama Pelanggan / Toko</p>
+              <p className="font-semibold text-foreground">{pesanan.pelanggan?.nama_toko || "N/A"}</p>
+            </div>
+            <div>
+              <p className="text-[9px] text-muted-foreground font-bold uppercase tracking-widest mb-0.5">Sales Representative</p>
+              <p className="font-semibold text-foreground">{pesanan.karyawan?.nama_lengkap || "Unknown"}</p>
+            </div>
+            <div>
+              <p className="text-[9px] text-muted-foreground font-bold uppercase tracking-widest mb-0.5">Waktu Transaksi</p>
+              <p className="font-medium text-foreground/80">
+                {new Date(pesanan.tanggal_transaksi).toLocaleString("id-ID", {
+                  day: "numeric",
+                  month: "short",
+                  year: "numeric",
+                  hour: "2-digit",
+                  minute: "2-digit",
+                })}
+              </p>
+            </div>
+            <div className="col-span-2">
+              <p className="text-[9px] text-muted-foreground font-bold uppercase tracking-widest mb-1">Status Transaksi</p>
+              <Badge variant="outline" className={`rounded-md px-2 py-0.5 text-[10px] font-bold uppercase tracking-widest border ${getStatusColor(pesanan.status || "")}`}>
+                {pesanan.status}
+              </Badge>
+            </div>
+          </div>
+
+          {/* Timeline / History */}
+          <div className="mt-4 pt-4 border-t border-border/40">
+            <h4 className="text-[10px] font-bold text-muted-foreground uppercase tracking-widest mb-3">Jejak Waktu Status</h4>
+            <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
+              {[
+                { label: "Diproses", date: pesanan.waktu_proses },
+                { label: "Dikirim", date: pesanan.waktu_kirim },
+                { label: "Selesai", date: pesanan.waktu_selesai },
+                { label: "Batal", date: pesanan.waktu_batal, isDestructive: true }
+              ].filter(t => t.date).map((entry, idx) => (
+                <div key={idx} className="bg-muted/30 p-2 rounded-lg border border-border/20">
+                  <p className={`text-[8px] font-bold uppercase tracking-tighter mb-0.5 ${entry.isDestructive ? 'text-destructive' : 'text-muted-foreground'}`}>{entry.label}</p>
+                  <p className="text-[10px] font-semibold text-foreground/90 whitespace-nowrap">
+                    {new Date(entry.date!).toLocaleString("id-ID", { hour: "2-digit", minute: "2-digit", day: "2-digit", month: "short" })}
+                  </p>
+                </div>
+              ))}
+              {(!pesanan.waktu_proses && !pesanan.waktu_kirim && !pesanan.waktu_selesai && !pesanan.waktu_batal) && (
+                <p className="col-span-4 text-[10px] text-muted-foreground italic text-center py-1 opacity-60 uppercase tracking-widest font-bold">Menunggu Proses Selanjutnya</p>
+              )}
+            </div>
+          </div>
+        </CardContent>
+      </Card>
+
+      <div className="space-y-3">
+        <div className="flex justify-between items-center">
+          <h4 className="text-[10px] font-bold text-muted-foreground uppercase tracking-widest ml-1">
+            Detail Item Pesanan
           </h4>
           {isEditing && (
-            <button
+            <Button
+              size="sm"
               onClick={() => setShowProductSearch(true)}
-              className="flex items-center text-xs font-medium bg-indigo-50 text-indigo-700 px-2 py-1 rounded hover:bg-indigo-100"
+              className="h-8 text-[10px] font-bold uppercase tracking-wider bg-indigo-600 hover:bg-indigo-700 text-white gap-1.5 rounded-lg"
             >
-              <Plus className="mr-1 h-3 w-3" /> Tambah Barang
-            </button>
+              <Plus className="h-3 w-3" /> Tambah Produk
+            </Button>
           )}
         </div>
 
-        {/* Product search dropdown for editing */}
+        {/* Product search for editing */}
         {isEditing && showProductSearch && (
-          <div className="mb-4 bg-white border border-indigo-100 rounded-lg shadow-sm p-3 animate-in fade-in slide-in-from-top-2">
+          <Card className="bg-indigo-50/50 border border-indigo-100 p-3 rounded-xl animate-in fade-in slide-in-from-top-2">
             <div className="relative mb-2">
-              <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-gray-400" />
+              <Search className="absolute left-2.5 top-1/2 -translate-y-1/2 h-3.5 w-3.5 text-indigo-400" />
               <input
                 autoFocus
                 type="text"
-                placeholder="Cari nama barang..."
-                className="w-full pl-9 pr-4 py-2 text-sm border border-gray-200 rounded-md focus:ring-1 focus:ring-indigo-500"
+                placeholder="Ketik nama produk untuk mencari..."
+                className="w-full pl-8 pr-4 py-2 text-xs bg-white border border-indigo-200 rounded-lg focus:ring-1 focus:ring-indigo-500 outline-none font-medium"
                 value={productSearch}
                 onChange={(e) => setProductSearch(e.target.value)}
               />
             </div>
-            <div className="max-h-40 overflow-y-auto space-y-1">
-              {produks.length === 0 ? (
-                <p className="text-xs text-center text-gray-500 py-4">
-                  Produk tidak ditemukan
-                </p>
-              ) : (
-                produks.map((p) => (
+            <ScrollArea className="h-32">
+              <div className="space-y-1">
+                {produks.map((p) => (
                   <button
                     key={p.id}
                     onClick={() => handleAddProduct(p)}
-                    className="w-full text-left px-3 py-2 text-xs hover:bg-gray-50 flex justify-between rounded"
+                    className="w-full text-left px-3 py-2 text-xs hover:bg-white hover:shadow-sm flex justify-between rounded-lg transition-all"
                   >
-                    <span className="font-medium">{p.nama_produk}</span>
-                    <span className="text-gray-500">
-                      Rp{" "}
-                      {Number(p.harga_jual).toLocaleString("id-ID", {
-                        maximumFractionDigits: 0,
-                      })}
+                    <span className="font-semibold text-foreground/80">{p.nama_produk}</span>
+                    <span className="font-bold text-indigo-600">
+                      Rp {Number(p.harga_jual).toLocaleString("id-ID", { maximumFractionDigits: 0 })}
                     </span>
                   </button>
-                ))
-              )}
-            </div>
-            <button
-              onClick={() => setShowProductSearch(false)}
-              className="w-full mt-2 text-xs text-gray-400 py-1"
-            >
-              Batal
-            </button>
-          </div>
+                ))}
+              </div>
+            </ScrollArea>
+          </Card>
         )}
 
-        <div className="overflow-hidden rounded-lg border border-gray-200">
-          <table className="min-w-full divide-y divide-gray-200">
-            <thead className="bg-gray-50">
-              <tr>
-                <th
-                  scope="col"
-                  className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase whitespace-nowrap"
-                >
-                  Barang
-                </th>
-                <th
-                  scope="col"
-                  className="px-4 py-3 text-right text-xs font-medium text-gray-500 uppercase whitespace-nowrap"
-                >
-                  Harga
-                </th>
-                <th
-                  scope="col"
-                  className="px-4 py-3 text-center text-xs font-medium text-gray-500 uppercase whitespace-nowrap"
-                >
-                  Qty Pesanan
-                </th>
-                <th
-                  scope="col"
-                  className="px-4 py-3 text-center text-xs font-medium text-indigo-600 uppercase whitespace-nowrap"
-                >
-                  Qty Disetujui
-                </th>
-                <th
-                  scope="col"
-                  className="px-4 py-3 text-center text-xs font-medium text-amber-600 uppercase whitespace-nowrap"
-                >
-                  Sisa (BO)
-                </th>
-                <th
-                  scope="col"
-                  className="px-4 py-3 text-center text-xs font-medium text-gray-500 uppercase whitespace-nowrap"
-                >
-                  Satuan
-                </th>
-                <th
-                  scope="col"
-                  className="px-4 py-3 text-right text-xs font-medium text-gray-500 uppercase whitespace-nowrap"
-                >
-                  Subtotal
-                </th>
-                {isEditing && (
-                  <th
-                    scope="col"
-                    className="px-4 py-3 text-center text-xs font-medium text-gray-500 uppercase"
-                  ></th>
-                )}
-              </tr>
-            </thead>
-            <tbody className="divide-y divide-gray-200 bg-white">
+        <div className="rounded-xl border border-border shadow-sm overflow-hidden bg-white">
+          <Table>
+            <TableHeader className="bg-muted/40">
+              <TableRow className="hover:bg-transparent">
+                <TableHead className="text-[9px] font-bold uppercase tracking-widest h-10 px-4">Nama Produk</TableHead>
+                <TableHead className="text-[9px] font-bold uppercase tracking-widest h-10 px-4 text-right">Harga</TableHead>
+                <TableHead className="text-[9px] font-bold uppercase tracking-widest h-10 px-4 text-center">Req Qty</TableHead>
+                <TableHead className="text-[9px] font-bold uppercase tracking-widest h-10 px-4 text-center text-primary">Acc Qty</TableHead>
+                <TableHead className="text-[9px] font-bold uppercase tracking-widest h-10 px-4 text-center text-amber-600">BO</TableHead>
+                <TableHead className="text-[9px] font-bold uppercase tracking-widest h-10 px-4 text-right">Subtotal</TableHead>
+                {isEditing && <TableHead className="w-10"></TableHead>}
+              </TableRow>
+            </TableHeader>
+            <TableBody>
               {(isEditing ? editedItems : pesanan.items)?.map((item) => (
-                <tr key={item.id_produk}>
-                  <td className="px-4 py-3 text-sm text-gray-900">
-                    {item.produk?.nama_produk ||
-                      item.nama_barang ||
-                      "Produk Dihapus"}
-                  </td>
-                  <td className="px-4 py-3 text-right text-sm text-gray-500 whitespace-nowrap">
+                <TableRow key={item.id_produk} className="hover:bg-muted/20 border-border/40">
+                  <TableCell className="px-4 py-2.5">
+                    <p className="text-[11px] font-bold leading-tight text-foreground/90">
+                      {item.produk?.nama_produk || item.nama_barang || "Produk N/A"}
+                    </p>
+                    <p className="text-[8px] text-muted-foreground font-bold uppercase opacity-60">
+                      SKU: {item.produk?.sku || "-"} • {item.produk?.satuan || "pcs"}
+                    </p>
+                  </TableCell>
+                  <TableCell className="px-4 py-2.5 text-right font-semibold text-xs text-foreground/70">
                     {isEditing ? (
                       <input
                         type="number"
-                        min="0"
-                        className="w-24 text-right px-2 py-1 text-xs border border-gray-300 rounded focus:ring-1 focus:ring-indigo-500"
-                        value={Number(item.harga_satuan).toString()}
-                        onChange={(e) =>
-                          handleUpdateItemPrice(
-                            item.id_produk,
-                            Number(e.target.value),
-                          )
-                        }
+                        className="w-20 text-right px-2 py-1 text-[11px] border border-border rounded-md focus:ring-1 focus:ring-primary outline-none font-bold"
+                        value={Number(item.harga_satuan)}
+                        onChange={(e) => handleUpdateItemPrice(item.id_produk, Number(e.target.value))}
                       />
                     ) : (
-                      `Rp ${(Number(item.harga_satuan) || 0).toLocaleString("id-ID", { maximumFractionDigits: 0 })}`
+                      `Rp ${(Number(item.harga_satuan) || 0).toLocaleString("id-ID")}`
                     )}
-                  </td>
-                  <td className="px-4 py-3 text-center text-sm text-gray-400">
+                  </TableCell>
+                  <TableCell className="px-4 py-2.5 text-center text-[11px] font-medium text-muted-foreground/60">
                     {item.jumlah_pesanan || item.jumlah}
-                  </td>
-                  <td className="px-4 py-3 text-center text-sm font-semibold text-indigo-700 bg-indigo-50/30">
+                  </TableCell>
+                  <TableCell className="px-4 py-2.5 text-center bg-primary/5">
                     {isEditing ? (
-                      <div className="flex items-center justify-center space-x-2">
+                      <div className="flex items-center justify-center gap-2">
                         <button
-                          onClick={() =>
-                            handleUpdateItemQty(item.id_produk, item.jumlah - 1)
-                          }
-                          className="w-5 h-5 rounded border border-indigo-200 bg-white flex items-center justify-center hover:bg-indigo-50 text-indigo-600"
-                        >
-                          -
-                        </button>
-                        <span className="w-8 text-center text-indigo-700">
-                          {item.jumlah}
-                        </span>
+                          onClick={() => handleUpdateItemQty(item.id_produk, item.jumlah - 1)}
+                          className="h-6 w-6 rounded-md border border-primary/20 bg-white shadow-sm flex items-center justify-center hover:bg-primary hover:text-white transition-colors text-primary font-bold text-base"
+                        > - </button>
+                        <span className="w-6 text-[11px] font-bold text-primary">{item.jumlah}</span>
                         <button
-                          onClick={() =>
-                            handleUpdateItemQty(item.id_produk, item.jumlah + 1)
-                          }
-                          className="w-5 h-5 rounded border border-indigo-200 bg-white flex items-center justify-center hover:bg-indigo-50 text-indigo-600"
-                        >
-                          +
-                        </button>
+                          onClick={() => handleUpdateItemQty(item.id_produk, item.jumlah + 1)}
+                          className="h-6 w-6 rounded-md border border-primary/20 bg-white shadow-sm flex items-center justify-center hover:bg-primary hover:text-white transition-colors text-primary font-bold text-base"
+                        > + </button>
                       </div>
                     ) : (
-                      item.jumlah
+                      <span className="text-[11px] font-bold text-primary">{item.jumlah}</span>
                     )}
-                  </td>
-                  <td className="px-4 py-3 text-center text-sm font-medium text-amber-600 italic">
-                    {(item.jumlah_pesanan || item.jumlah) - item.jumlah}
-                  </td>
-                  <td className="px-4 py-3 text-center text-sm text-gray-500">
-                    {item.produk?.satuan || "pcs"}
-                  </td>
-                  <td className="px-4 py-3 text-right text-sm font-medium text-gray-900 whitespace-nowrap">
-                    Rp{" "}
-                    {(Number(item.total_harga) || 0).toLocaleString("id-ID", {
-                      maximumFractionDigits: 0,
-                    })}
-                  </td>
+                  </TableCell>
+                  <TableCell className="px-4 py-2.5 text-center">
+                    <Badge variant="secondary" className="h-5 text-[10px] font-bold text-amber-600 bg-amber-50 rounded-md">
+                      {(item.jumlah_pesanan || item.jumlah) - item.jumlah}
+                    </Badge>
+                  </TableCell>
+                  <TableCell className="px-4 py-2.5 text-right font-bold text-[11px] text-foreground">
+                    Rp {(Number(item.total_harga) || 0).toLocaleString("id-ID")}
+                  </TableCell>
                   {isEditing && (
-                    <td className="px-4 py-3 text-center">
-                      <button
+                    <TableCell className="px-2">
+                      <Button
+                        variant="ghost"
+                        size="icon"
                         onClick={() => handleRemoveItem(item.id_produk)}
-                        className="text-red-400 hover:text-red-600"
+                        className="h-7 w-7 text-destructive hover:bg-destructive/10 rounded-lg"
                       >
-                        <Trash2 className="h-4 w-4" />
-                      </button>
-                    </td>
+                        <Trash2 className="h-3.5 w-3.5" />
+                      </Button>
+                    </TableCell>
                   )}
-                </tr>
+                </TableRow>
               ))}
-              <tr className="bg-gray-50 text-gray-900 font-bold">
-                <td colSpan={7} className="px-4 py-3 text-right text-sm">
-                  Total Pembayaran (Disetujui)
-                </td>
-                <td className="px-4 py-3 text-right text-sm text-indigo-700 whitespace-nowrap">
-                  Rp{" "}
-                  {(
-                    Number(isEditing ? totalTagihan : pesanan.total_tagihan) ||
-                    0
-                  ).toLocaleString("id-ID", { maximumFractionDigits: 0 })}
-                </td>
-                {isEditing && <td></td>}
-              </tr>
-            </tbody>
-          </table>
+              <TableRow className="bg-slate-50/80 hover:bg-slate-50/80">
+                <TableCell colSpan={5} className="text-right px-4 py-3 text-[10px] font-bold uppercase text-muted-foreground tracking-widest">
+                  Total Tagihan Disetujui
+                </TableCell>
+                <TableCell className="text-right px-4 py-3 text-sm font-black text-primary tracking-tight">
+                  Rp {(Number(isEditing ? totalTagihan : pesanan.total_tagihan) || 0).toLocaleString("id-ID")}
+                </TableCell>
+                {isEditing && <TableCell></TableCell>}
+              </TableRow>
+            </TableBody>
+          </Table>
         </div>
       </div>
 
-      {/* Note Section */}
-      <div>
-        <label className="block text-xs font-semibold text-gray-500 uppercase tracking-wider mb-2">
-          Catatan
+      <div className="space-y-1.5 px-1">
+        <label className="text-[10px] font-bold text-muted-foreground uppercase tracking-widest">
+          Catatan Pesanan
         </label>
         {isEditing ? (
           <textarea
-            className="w-full text-sm border border-gray-200 rounded-lg p-3 h-20 focus:ring-1 focus:ring-indigo-500"
+            className="w-full text-xs font-semibold bg-white border border-border rounded-xl p-3 h-16 focus:ring-1 focus:ring-primary outline-none transition-all shadow-sm"
             value={catatan}
             onChange={(e) => setCatatan(e.target.value)}
-            placeholder="Tambahkan catatan untuk pesanan ini..."
+            placeholder="Tambahkan instruksi khusus untuk gudang atau pengiriman..."
           />
         ) : (
-          <div className="bg-gray-50 p-3 rounded-lg border border-gray-100 min-h-[40px]">
-            <p className="text-sm text-gray-700 italic">
-              {pesanan.catatan || "Tidak ada catatan."}
+          <div className="bg-muted/20 p-3 rounded-xl border border-border/50 min-h-[40px]">
+            <p className="text-[11px] text-foreground/70 font-medium italic">
+              {pesanan.catatan || "Tidak ada catatan internal."}
             </p>
           </div>
         )}
       </div>
 
-      <div className="flex justify-end space-x-3 pt-6 border-t border-gray-200">
+      <div className="flex flex-wrap items-center justify-end gap-2.5 pt-4 border-t border-border">
         {isEditing ? (
           <>
-            <button
+            <Button
+              variant="ghost"
               onClick={() => setIsEditing(false)}
-              className="rounded-md border border-gray-300 bg-white px-4 py-2 text-sm font-medium text-gray-700 hover:bg-gray-50"
+              className="h-9 px-6 text-[10px] font-bold uppercase tracking-wider text-muted-foreground rounded-lg"
               disabled={isSaving}
             >
-              Batal
-            </button>
-            <button
+              Batalkan
+            </Button>
+            <Button
               onClick={saveOrderAdjustment}
-              className="flex items-center justify-center rounded-md bg-indigo-600 px-6 py-2 text-sm font-medium text-white shadow-sm hover:bg-indigo-700 disabled:opacity-50"
+              className="h-9 px-8 text-[10px] font-bold uppercase tracking-wider bg-primary hover:bg-primary/90 text-white shadow-lg shadow-primary/20 rounded-lg gap-2"
               disabled={isSaving || editedItems.length === 0}
             >
               {isSaving ? (
-                "Menyimpan..."
+                <div className="h-3.5 w-3.5 animate-spin rounded-full border-2 border-white border-t-transparent" />
               ) : (
-                <>
-                  <Save className="mr-2 h-4 w-4" /> Simpan Perubahan
-                </>
+                <Save className="h-3.5 w-3.5" />
               )}
-            </button>
+              {isSaving ? "Menyimpan..." : "Simpan Perubahan"}
+            </Button>
           </>
         ) : (
           <>
+            <div className="flex gap-2 mr-auto">
+              {pesanan.status === "SUKSES" && (
+                <Button
+                  variant="outline"
+                  size="sm"
+                  className="h-9 px-4 text-[10px] font-bold uppercase tracking-wider border-border gap-2 rounded-lg"
+                  onClick={() => window.print()}
+                >
+                  <Printer className="h-3.5 w-3.5" /> Cetak PO
+                </Button>
+              )}
+            </div>
+            
             {(pesanan.status === "PENDING" || pesanan.status === "PROSES") && (
-              <button
+              <Button
+                variant="outline"
                 onClick={() => setStatusToConfirm("BATAL")}
-                className="flex items-center justify-center rounded-md border border-red-300 bg-white px-4 py-2 text-sm font-medium text-red-700 hover:bg-red-50"
+                className="h-9 px-5 text-[10px] font-bold uppercase tracking-wider text-destructive border-destructive/20 hover:bg-destructive/5 hover:text-destructive gap-2 rounded-lg"
               >
-                <XCircle className="mr-2 h-4 w-4" />{" "}
-                {pesanan.status === "PENDING" ? "Tolak" : "Batalkan"}
-              </button>
+                <XCircle className="h-3.5 w-3.5" /> {pesanan.status === "PENDING" ? "Tolak" : "Batalkan"}
+              </Button>
             )}
-            {(pesanan.status === "PROSES" || pesanan.status === "PENDING") && (
-              <button
-                onClick={() =>
-                  setStatusToConfirm(
-                    pesanan.status === "PENDING" ? "PROSES" : "DIKIRIM",
-                  )
-                }
-                className="flex items-center justify-center rounded-md bg-indigo-600 px-4 py-2 text-sm font-medium text-white shadow-sm hover:bg-indigo-700"
+
+            {(pesanan.status === "PENDING" || pesanan.status === "PROSES") && (
+              <Button
+                onClick={() => setStatusToConfirm(pesanan.status === "PENDING" ? "PROSES" : "DIKIRIM")}
+                className="h-9 px-6 text-[10px] font-bold uppercase tracking-wider bg-primary hover:bg-primary/90 text-white shadow-lg shadow-primary/20 gap-2 rounded-lg"
               >
-                {pesanan.status === "PENDING" ? (
-                  <>
-                    <CheckCircle className="mr-2 h-4 w-4" /> Proses
-                  </>
-                ) : (
-                  <>
-                    <Truck className="mr-2 h-4 w-4" /> Kirim Barang
-                  </>
-                )}
-              </button>
+                {pesanan.status === "PENDING" ? <CheckCircle className="h-3.5 w-3.5" /> : <Truck className="h-3.5 w-3.5" />}
+                {pesanan.status === "PENDING" ? "Proses Pesanan" : "Kirim Sekarang"}
+              </Button>
             )}
+
             {pesanan.status === "DIKIRIM" && (
-              <button
+              <Button
                 onClick={() => setStatusToConfirm("SUKSES")}
-                className="flex items-center justify-center rounded-md bg-green-600 px-4 py-2 text-sm font-medium text-white shadow-sm hover:bg-green-700"
+                className="h-9 px-10 text-[10px] font-bold uppercase tracking-wider bg-green-600 hover:bg-green-700 text-white shadow-lg shadow-green-500/20 gap-2 rounded-lg"
               >
-                <CheckCircle className="mr-2 h-4 w-4" /> Selesaikan
-              </button>
+                <CheckCircle className="h-3.5 w-3.5" /> Selesaikan Pengiriman
+              </Button>
             )}
-            {pesanan.status === "SUKSES" && (
-              <button
-                className="flex items-center justify-center rounded-md border border-gray-300 bg-white px-4 py-2 text-sm font-medium text-gray-700 hover:bg-gray-50"
-                onClick={() => window.print()}
-              >
-                <Printer className="mr-2 h-4 w-4" /> Cetak
-              </button>
-            )}
-            <button
+
+            <Button
+              variant="ghost"
               onClick={onClose}
-              className="rounded-md border border-gray-300 bg-white px-4 py-2 text-sm font-medium text-gray-700 hover:bg-gray-50"
+              className="h-9 px-8 text-[10px] font-bold uppercase tracking-wider text-muted-foreground hover:bg-muted/50 rounded-lg"
             >
               Tutup
-            </button>
+            </Button>
           </>
         )}
       </div>
 
-      {/* Confirm Modal for Status Changes */}
       <ConfirmModal
         isOpen={!!statusToConfirm}
         onClose={() => setStatusToConfirm(null)}
         onConfirm={confirmStatusChange}
-        title="Konfirmasi Status"
-        message={`Sistem akan mengubah status pesanan dari ${pesanan.status} menjadi ${statusToConfirm}. ${statusToConfirm === "SUKSES" ? "Jika ada sisa barang yang belum disetujui, sistem akan otomatis membuat pesanan Backorder (BO) baru." : ""} Lanjutkan?`}
-        confirmText="Ya, Lanjutkan"
+        title="Konfirmasi Perubahan Status"
+        message={`Apakah Anda yakin ingin mengubah status pesanan menjadi ${statusToConfirm}? ${statusToConfirm === "SUKSES" ? "Sistem akan otomatis membuat backorder untuk barang yang belum terpenuhi." : ""}`}
+        confirmText="Ya, Update Status"
         type={statusToConfirm === "BATAL" ? "danger" : "info"}
       />
     </div>

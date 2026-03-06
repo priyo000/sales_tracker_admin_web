@@ -21,14 +21,14 @@ export const FormField = ({
   description,
 }: FormFieldProps) => (
   <div className={cn("space-y-2", className)}>
-    <Label className="flex items-center gap-2 text-[11px] font-black uppercase tracking-widest text-muted-foreground/80">
-      {Icon && <Icon className="h-3 w-3 text-primary shrink-0" />}
+    <Label className="flex items-center gap-1.5 text-[10px] font-bold uppercase tracking-wider text-muted-foreground/90">
+      {Icon && <Icon className="h-3 w-3 text-primary/80 shrink-0" />}
       {label}
-      {required && <span className="text-destructive ml-0.5">*</span>}
+      {required && <span className="text-destructive font-black ml-0.5">*</span>}
     </Label>
     {children}
     {description && (
-      <p className="text-[10px] text-muted-foreground font-medium italic mt-1 uppercase tracking-tight">
+      <p className="text-[10px] text-muted-foreground/70 font-medium px-0.5">
         {description}
       </p>
     )}

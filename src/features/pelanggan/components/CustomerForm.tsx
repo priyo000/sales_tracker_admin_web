@@ -35,7 +35,6 @@ import {
 } from "@/components/ui/select";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Card, CardContent } from "@/components/ui/card";
-import { ScrollArea } from "@/components/ui/scroll-area";
 import { FormField } from "@/components/ui/FormField";
 import { SectionHeader } from "@/components/ui/SectionHeader";
 
@@ -92,6 +91,10 @@ const CustomerForm: React.FC<CustomerFormProps> = ({
     catatan_lain: initialData?.catatan_lain || "",
     id_sales_pembuat: initialData?.id_sales_pembuat || 0,
     status: initialData?.status || "active",
+    provinsi_usaha: initialData?.provinsi_usaha || "",
+    kota_usaha: initialData?.kota_usaha || "",
+    kecamatan_usaha: initialData?.kecamatan_usaha || "",
+    klasifikasi_outlet: initialData?.klasifikasi_outlet || "",
   });
 
   const [files, setFiles] = useState<{
@@ -167,14 +170,14 @@ const CustomerForm: React.FC<CustomerFormProps> = ({
   };
 
   return (
-    <form onSubmit={handleSubmit} className="flex flex-col h-[85vh] -m-6 mt-0">
+    <form onSubmit={handleSubmit} className="space-y-6 py-2">
       <Tabs
         value={activeTab}
         onValueChange={setActiveTab}
-        className="flex flex-col flex-1"
+        className="space-y-6"
       >
-        <div className="px-6 py-3 bg-background border-b border-border/50 sticky top-0 z-10">
-          <TabsList className="grid w-full grid-cols-2 max-w-md mx-auto h-10 bg-muted/50 p-1 rounded-xl">
+        <div className="flex justify-center">
+          <TabsList className="grid w-full grid-cols-2 max-w-md h-9 bg-muted/50 p-1 rounded-xl">
             <TabsTrigger
               value="profil"
               className="rounded-lg data-[state=active]:bg-primary data-[state=active]:text-white data-[state=active]:shadow-md transition-all font-bold text-[10px] uppercase tracking-wider gap-2"
@@ -190,12 +193,10 @@ const CustomerForm: React.FC<CustomerFormProps> = ({
           </TabsList>
         </div>
 
-        <div className="flex-1 overflow-hidden">
-          <ScrollArea className="h-full">
-            <div className="p-6 max-w-5xl mx-auto pb-10">
-              <TabsContent value="profil" className="m-0 space-y-6 focus:outline-none">
+        <div>
+          <TabsContent value="profil" className="m-0 space-y-6 focus:outline-none">
                 {/* Toko Info Card */}
-                <Card className="border-none shadow-xl bg-card overflow-hidden">
+                <Card className="border border-border/50 shadow-sm bg-card overflow-hidden">
                   <div className="h-1.5 bg-primary" />
                   <CardContent className="p-6 space-y-6">
                     <SectionHeader
@@ -212,7 +213,7 @@ const CustomerForm: React.FC<CustomerFormProps> = ({
                             value={formData.nama_toko}
                             onChange={(e) => handleChange("nama_toko", e.target.value)}
                             required
-                            className="h-10 bg-muted/30 border-border/50 text-sm font-semibold focus-visible:ring-primary shadow-sm"
+                            className="h-9 bg-muted/30 border-border/50 text-sm font-semibold focus-visible:ring-primary shadow-sm"
                           />
                         </FormField>
 
@@ -222,7 +223,7 @@ const CustomerForm: React.FC<CustomerFormProps> = ({
                             value={formData.nama_pemilik}
                             onChange={(e) => handleChange("nama_pemilik", e.target.value)}
                             required
-                            className="h-10 bg-muted/30 border-border/50 text-sm font-semibold focus-visible:ring-primary shadow-sm"
+                            className="h-9 bg-muted/30 border-border/50 text-sm font-semibold focus-visible:ring-primary shadow-sm"
                           />
                         </FormField>
 
@@ -232,7 +233,7 @@ const CustomerForm: React.FC<CustomerFormProps> = ({
                             onValueChange={(val) => handleChange("id_divisi", parseInt(val))}
                             required
                           >
-                            <SelectTrigger className="h-10 bg-muted/30 border-border/50 shadow-sm font-semibold">
+                            <SelectTrigger className="h-9 bg-muted/30 border-border/50 shadow-sm font-semibold">
                               <SelectValue placeholder="Pilih Divisi" />
                             </SelectTrigger>
                             <SelectContent>
@@ -241,6 +242,23 @@ const CustomerForm: React.FC<CustomerFormProps> = ({
                                   {div.nama_divisi}
                                 </SelectItem>
                               ))}
+                            </SelectContent>
+                          </Select>
+                        </FormField>
+                        <FormField label="Kategori / Klasifikasi" icon={Layers}>
+                          <Select
+                            value={formData.klasifikasi_outlet}
+                            onValueChange={(val) => handleChange("klasifikasi_outlet", val)}
+                          >
+                            <SelectTrigger className="h-9 bg-muted/30 border-border/50 shadow-sm font-semibold">
+                              <SelectValue placeholder="Pilih Kategori" />
+                            </SelectTrigger>
+                            <SelectContent>
+                              <SelectItem value="Grosir">Grosir</SelectItem>
+                              <SelectItem value="Retail">Retail</SelectItem>
+                              <SelectItem value="Distributor">Distributor</SelectItem>
+                              <SelectItem value="Proyek">Proyek</SelectItem>
+                              <SelectItem value="Lainnya">Lainnya</SelectItem>
                             </SelectContent>
                           </Select>
                         </FormField>
@@ -253,7 +271,7 @@ const CustomerForm: React.FC<CustomerFormProps> = ({
                               value={formData.status}
                               onValueChange={(val) => handleChange("status", val)}
                             >
-                              <SelectTrigger className="h-10 bg-muted/30 border-border/50 shadow-sm font-semibold">
+                              <SelectTrigger className="h-9 bg-muted/30 border-border/50 shadow-sm font-semibold">
                                 <SelectValue />
                               </SelectTrigger>
                               <SelectContent>
@@ -310,7 +328,7 @@ const CustomerForm: React.FC<CustomerFormProps> = ({
                 </Card>
 
                 {/* Contact Info Card */}
-                <Card className="border-none shadow-xl bg-card">
+                <Card className="border border-border/50 shadow-sm bg-card">
                   <CardContent className="p-6 space-y-6">
                     <SectionHeader
                       icon={Phone}
@@ -324,7 +342,7 @@ const CustomerForm: React.FC<CustomerFormProps> = ({
                           value={formData.no_hp_pribadi}
                           onChange={(e) => handleChange("no_hp_pribadi", e.target.value)}
                           required
-                          className="h-10 bg-muted/30 border-border/50 text-sm font-semibold"
+                          className="h-9 bg-muted/30 border-border/50 text-sm font-semibold"
                         />
                       </FormField>
 
@@ -333,7 +351,7 @@ const CustomerForm: React.FC<CustomerFormProps> = ({
                           placeholder="(021) XXXXXXXX"
                           value={formData.no_hp_kontak || ""}
                           onChange={(e) => handleChange("no_hp_kontak", e.target.value)}
-                          className="h-10 bg-muted/30 border-border/50 text-sm font-semibold"
+                          className="h-9 bg-muted/30 border-border/50 text-sm font-semibold"
                         />
                       </FormField>
 
@@ -342,7 +360,7 @@ const CustomerForm: React.FC<CustomerFormProps> = ({
                           placeholder="Nama Kontak person"
                           value={formData.nama_kontak_person || ""}
                           onChange={(e) => handleChange("nama_kontak_person", e.target.value)}
-                          className="h-10 bg-muted/30 border-border/50 text-sm font-semibold"
+                          className="h-9 bg-muted/30 border-border/50 text-sm font-semibold"
                         />
                       </FormField>
                     </div>
@@ -350,7 +368,7 @@ const CustomerForm: React.FC<CustomerFormProps> = ({
                 </Card>
 
                 {/* Location Card */}
-                <Card className="border-none shadow-xl bg-card overflow-hidden">
+                <Card className="border border-border/50 shadow-sm bg-card overflow-hidden">
                   <CardContent className="p-6 space-y-6">
                     <SectionHeader
                       icon={MapPin}
@@ -366,10 +384,37 @@ const CustomerForm: React.FC<CustomerFormProps> = ({
                             value={formData.alamat_usaha}
                             onChange={(e) => handleChange("alamat_usaha", e.target.value)}
                             required
-                            rows={4}
+                            rows={3}
                             className="bg-muted/30 border-border/50 focus-visible:ring-primary shadow-sm resize-none"
                           />
                         </FormField>
+
+                        <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
+                          <FormField label="Provinsi">
+                            <Input
+                              value={formData.provinsi_usaha || ""}
+                              onChange={(e) => handleChange("provinsi_usaha", e.target.value)}
+                              placeholder="Provinsi"
+                              className="h-9 bg-muted/30 border-border/50 text-xs font-semibold"
+                            />
+                          </FormField>
+                          <FormField label="Kota / Kabupaten">
+                            <Input
+                              value={formData.kota_usaha || ""}
+                              onChange={(e) => handleChange("kota_usaha", e.target.value)}
+                              placeholder="Kota"
+                              className="h-9 bg-muted/30 border-border/50 text-xs font-semibold"
+                            />
+                          </FormField>
+                          <FormField label="Kecamatan">
+                            <Input
+                              value={formData.kecamatan_usaha || ""}
+                              onChange={(e) => handleChange("kecamatan_usaha", e.target.value)}
+                              placeholder="Kecamatan"
+                              className="h-9 bg-muted/30 border-border/50 text-xs font-semibold"
+                            />
+                          </FormField>
+                        </div>
 
                         <div className="grid grid-cols-2 gap-3">
                           <FormField label="Latitude" icon={MapPin}>
@@ -420,7 +465,7 @@ const CustomerForm: React.FC<CustomerFormProps> = ({
                 <div className="grid grid-cols-1 xl:grid-cols-2 gap-10">
                   <div className="space-y-10">
                     {/* Payment Settings Card */}
-                    <Card className="border-none shadow-xl bg-card">
+                    <Card className="border border-border/50 shadow-sm bg-card">
                       <CardContent className="p-6 space-y-4">
                         <SectionHeader
                           icon={CreditCard}
@@ -434,7 +479,7 @@ const CustomerForm: React.FC<CustomerFormProps> = ({
                               value={formData.cara_pembayaran}
                               onValueChange={(val) => handleChange("cara_pembayaran", val)}
                             >
-                              <SelectTrigger className="h-10 bg-muted/30 border-border/50 shadow-sm font-semibold">
+                              <SelectTrigger className="h-9 bg-muted/30 border-border/50 shadow-sm font-semibold">
                                 <SelectValue placeholder="Pilih Cara" />
                               </SelectTrigger>
                               <SelectContent>
@@ -450,7 +495,7 @@ const CustomerForm: React.FC<CustomerFormProps> = ({
                               value={formData.sistem_pembayaran}
                               onValueChange={(val) => handleChange("sistem_pembayaran", val)}
                             >
-                              <SelectTrigger className="h-10 bg-muted/30 border-border/50 shadow-sm font-semibold">
+                              <SelectTrigger className="h-9 bg-muted/30 border-border/50 shadow-sm font-semibold">
                                 <SelectValue placeholder="Pilih Sistem" />
                               </SelectTrigger>
                               <SelectContent>
@@ -469,7 +514,7 @@ const CustomerForm: React.FC<CustomerFormProps> = ({
                                     type="number"
                                     value={formData.limit_kredit_awal}
                                     onChange={(e) => handleChange("limit_kredit_awal", parseFloat(e.target.value))}
-                                    className="h-10 pl-10 bg-card border-border/50 text-sm font-semibold"
+                                    className="h-9 pl-10 bg-card border-border/50 text-sm font-semibold"
                                   />
                                 </div>
                               </FormField>
@@ -480,7 +525,7 @@ const CustomerForm: React.FC<CustomerFormProps> = ({
                                     type="number"
                                     value={formData.top_hari}
                                     onChange={(e) => handleChange("top_hari", parseInt(e.target.value))}
-                                    className="h-10 pr-12 bg-card border-border/50 text-sm font-semibold"
+                                    className="h-9 pr-12 bg-card border-border/50 text-sm font-semibold"
                                   />
                                   <span className="absolute right-3 top-1/2 -translate-y-1/2 text-[10px] font-bold text-muted-foreground uppercase">Hari</span>
                                 </div>
@@ -493,7 +538,7 @@ const CustomerForm: React.FC<CustomerFormProps> = ({
 
                     {/* Bank Account Info Card */}
                     {(formData.cara_pembayaran === "Transfer" || formData.cara_pembayaran === "Giro") && (
-                      <Card className="border-none shadow-xl bg-card animate-in slide-in-from-left-4 duration-500">
+                      <Card className="border border-border/50 shadow-sm bg-card animate-in slide-in-from-left-4 duration-500">
                         <CardContent className="p-6 space-y-4">
                           <SectionHeader
                             icon={Landmark}
@@ -507,7 +552,7 @@ const CustomerForm: React.FC<CustomerFormProps> = ({
                                 placeholder="Misal: BCA, Mandiri, BRI"
                                 value={formData.nama_bank}
                                 onChange={(e) => handleChange("nama_bank", e.target.value)}
-                                className="h-10 bg-muted/30 border-border/50 text-sm font-semibold"
+                                className="h-9 bg-muted/30 border-border/50 text-sm font-semibold"
                               />
                             </FormField>
                             <FormField label="Kantor Cabang">
@@ -515,7 +560,7 @@ const CustomerForm: React.FC<CustomerFormProps> = ({
                                 placeholder="Nama Cabang"
                                 value={formData.cabang_bank}
                                 onChange={(e) => handleChange("cabang_bank", e.target.value)}
-                                className="h-10 bg-muted/30 border-border/50 text-sm font-semibold"
+                                className="h-9 bg-muted/30 border-border/50 text-sm font-semibold"
                               />
                             </FormField>
                             <FormField label="Nomor Rekening">
@@ -523,7 +568,7 @@ const CustomerForm: React.FC<CustomerFormProps> = ({
                                 placeholder="XXXXXXXXXXXX"
                                 value={formData.no_rekening}
                                 onChange={(e) => handleChange("no_rekening", e.target.value)}
-                                className="h-10 bg-muted/30 border-border/50 font-mono text-sm font-semibold tracking-wider"
+                                className="h-9 bg-muted/30 border-border/50 font-mono text-sm font-semibold tracking-wider"
                               />
                             </FormField>
                             <FormField label="Atas Nama Pemilik">
@@ -531,7 +576,7 @@ const CustomerForm: React.FC<CustomerFormProps> = ({
                                 placeholder="Nama sesuai buku tabungan"
                                 value={formData.atas_nama_rekening}
                                 onChange={(e) => handleChange("atas_nama_rekening", e.target.value)}
-                                className="h-10 bg-muted/30 border-border/50 text-sm font-semibold"
+                                className="h-9 bg-muted/30 border-border/50 text-sm font-semibold"
                               />
                             </FormField>
                           </div>
@@ -542,7 +587,7 @@ const CustomerForm: React.FC<CustomerFormProps> = ({
 
                   <div className="space-y-10">
                     {/* Sales Assignment Card */}
-                    <Card className="border-none shadow-xl bg-card">
+                    <Card className="border border-border/50 shadow-sm bg-card">
                       <CardContent className="p-6 space-y-4">
                         <SectionHeader
                           icon={User}
@@ -557,7 +602,7 @@ const CustomerForm: React.FC<CustomerFormProps> = ({
                               onValueChange={(val) => handleChange("id_sales_pembuat", parseInt(val))}
                               required
                             >
-                              <SelectTrigger className="h-10 bg-muted/30 border-border/50 shadow-sm font-semibold">
+                              <SelectTrigger className="h-9 bg-muted/30 border-border/50 shadow-sm font-semibold">
                                 <SelectValue placeholder="Pilih Sales Person" />
                               </SelectTrigger>
                               <SelectContent>
@@ -574,7 +619,7 @@ const CustomerForm: React.FC<CustomerFormProps> = ({
                     </Card>
 
                     {/* KTP Card */}
-                    <Card className="border-none shadow-xl bg-card">
+                    <Card className="border border-border/50 shadow-sm bg-card">
                       <CardContent className="p-6 space-y-4">
                         <SectionHeader
                           icon={LucideImage}
@@ -640,25 +685,23 @@ const CustomerForm: React.FC<CustomerFormProps> = ({
                   </div>
                 </div>
               </TabsContent>
-            </div>
-          </ScrollArea>
         </div>
 
         {/* Form Actions Footer */}
-        <div className="px-8 py-4 bg-background border-t border-border flex items-center justify-end gap-3 shrink-0 shadow-sm font-semibold">
+        <div className="flex items-center justify-end gap-3 pt-4 border-t border-border font-semibold">
           <Button
             type="button"
             variant="ghost"
             onClick={onCancel}
             disabled={loading}
-            className="h-10 px-8 text-[10px] font-bold uppercase tracking-wider text-muted-foreground hover:text-foreground hover:bg-muted/50 transition-all rounded-lg"
+            className="h-9 px-8 text-[10px] font-bold uppercase tracking-wider text-muted-foreground hover:text-foreground hover:bg-muted/50 transition-all rounded-lg"
           >
             <X className="mr-2 h-3.5 w-3.5" /> Batal
           </Button>
           <Button
             type="submit"
             disabled={loading}
-            className="h-10 px-10 text-[10px] font-bold uppercase tracking-wider bg-primary hover:bg-primary/90 text-white shadow-lg shadow-primary/20 transition-all hover:scale-[1.01] active:scale-[0.99] rounded-lg"
+            className="h-9 px-10 text-[10px] font-bold uppercase tracking-wider bg-primary hover:bg-primary/90 text-white shadow-lg shadow-primary/20 transition-all hover:scale-[1.01] active:scale-[0.99] rounded-lg"
           >
             {loading ? (
               <span className="flex items-center gap-2">

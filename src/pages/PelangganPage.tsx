@@ -208,7 +208,6 @@ const PelangganPage: React.FC = () => {
         onClose={() => setIsAddModalOpen(false)}
         title="Tambah Pelanggan Baru"
         size="3xl"
-        noPadding
       >
         <CustomerForm
           onSubmit={handleCreatePelanggan}
@@ -223,7 +222,6 @@ const PelangganPage: React.FC = () => {
         onClose={() => setEditingPelanggan(null)}
         title={`Edit Pelanggan: ${editingPelanggan?.nama_toko}`}
         size="3xl"
-        noPadding
       >
         <CustomerForm
           initialData={editingPelanggan}

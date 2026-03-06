@@ -175,7 +175,6 @@ const UserPage: React.FC = () => {
         onClose={() => setIsModalOpen(false)}
         title={editingUser ? "Edit Akun User" : "Buat Akun User Baru"}
         size="3xl"
-        noPadding
       >
         <UserForm
           initialData={editingUser}

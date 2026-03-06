@@ -145,7 +145,6 @@ const PerusahaanPage: React.FC = () => {
           editingCompany ? "Edit Data Perusahaan" : "Daftar Perusahaan Baru"
         }
         size="4xl"
-        noPadding
       >
         <PerusahaanForm
           initialData={editingCompany || undefined}

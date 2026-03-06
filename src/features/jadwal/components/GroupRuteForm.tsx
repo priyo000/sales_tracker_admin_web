@@ -88,7 +88,7 @@ const GroupRuteForm: React.FC<GroupRuteFormProps> = ({
           <FormField label="Nama Template / Paket Rute" icon={LayoutList} required>
             <Input
               type="text"
-              className="h-10 bg-card border-border/50 text-xs font-semibold uppercase tracking-tight focus:ring-primary/20 transition-all rounded-lg"
+              className="h-9 bg-card border-border/50 text-xs font-semibold uppercase tracking-tight focus:ring-primary/20 transition-all rounded-lg"
               placeholder="Ex: Area Utara - Minggu 1"
               value={namaGroup}
               onChange={(e) => setNamaGroup(e.target.value)}
@@ -191,14 +191,14 @@ const GroupRuteForm: React.FC<GroupRuteFormProps> = ({
             type="button"
             variant="ghost"
             onClick={onCancel}
-            className="flex-1 sm:flex-none h-10 px-6 text-[10px] font-bold uppercase tracking-wider text-muted-foreground hover:text-foreground rounded-lg"
+            className="flex-1 sm:flex-none h-9 px-6 text-[10px] font-bold uppercase tracking-wider text-muted-foreground hover:text-foreground rounded-lg"
           >
             <X className="mr-2 h-3.5 w-3.5" /> Batal
           </Button>
           <Button
             type="submit"
             disabled={loading || !namaGroup}
-            className="flex-1 sm:flex-none h-10 px-10 text-[10px] font-bold uppercase tracking-wider shadow-md shadow-primary/20 bg-primary hover:bg-primary/90 text-white rounded-lg"
+            className="flex-1 sm:flex-none h-9 px-10 text-[10px] font-bold uppercase tracking-wider shadow-md shadow-primary/20 bg-primary hover:bg-primary/90 text-white rounded-lg"
           >
             {loading ? (
               <span className="flex items-center gap-2">

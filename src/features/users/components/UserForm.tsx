@@ -76,7 +76,7 @@ const UserForm: React.FC<UserFormProps> = ({
             label="Pilih Karyawan" 
             icon={UserIcon} 
             required
-            description="* Hanya karyawan aktif yang belum memiliki akun."
+            description="Tampilkan hanya karyawan aktif yang belum memiliki akun akses."
           >
             <Select
               value={
@@ -89,7 +89,7 @@ const UserForm: React.FC<UserFormProps> = ({
             >
               <SelectTrigger
                 id="id_karyawan"
-                className="h-10 bg-card border-border/50 shadow-sm font-semibold"
+                className="h-9 bg-muted/20 border-border shadow-sm font-semibold rounded-lg"
               >
                 <SelectValue placeholder="Pilih Karyawan..." />
               </SelectTrigger>
@@ -97,7 +97,7 @@ const UserForm: React.FC<UserFormProps> = ({
                 {availableEmployees.map((emp) => (
                   <SelectItem key={emp.id} value={emp.id.toString()}>
                     <div className="flex flex-col">
-                      <span className="font-semibold">{emp.nama_lengkap}</span>
+                      <span className="font-semibold text-xs">{emp.nama_lengkap}</span>
                       <span className="text-[10px] text-muted-foreground uppercase">
                         {emp.kode_karyawan || emp.jabatan}
                       </span>
@@ -108,71 +108,72 @@ const UserForm: React.FC<UserFormProps> = ({
             </Select>
           </FormField>
         ) : (
-          <div className="bg-primary/5 p-4 rounded-xl border border-primary/10 flex items-center gap-4 shadow-inner">
-            <div className="p-2.5 bg-primary text-white rounded-lg shadow-md shadow-primary/20">
+          <div className="bg-primary/5 p-3 rounded-xl border border-primary/10 flex items-center gap-3 shadow-inner">
+            <div className="p-2 bg-primary text-white rounded-lg shadow-md shadow-primary/20">
               <UserCheck className="h-4 w-4" />
             </div>
             <div>
-              <div className="text-[9px] font-bold uppercase text-muted-foreground tracking-widest leading-none">
+              <div className="text-[9px] font-bold uppercase text-muted-foreground/70 tracking-widest leading-none">
                 Akses Karyawan
               </div>
-              <div className="text-sm font-bold text-foreground uppercase tracking-tight mt-1">
+              <div className="text-sm font-bold text-foreground/90 uppercase tracking-tight mt-1">
                 {initialData.karyawan?.nama_lengkap}
               </div>
             </div>
           </div>
         )}
 
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-          <FormField label="Username" icon={UserIcon} required>
-            <Input
-              id="username"
-              name="username"
-              type="text"
-              required
-              className="h-10 bg-card border-border/50 focus-visible:ring-primary shadow-sm font-semibold"
-              value={formData.username}
-              onChange={(e) =>
-                setFormData((prev) => ({ ...prev, username: e.target.value }))
-              }
-              placeholder="Username"
-            />
-          </FormField>
-
-          <FormField label="Role / Peran Utama" icon={Shield} required>
-            <Select
-              value={formData.peran}
-              onValueChange={(val) =>
-                setFormData((prev) => ({
-                  ...prev,
-                  peran: val as "sales" | "admin_perusahaan" | "admin_divisi" | "manager",
-                }))
-              }
-              required
-            >
-              <SelectTrigger
-                id="peran"
-                className="h-10 bg-card border-border/50 shadow-sm font-semibold"
+        <div className="grid grid-cols-1 md:grid-cols-12 gap-4">
+          <div className="md:col-span-8">
+            <FormField label="Username Akun" icon={UserIcon} required>
+              <Input
+                id="username"
+                name="username"
+                type="text"
+                required
+                className="h-9 bg-card border-border focus-visible:ring-primary shadow-sm font-semibold rounded-lg"
+                value={formData.username}
+                onChange={(e) =>
+                  setFormData((prev) => ({ ...prev, username: e.target.value }))
+                }
+                placeholder="Username"
+              />
+            </FormField>
+          </div>
+          <div className="md:col-span-4">
+            <FormField label="Role / Peran" icon={Shield} required>
+              <Select
+                value={formData.peran}
+                onValueChange={(val) =>
+                  setFormData((prev) => ({
+                    ...prev,
+                    peran: val as "sales" | "admin_perusahaan" | "admin_divisi" | "manager",
+                  }))
+                }
+                required
               >
-                <SelectValue placeholder="Pilih Role" />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="sales">Sales (Mobile App)</SelectItem>
-                <SelectItem value="admin_perusahaan">
-                   Admin Perusahaan
-                </SelectItem>
-                <SelectItem value="admin_divisi">Admin Divisi</SelectItem>
-                <SelectItem value="manager">Manager</SelectItem>
-              </SelectContent>
-            </Select>
-          </FormField>
+                <SelectTrigger
+                  id="peran"
+                  className="h-9 bg-card border-border shadow-sm font-semibold rounded-lg"
+                >
+                  <SelectValue placeholder="Role" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="sales">Sales (App)</SelectItem>
+                  <SelectItem value="admin_perusahaan">Admin Co</SelectItem>
+                  <SelectItem value="admin_divisi">Admin Div</SelectItem>
+                  <SelectItem value="manager">Manager</SelectItem>
+                </SelectContent>
+              </Select>
+            </FormField>
+          </div>
         </div>
 
         <FormField 
-          label="Password Akses" 
+          label="Password Akses Keamanan" 
           icon={Key} 
           required={!isEdit}
-          description={isEdit ? "* Kosongkan jika tidak ingin mengubah password." : undefined}
+          description={isEdit ? "Kosongkan jika tidak ingin mengubah password lama." : undefined}
         >
           <div className="relative group">
             <Input
@@ -180,23 +181,23 @@ const UserForm: React.FC<UserFormProps> = ({
               name="password"
               type="password"
               required={!isEdit}
-              className="h-10 bg-card border-border/50 focus-visible:ring-primary shadow-sm pr-10"
+              className="h-9 bg-card border-border focus-visible:ring-primary shadow-sm rounded-lg pr-10 font-semibold"
               value={formData.password}
               onChange={(e) =>
                 setFormData((prev) => ({ ...prev, password: e.target.value }))
               }
-              placeholder={isEdit ? "••••••••" : "Password"}
+              placeholder={isEdit ? "••••••••" : "Masukkan Password"}
             />
           </div>
         </FormField>
       </div>
 
-      <div className="flex items-center justify-end gap-3 pt-4 border-t font-semibold">
+      <div className="flex items-center justify-end gap-3 pt-4 border-t">
         <Button
           type="button"
-          variant="ghost"
+          variant="outline"
           onClick={onCancel}
-          className="h-10 px-8 text-[10px] font-bold uppercase tracking-wider text-muted-foreground hover:text-foreground rounded-lg"
+          className="h-9 px-6 text-[10px] font-bold uppercase tracking-wider text-muted-foreground hover:bg-muted/50 rounded-lg border-border/60"
           disabled={loading}
         >
           <X className="mr-2 h-3.5 w-3.5" /> Batal
@@ -204,16 +205,16 @@ const UserForm: React.FC<UserFormProps> = ({
         <Button
           type="submit"
           disabled={loading}
-          className="h-10 px-10 text-[10px] font-bold uppercase tracking-wider shadow-md shadow-primary/20 bg-primary hover:bg-primary/90 text-white rounded-lg"
+          className="h-9 px-8 text-[10px] font-bold uppercase tracking-wider shadow-lg shadow-primary/20 bg-primary hover:bg-primary/90 text-white rounded-lg transition-all hover:scale-[1.02]"
         >
           {loading ? (
             <span className="flex items-center gap-2">
-              <div className="h-4 w-4 animate-spin rounded-full border-2 border-white border-t-transparent" />
+              <div className="h-3.5 w-3.5 animate-spin rounded-full border-2 border-white border-t-transparent" />
               Menyimpan...
             </span>
           ) : (
             <span className="flex items-center gap-2">
-              <Save className="h-4 w-4" />
+              <Save className="h-3.5 w-3.5" />
               {isEdit ? "Update Akses" : "Buat Akun Sekarang"}
             </span>
           )}

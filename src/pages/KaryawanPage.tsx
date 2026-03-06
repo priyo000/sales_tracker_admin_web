@@ -174,7 +174,6 @@ const KaryawanPage: React.FC = () => {
         onClose={() => setIsModalOpen(false)}
         title={editingEmployee ? "Edit Data Karyawan" : "Tambah Karyawan Baru"}
         size="4xl"
-        noPadding
       >
         <EmployeeForm
           initialData={editingEmployee || undefined}

@@ -220,15 +220,15 @@ const RouteForm: React.FC<RouteFormProps> = ({
       className="flex h-[80vh] w-full bg-background overflow-hidden"
     >
       {/* LEFT SIDEBAR - CONTROL PANEL */}
-      <div className="w-[350px] flex flex-col border-r border-border bg-card z-10 shrink-0">
+      <div className="w-[320px] flex flex-col border-r border-border bg-card z-10 shrink-0">
         {/* Header Section */}
-        <div className="p-5 border-b border-border bg-background space-y-4">
+        <div className="p-4 border-b border-border bg-background space-y-3">
           <div className="space-y-3">
             {(user?.peran === "super_admin" ||
               user?.peran === "admin_perusahaan") && (
               <FormField label="Divisi Rute" icon={LayoutGrid} required>
                 <Select value={idDivisi} onValueChange={setIdDivisi} required>
-                  <SelectTrigger className="h-9 bg-card border-border/50 font-semibold">
+                  <SelectTrigger className="h-9 bg-muted/20 border-border font-semibold rounded-lg">
                     <SelectValue placeholder="Pilih Divisi..." />
                   </SelectTrigger>
                   <SelectContent>
@@ -247,7 +247,7 @@ const RouteForm: React.FC<RouteFormProps> = ({
                 name="nama_rute"
                 type="text"
                 required
-                className="h-9 bg-card border-border/50 font-semibold"
+                className="h-9 bg-card border-border font-semibold rounded-lg"
                 value={namaRute}
                 onChange={(e) => setNamaRute(e.target.value)}
                 placeholder="Ex: Rute Senin Barat"
@@ -257,7 +257,7 @@ const RouteForm: React.FC<RouteFormProps> = ({
             <FormField label="Keterangan Rute" icon={FileText}>
               <Input
                 name="deskripsi"
-                className="h-9 bg-card border-border/50 text-xs"
+                className="h-9 bg-card border-border text-xs rounded-lg"
                 value={deskripsi}
                 onChange={(e) => setDeskripsi(e.target.value)}
                 placeholder="Contoh: Fokus toko besar"
@@ -269,11 +269,11 @@ const RouteForm: React.FC<RouteFormProps> = ({
         {/* Search & List Header */}
         <div className="px-4 py-3 bg-muted/30 border-b border-border space-y-3">
           <div className="relative group">
-            <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground z-10 group-focus-within:text-primary transition-colors" />
+            <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-3.5 w-3.5 text-muted-foreground z-10 group-focus-within:text-primary transition-colors" />
             <Input
               type="text"
               placeholder="Cari Toko atau Alamat..."
-              className="w-full pl-10 pr-3 h-9 bg-card border-border/50 focus-visible:ring-primary text-xs"
+              className="w-full pl-9 pr-3 h-9 bg-card border-border focus-visible:ring-primary text-xs rounded-lg shadow-sm"
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
             />
@@ -286,7 +286,7 @@ const RouteForm: React.FC<RouteFormProps> = ({
                 setSelectedKaryawanId(val === "all" ? "all" : Number(val))
               }
             >
-              <SelectTrigger className="w-full bg-card border-border/50 h-9 text-[10px] font-semibold">
+              <SelectTrigger className="w-full bg-card border-border h-9 text-[10px] font-semibold rounded-lg">
                 <SelectValue placeholder="Semua Sales" />
               </SelectTrigger>
               <SelectContent>
@@ -301,12 +301,12 @@ const RouteForm: React.FC<RouteFormProps> = ({
             </Select>
           </FormField>
 
-          <div className="flex items-center justify-between text-[9px] font-bold uppercase tracking-wider text-muted-foreground px-1">
+          <div className="flex items-center justify-between text-[9px] font-bold uppercase tracking-wider text-muted-foreground/80 px-1">
             <span>{filteredCustomers.length} Pelanggan</span>
             <span
               className={cn(
                 "transition-colors",
-                selectedCount > 0 ? "text-primary" : "",
+                selectedCount > 0 ? "text-primary/90" : "",
               )}
             >
               {selectedCount} Terpilih
@@ -314,16 +314,16 @@ const RouteForm: React.FC<RouteFormProps> = ({
           </div>
         </div>
 
-        <div className="flex-1 overflow-y-auto p-3 space-y-2 bg-muted/10">
+        <div className="flex-1 overflow-y-auto p-4 space-y-2 bg-muted/5">
           {pelanggansLoading ? (
-            <div className="flex flex-col items-center justify-center h-40 text-muted-foreground space-y-3">
-              <div className="animate-spin h-6 w-6 border-2 border-primary border-t-transparent rounded-full" />
-              <span className="text-[10px] font-black uppercase tracking-widest">Memuat database...</span>
+            <div className="flex flex-col items-center justify-center h-40 text-muted-foreground space-y-2">
+              <div className="animate-spin h-5 w-5 border-2 border-primary/50 border-t-transparent rounded-full" />
+              <span className="text-[9px] font-bold uppercase tracking-widest opacity-60">Memuat...</span>
             </div>
           ) : filteredCustomers.length === 0 ? (
-            <div className="flex flex-col items-center justify-center h-40 text-muted-foreground space-y-2 opacity-50">
-              <Info className="h-8 w-8" />
-              <span className="text-[10px] font-black uppercase tracking-widest">Tidak ada data</span>
+            <div className="flex flex-col items-center justify-center h-40 text-muted-foreground/50 space-y-2">
+              <Info className="h-6 w-6" />
+              <span className="text-[9px] font-bold uppercase tracking-widest">Tidak ada data</span>
             </div>
           ) : (
             <CustomerListItems
@@ -335,36 +335,33 @@ const RouteForm: React.FC<RouteFormProps> = ({
         </div>
 
         {/* FOOTER ACTIONS */}
-        <div className="p-4 border-t border-border bg-background shadow-sm z-20 space-y-3 font-semibold">
-          <div className="flex items-center justify-between text-[10px] font-bold uppercase tracking-widest text-muted-foreground">
-            <span>Total Rute:</span>
-            <span className="text-foreground">
-              {selectedCount} Stop Points
+        <div className="p-4 border-t border-border bg-background shadow-sm z-20 space-y-4">
+          <div className="flex items-center justify-between text-[10px] font-bold uppercase tracking-widest text-muted-foreground/80">
+            <span>Stop Points:</span>
+            <span className="text-foreground/90 bg-muted px-2 py-0.5 rounded-lg">
+              {selectedCount} Lokasi
             </span>
           </div>
           <div className="grid grid-cols-2 gap-2">
             <Button
               type="button"
-              variant="ghost"
+              variant="outline"
               onClick={onCancel}
               disabled={isLoading}
-              className="h-10 text-[10px] font-bold uppercase tracking-widest text-muted-foreground hover:text-foreground rounded-lg"
+              className="h-9 text-[10px] font-bold uppercase tracking-widest text-muted-foreground hover:bg-muted/50 rounded-lg border-border/60"
             >
               <X className="mr-2 h-3.5 w-3.5" /> Batal
             </Button>
             <Button
               type="submit"
               disabled={isLoading}
-              className="h-10 text-[10px] font-bold uppercase tracking-widest shadow-md shadow-primary/20 bg-primary hover:bg-primary/90 text-white rounded-lg"
+              className="h-9 text-[10px] font-bold uppercase tracking-widest shadow-lg shadow-primary/20 bg-primary hover:bg-primary/90 text-white rounded-lg transition-all"
             >
               {isLoading ? (
-                <span className="flex items-center gap-2">
-                  <div className="h-4 w-4 animate-spin rounded-full border-2 border-white border-t-transparent" />
-                  ...
-                </span>
+                <div className="h-3.5 w-3.5 animate-spin rounded-full border-2 border-white border-t-transparent" />
               ) : (
                 <span className="flex items-center gap-2">
-                  <Save className="h-4 w-4" /> Simpan
+                  <Save className="h-3.5 w-3.5" /> Simpan
                 </span>
               )}
             </Button>

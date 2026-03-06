@@ -51,7 +51,7 @@ const DivisionForm: React.FC<DivisionFormProps> = ({
           <Input
             type="text"
             required
-            className="h-10 bg-card border-border/50 focus-visible:ring-primary shadow-sm font-semibold"
+            className="h-9 bg-card border-border/50 focus-visible:ring-primary shadow-sm font-semibold"
             placeholder="Sales, Marketing, Gudang..."
             value={namaDivisi}
             onChange={(e) => setNamaDivisi(e.target.value)}
@@ -69,7 +69,7 @@ const DivisionForm: React.FC<DivisionFormProps> = ({
               type="number"
               min="0"
               required
-              className="h-10 bg-card border-border/50 focus-visible:ring-primary shadow-sm font-semibold pr-16"
+              className="h-9 bg-card border-border/50 focus-visible:ring-primary shadow-sm font-semibold pr-16"
               placeholder="100"
               value={radiusToleransi}
               onChange={(e) => setRadiusToleransi(Number(e.target.value))}
@@ -146,7 +146,7 @@ const DivisionForm: React.FC<DivisionFormProps> = ({
           type="button"
           variant="ghost"
           onClick={onCancel}
-          className="h-10 px-8 text-[10px] font-bold uppercase tracking-wider text-muted-foreground hover:text-foreground rounded-lg"
+          className="h-9 px-8 text-[10px] font-bold uppercase tracking-wider text-muted-foreground hover:text-foreground rounded-lg"
           disabled={loading}
         >
           <X className="mr-2 h-3.5 w-3.5" /> Batal
@@ -154,7 +154,7 @@ const DivisionForm: React.FC<DivisionFormProps> = ({
         <Button
           type="submit"
           disabled={loading}
-          className="h-10 px-10 text-[10px] font-bold uppercase tracking-wider shadow-md shadow-primary/20 bg-primary hover:bg-primary/90 text-white rounded-lg"
+          className="h-9 px-10 text-[10px] font-bold uppercase tracking-wider shadow-md shadow-primary/20 bg-primary hover:bg-primary/90 text-white rounded-lg"
         >
           {loading ? (
             <span className="flex items-center gap-2">

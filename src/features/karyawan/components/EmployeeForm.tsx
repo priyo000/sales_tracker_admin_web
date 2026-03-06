@@ -75,13 +75,13 @@ const EmployeeForm: React.FC<EmployeeFormProps> = ({
     <form onSubmit={handleSubmit} className="space-y-6 py-1">
       <div className="space-y-4">
         {/* ID & NIK Row */}
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-3.5">
           <FormField label="Kode Karyawan" icon={Contact}>
             <Input
               name="kode_karyawan"
               type="text"
-              placeholder="Contoh: KYW001"
-              className="h-10 bg-card border-border/50 focus-visible:ring-primary shadow-sm font-semibold"
+              placeholder="KYW001"
+              className="h-9 bg-card border-border focus-visible:ring-primary shadow-sm font-semibold rounded-lg"
               value={formData.kode_karyawan}
               onChange={(e) => handleChange("kode_karyawan", e.target.value)}
             />
@@ -91,7 +91,7 @@ const EmployeeForm: React.FC<EmployeeFormProps> = ({
               name="nik"
               type="text"
               placeholder="16 digit NIK"
-              className="h-10 bg-card border-border/50 focus-visible:ring-primary shadow-sm font-semibold"
+              className="h-9 bg-card border-border focus-visible:ring-primary shadow-sm font-semibold rounded-lg"
               value={formData.nik}
               onChange={(e) => handleChange("nik", e.target.value)}
             />
@@ -104,7 +104,7 @@ const EmployeeForm: React.FC<EmployeeFormProps> = ({
             name="nama_lengkap"
             type="text"
             required
-            className="h-10 bg-card border-border/50 focus-visible:ring-primary shadow-sm font-semibold"
+            className="h-9 bg-card border-border focus-visible:ring-primary shadow-sm font-semibold rounded-lg"
             placeholder="Nama Lengkap Sesuai KTP"
             value={formData.nama_lengkap}
             onChange={(e) => handleChange("nama_lengkap", e.target.value)}
@@ -112,14 +112,14 @@ const EmployeeForm: React.FC<EmployeeFormProps> = ({
         </FormField>
 
         {/* Division & Position Row */}
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-3.5">
           <FormField label="Divisi Kerja" icon={Building2} required>
             <Select
               value={formData.id_divisi}
               onValueChange={(val) => handleChange("id_divisi", val)}
               required
             >
-              <SelectTrigger className="h-10 bg-card border-border/50 shadow-sm font-semibold">
+              <SelectTrigger className="h-9 bg-card border-border shadow-sm font-semibold rounded-lg">
                 <SelectValue placeholder="Pilih Divisi" />
               </SelectTrigger>
               <SelectContent>
@@ -136,7 +136,7 @@ const EmployeeForm: React.FC<EmployeeFormProps> = ({
               value={formData.jabatan}
               onValueChange={(val) => handleChange("jabatan", val)}
             >
-              <SelectTrigger className="h-10 bg-card border-border/50 shadow-sm font-semibold">
+              <SelectTrigger className="h-9 bg-card border-border shadow-sm font-semibold rounded-lg">
                 <SelectValue placeholder="Pilih Jabatan" />
               </SelectTrigger>
               <SelectContent>
@@ -151,24 +151,24 @@ const EmployeeForm: React.FC<EmployeeFormProps> = ({
         </div>
 
         {/* Contact Row */}
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-          <FormField label="Nomor WhatsApp / HP" icon={Phone} required>
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-3.5">
+          <FormField label="WhatsApp / No HP" icon={Phone} required>
             <Input
               name="no_hp"
               type="tel"
               required
               placeholder="0812xxxx"
-              className="h-10 bg-card border-border/50 focus-visible:ring-primary shadow-sm font-semibold"
+              className="h-9 bg-card border-border focus-visible:ring-primary shadow-sm font-semibold rounded-lg"
               value={formData.no_hp}
               onChange={(e) => handleChange("no_hp", e.target.value)}
             />
           </FormField>
-          <FormField label="Email Perusahaan / Personal" icon={Mail}>
+          <FormField label="Email Perusahaan" icon={Mail}>
             <Input
               name="email"
               type="email"
               placeholder="email@perusahaan.com"
-              className="h-10 bg-card border-border/50 focus-visible:ring-primary shadow-sm font-semibold"
+              className="h-9 bg-card border-border focus-visible:ring-primary shadow-sm font-semibold rounded-lg"
               value={formData.email}
               onChange={(e) => handleChange("email", e.target.value)}
             />
@@ -176,15 +176,15 @@ const EmployeeForm: React.FC<EmployeeFormProps> = ({
         </div>
 
         {/* Date & Status Row */}
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-3.5">
           <FormField label="Tanggal Bergabung" icon={Calendar}>
             <DatePicker
               date={formData.tanggal_bergabung ? parse(formData.tanggal_bergabung, "yyyy-MM-dd", new Date()) : undefined}
               onChange={(date) => 
                 handleChange("tanggal_bergabung", date ? format(date, "yyyy-MM-dd") : "")
               }
-              className="w-full h-10 bg-card border-border/50 shadow-sm font-semibold text-left"
-              placeholder="Pilih Tanggal Bergabung"
+              className="w-full h-9 bg-card border-border shadow-sm font-semibold text-left rounded-lg text-xs"
+              placeholder="Pilih Tanggal"
             />
           </FormField>
           <FormField label="Status Kepegawaian" icon={Activity}>
@@ -194,13 +194,13 @@ const EmployeeForm: React.FC<EmployeeFormProps> = ({
                   key={status}
                   type="button"
                   onClick={() => handleChange("status_karyawan", status)}
-                  className={`h-10 rounded-lg border-2 transition-all text-[10px] font-bold uppercase tracking-wider ${
+                  className={`h-9 rounded-lg border transition-all text-[10px] font-bold uppercase tracking-wider ${
                     formData.status_karyawan === status
                       ? "border-primary bg-primary/5 text-primary shadow-sm"
-                      : "border-border/50 bg-card text-muted-foreground hover:bg-muted/50"
+                      : "border-border bg-card text-muted-foreground hover:bg-muted/50"
                   }`}
                 >
-                  {status.replace("_", "-")}
+                  {status.replace("_", " ")}
                 </button>
               ))}
             </div>
@@ -211,39 +211,39 @@ const EmployeeForm: React.FC<EmployeeFormProps> = ({
         <FormField label="Alamat Domisili" icon={MapPin}>
           <Textarea
             name="alamat_domisili"
-            className="bg-card border-border/50 focus-visible:ring-primary shadow-sm font-semibold min-h-[80px] resize-none text-sm"
-            placeholder="Tulis alamat lengkap domisili saat ini..."
-            rows={3}
+            className="bg-card border-border focus-visible:ring-primary shadow-sm font-semibold min-h-[70px] resize-none text-xs rounded-lg"
+            placeholder="Tulis alamat lengkap domisili..."
+            rows={2}
             value={formData.alamat_domisili}
             onChange={(e) => handleChange("alamat_domisili", e.target.value)}
           />
         </FormField>
       </div>
 
-      <div className="flex items-center justify-end gap-3 pt-4 border-t font-semibold">
+      <div className="flex items-center justify-end gap-3 pt-4 border-t">
         <Button
           type="button"
           variant="ghost"
           onClick={onCancel}
-          className="h-10 px-6 text-xs font-semibold uppercase tracking-wider text-muted-foreground hover:text-foreground"
+          className="h-9 px-6 text-[10px] font-bold uppercase tracking-wider text-muted-foreground hover:text-foreground rounded-lg"
           disabled={loading}
         >
-          <X className="mr-2 h-4 w-4" /> Batal
+          <X className="mr-2 h-3.5 w-3.5" /> Batal
         </Button>
         <Button
           type="submit"
           disabled={loading}
-          className="h-10 px-8 text-xs font-semibold uppercase tracking-wider shadow-lg shadow-primary/20 bg-primary hover:bg-primary/90 text-white"
+          className="h-9 px-8 text-[10px] font-bold uppercase tracking-wider shadow-lg shadow-primary/20 bg-primary hover:bg-primary/90 text-white rounded-lg transition-all hover:scale-[1.02]"
         >
           {loading ? (
             <span className="flex items-center gap-2">
-              <div className="h-4 w-4 animate-spin rounded-full border-2 border-white border-t-transparent" />
-              Menyimpan...
+              <div className="h-3.5 w-3.5 animate-spin rounded-full border-2 border-white border-t-transparent" />
+              Processing...
             </span>
           ) : (
             <span className="flex items-center gap-2">
-              <Save className="h-4 w-4" />
-              {isEdit ? "Simpan Perubahan" : "Tambah Karyawan Baru"}
+              <Save className="h-3.5 w-3.5" />
+              {isEdit ? "Update Karyawan" : "Simpan Data"}
             </span>
           )}
         </Button>

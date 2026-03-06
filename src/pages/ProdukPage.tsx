@@ -154,7 +154,6 @@ const ProdukPage: React.FC = () => {
         onClose={() => setIsModalOpen(false)}
         title={editingProduct ? "Edit Data Produk" : "Tambah Produk Baru"}
         size="4xl"
-        noPadding
       >
         <ProductForm
           initialData={editingProduct || undefined}

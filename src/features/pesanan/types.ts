@@ -5,6 +5,7 @@ export interface ItemPesanan {
     produk?: {
         nama_produk: string;
         satuan: string;
+        sku?: string;
     };
     jumlah: number;
     jumlah_pesanan?: number;

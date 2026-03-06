@@ -92,7 +92,7 @@ const MapPicker: React.FC<MapPickerProps> = ({ lat, lng, onChange, hideSearch = 
     };
 
     return (
-        <div className={hideSearch ? "" : "space-y-3"}>
+        <div className={hideSearch ? "h-full w-full" : "space-y-3"}>
             {!hideSearch && (
                 <div className="flex space-x-2">
                     <div className="relative flex-1">

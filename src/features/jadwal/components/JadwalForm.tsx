@@ -79,7 +79,7 @@ const JadwalForm: React.FC<JadwalFormProps> = ({
                 tanggal: date ? format(date, "yyyy-MM-dd") : "" 
               })
             }
-            className="w-full h-10 bg-card border-border/50 text-[13px] font-semibold"
+            className="w-full h-9 bg-card border-border/50 text-[13px] font-semibold"
           />
         </FormField>
 
@@ -93,7 +93,7 @@ const JadwalForm: React.FC<JadwalFormProps> = ({
           >
             <SelectTrigger
               id="sales"
-              className="h-10 bg-card border-border/50 shadow-sm text-[13px] font-semibold"
+              className="h-9 bg-card border-border/50 shadow-sm text-[13px] font-semibold"
             >
               <SelectValue placeholder="Pilih Sales..." />
             </SelectTrigger>
@@ -128,7 +128,7 @@ const JadwalForm: React.FC<JadwalFormProps> = ({
           >
             <SelectTrigger
               id="rute"
-              className="h-10 bg-card border-border/50 shadow-sm text-[13px] font-semibold"
+              className="h-9 bg-card border-border/50 shadow-sm text-[13px] font-semibold"
             >
               <SelectValue placeholder="Pilih Rute..." />
             </SelectTrigger>
@@ -156,14 +156,14 @@ const JadwalForm: React.FC<JadwalFormProps> = ({
           type="button"
           variant="ghost"
           onClick={onCancel}
-          className="h-10 px-8 text-[10px] font-bold uppercase tracking-wider text-muted-foreground hover:text-foreground rounded-lg"
+          className="h-9 px-8 text-[10px] font-bold uppercase tracking-wider text-muted-foreground hover:text-foreground rounded-lg"
           disabled={loading}
         >
           <X className="mr-2 h-3.5 w-3.5" /> Batal
         </Button>
         <Button
           type="submit"
-          className="h-10 px-10 text-[10px] font-bold uppercase tracking-wider shadow-md shadow-primary/20 bg-primary hover:bg-primary/90 text-white rounded-lg"
+          className="h-9 px-10 text-[10px] font-bold uppercase tracking-wider shadow-md shadow-primary/20 bg-primary hover:bg-primary/90 text-white rounded-lg"
           disabled={loading}
         >
           {loading ? (

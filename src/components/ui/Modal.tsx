@@ -59,16 +59,16 @@ export const Modal: React.FC<ModalProps> = ({
       <DialogContent
         className={cn(
           sizeClasses[size],
-          "p-0 overflow-hidden flex flex-col max-h-[90vh] border-none shadow-2xl bg-card",
+          "p-0 overflow-hidden flex flex-col max-h-[90vh] border-none shadow-2xl bg-card rounded-2xl",
           size === "full" && "h-[90vh]",
         )}
       >
-        <DialogHeader className="px-6 py-4 border-b bg-muted/30 shrink-0 space-y-1">
-          <DialogTitle className="text-xl font-black tracking-tight text-foreground uppercase">
+        <DialogHeader className="px-5 py-3.5 border-b bg-muted/50 shrink-0 space-y-1">
+          <DialogTitle className="text-lg font-bold tracking-tight text-foreground/90 uppercase">
             {title}
           </DialogTitle>
           {description && (
-            <DialogDescription className="text-xs text-muted-foreground font-medium uppercase tracking-wider">
+            <DialogDescription className="text-[10px] text-muted-foreground/80 font-semibold uppercase tracking-widest">
               {description}
             </DialogDescription>
           )}
