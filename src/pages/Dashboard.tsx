@@ -167,16 +167,16 @@ const Dashboard: React.FC = () => {
                         </div>
                     </CardHeader>
                     <CardContent>
-                        <div className="flex items-end gap-2 mb-1">
+                        <div className="flex items-center gap-2 mb-1">
                             <span className="text-2xl font-bold">{formatCurrency(stats.total_omset)}</span>
                             {stats.omset_mom && (
-                                <Badge variant={stats.omset_mom.is_up ? "success" : "destructive"} className="text-[10px] px-1.5 h-5 flex items-center gap-0.5 mb-1.5 rounded-sm">
+                                <Badge variant={stats.omset_mom.is_up ? "success" : "destructive"} className="text-[10px] px-1.5 py-0 h-4 flex items-center gap-0.5 rounded-sm">
                                     {stats.omset_mom.is_up ? <ArrowUpRight className="w-3 h-3" /> : <ArrowDownRight className="w-3 h-3" />}
                                     {stats.omset_mom.percentage}% (MoM)
                                 </Badge>
                             )}
                         </div>
-                        <p className="text-xs text-muted-foreground flex items-center gap-1">
+                        <p className="text-xs text-muted-foreground">
                             Total pendapatan kumulatif
                         </p>
                     </CardContent>
@@ -204,7 +204,7 @@ const Dashboard: React.FC = () => {
                     </CardHeader>
                     <CardContent>
                         <div className="text-2xl font-bold mb-1">{stats.total_pelanggan}</div>
-                        <p className="text-xs text-muted-foreground flex items-center gap-1">
+                        <p className="text-xs text-muted-foreground">
                             Toko / Customer terdaftar
                         </p>
                     </CardContent>
