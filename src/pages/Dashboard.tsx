@@ -224,7 +224,8 @@ const Dashboard: React.FC = () => {
                                     />
                                     <RechartsTooltip 
                                         cursor={{ fill: 'rgba(0,0,0,0.05)' }} 
-                                        formatter={(value: number) => [formatCurrency(value), "Omset"]}
+                                        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+                                        formatter={(value: any) => [formatCurrency(Number(value) || 0), "Omset"]}
                                         contentStyle={{ borderRadius: '8px', border: '1px solid #e5e7eb', boxShadow: '0 4px 6px -1px rgb(0 0 0 / 0.1)' }}
                                         labelStyle={{ fontWeight: 'bold', color: '#111827', marginBottom: '4px' }}
                                     />
