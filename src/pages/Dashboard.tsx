@@ -7,7 +7,6 @@ import {
     Map as MapIcon, 
     CheckCircle,
     Activity,
-    Truck,
     DollarSign,
     ArrowUpRight,
     ArrowDownRight
@@ -51,12 +50,13 @@ interface RecentOrder {
 
 interface DashboardStats {
     total_pesanan: number;
-    pesanan_hari_ini: number;
+    pesanan_bulan_ini: number;
     total_omset: number;
     total_pelanggan: number;
     total_produk: number;
     total_sales: number;
     total_rute: number;
+    pelanggan_baru_bulan_ini: number;
     recent_orders: RecentOrder[];
     sales_chart?: SalesChartData[];
     best_selling_products?: BestSellingProduct[];
@@ -160,8 +160,8 @@ const Dashboard: React.FC = () => {
             {/* Top Stat Cards */}
             <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
                 <Card className="bg-card hover:bg-muted/10 transition-colors">
-                    <CardHeader className="flex flex-row items-center justify-between space-y-0">
-                        <CardTitle className="text-sm font-medium text-muted-foreground">Total Omset</CardTitle>
+                    <CardHeader className="flex flex-row items-center justify-between pb-2 space-y-0">
+                        <CardTitle className="text-sm font-medium text-muted-foreground">Omset Bulan Ini</CardTitle>
                         <div className="p-2 bg-emerald-100 rounded-lg">
                             <DollarSign className="w-4 h-4 text-emerald-600" />
                         </div>
@@ -185,20 +185,20 @@ const Dashboard: React.FC = () => {
                 </Card>
 
                 <Card className="bg-card hover:bg-muted/10 transition-colors">
-                    <CardHeader className="flex flex-row items-center justify-between space-y-0">
-                        <CardTitle className="text-sm font-medium text-muted-foreground">Pesanan Hari Ini</CardTitle>
+                    <CardHeader className="flex flex-row items-center justify-between pb-2 space-y-0">
+                        <CardTitle className="text-sm font-medium text-muted-foreground">Pesanan Bulan Ini</CardTitle>
                         <div className="p-2 bg-indigo-100 rounded-lg">
                             <ShoppingCart className="w-4 h-4 text-indigo-600" />
                         </div>
                     </CardHeader>
                     <CardContent>
-                        <div className="text-2xl font-bold mb-1">{stats.pesanan_hari_ini}</div>
-                        <p className="text-xs text-muted-foreground">Dari total {stats.total_pesanan} pesanan</p>
+                        <div className="text-2xl font-bold mb-1">{stats.pesanan_bulan_ini}</div>
+                        <p className="text-xs text-muted-foreground">Dari total {stats.total_pesanan} pesanan cumulatif</p>
                     </CardContent>
                 </Card>
 
                 <Card className="bg-card hover:bg-muted/10 transition-colors">
-                    <CardHeader className="flex flex-row items-center justify-between space-y-0">
+                    <CardHeader className="flex flex-row items-center justify-between pb-2 space-y-0">
                         <CardTitle className="text-sm font-medium text-muted-foreground">Pelanggan Aktif</CardTitle>
                         <div className="p-2 bg-pink-100 rounded-lg">
                             <Users className="w-4 h-4 text-pink-600" />
@@ -213,15 +213,15 @@ const Dashboard: React.FC = () => {
                 </Card>
                 
                 <Card className="bg-card hover:bg-muted/10 transition-colors">
-                    <CardHeader className="flex flex-row items-center justify-between space-y-0">
-                        <CardTitle className="text-sm font-medium text-muted-foreground">Sales Tracking</CardTitle>
+                    <CardHeader className="flex flex-row items-center justify-between pb-2 space-y-0">
+                        <CardTitle className="text-sm font-medium text-muted-foreground">Pelanggan Baru</CardTitle>
                         <div className="p-2 bg-orange-100 rounded-lg">
-                            <Truck className="w-4 h-4 text-orange-600" />
+                            <Users className="w-4 h-4 text-orange-600" />
                         </div>
                     </CardHeader>
                     <CardContent>
-                        <div className="text-2xl font-bold mb-1">{stats.total_sales}</div>
-                        <p className="text-xs text-muted-foreground">Total armada sales aktif</p>
+                        <div className="text-2xl font-bold mb-1">{stats.pelanggan_baru_bulan_ini}</div>
+                        <p className="text-xs text-muted-foreground">Registrasi baru bulan ini</p>
                     </CardContent>
                 </Card>
             </div>
