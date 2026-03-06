@@ -65,6 +65,14 @@ interface DashboardStats {
         percentage: number;
         is_up: boolean;
     };
+    pesanan_mom?: {
+        percentage: number;
+        is_up: boolean;
+    };
+    pelanggan_baru_mom?: {
+        percentage: number;
+        is_up: boolean;
+    };
 }
 
 const Dashboard: React.FC = () => {
@@ -193,7 +201,17 @@ const Dashboard: React.FC = () => {
                     </CardHeader>
                     <CardContent>
                         <div className="text-2xl font-bold mb-1">{stats.pesanan_bulan_ini}</div>
-                        <p className="text-xs text-muted-foreground">Dari total {stats.total_pesanan} pesanan cumulatif</p>
+                        <div className="flex items-center gap-1.5 flex-wrap">
+                            {stats.pesanan_mom && (
+                                <Badge variant={stats.pesanan_mom.is_up ? "success" : "destructive"} className="text-[9px] px-1 py-0 h-4 flex items-center gap-0.5 rounded-sm shrink-0">
+                                    {stats.pesanan_mom.is_up ? <ArrowUpRight className="w-2.5 h-2.5" /> : <ArrowDownRight className="w-2.5 h-2.5" />}
+                                    {stats.pesanan_mom.percentage}%
+                                </Badge>
+                            )}
+                            <p className="text-xs text-muted-foreground truncate">
+                                Perbandingan MoM
+                            </p>
+                        </div>
                     </CardContent>
                 </Card>
 
@@ -221,7 +239,17 @@ const Dashboard: React.FC = () => {
                     </CardHeader>
                     <CardContent>
                         <div className="text-2xl font-bold mb-1">{stats.pelanggan_baru_bulan_ini}</div>
-                        <p className="text-xs text-muted-foreground">Registrasi baru bulan ini</p>
+                        <div className="flex items-center gap-1.5 flex-wrap">
+                            {stats.pelanggan_baru_mom && (
+                                <Badge variant={stats.pelanggan_baru_mom.is_up ? "success" : "destructive"} className="text-[9px] px-1 py-0 h-4 flex items-center gap-0.5 rounded-sm shrink-0">
+                                    {stats.pelanggan_baru_mom.is_up ? <ArrowUpRight className="w-2.5 h-2.5" /> : <ArrowDownRight className="w-2.5 h-2.5" />}
+                                    {stats.pelanggan_baru_mom.percentage}%
+                                </Badge>
+                            )}
+                            <p className="text-xs text-muted-foreground truncate">
+                                Perbandingan MoM
+                            </p>
+                        </div>
                     </CardContent>
                 </Card>
             </div>
