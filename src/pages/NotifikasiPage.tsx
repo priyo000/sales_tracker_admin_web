@@ -44,7 +44,6 @@ const NotifikasiPage = () => {
 
   const handlePerPageChange = (p: number) => {
     setPerPage(p);
-    fetchNotifikasies(1, search, p);
   };
 
   const getIcon = (jenis: string) => {

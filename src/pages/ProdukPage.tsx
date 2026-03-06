@@ -28,13 +28,14 @@ const ProdukPage: React.FC = () => {
   const [editingProduct, setEditingProduct] = useState<Produk | null>(null);
   const [deletingId, setDeletingId] = useState<number | null>(null);
   const [page, setPage] = useState(1);
+  const [perPage, setPerPage] = useState(20);
 
   useEffect(() => {
     const timer = setTimeout(() => {
-      fetchProduks({ page, search: searchTerm });
+      fetchProduks({ page, search: searchTerm, per_page: perPage });
     }, 500);
     return () => clearTimeout(timer);
-  }, [searchTerm, page, fetchProduks]);
+  }, [searchTerm, page, perPage, fetchProduks]);
 
   const handleOpenModal = () => {
     setEditingProduct(null);
@@ -119,6 +120,10 @@ const ProdukPage: React.FC = () => {
         onDelete={handleDeleteProduct}
         pagination={pagination}
         onPageChange={setPage}
+        onPerPageChange={(pp) => {
+          setPerPage(pp);
+          setPage(1);
+        }}
         onSearchChange={(val) => {
           setSearchTerm(val);
           setPage(1);
