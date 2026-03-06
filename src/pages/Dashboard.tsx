@@ -26,7 +26,7 @@ interface SalesChartData {
 interface BestSellingProduct {
     id: number;
     nama_produk: string;
-    kode_produk: string;
+    kode_barang: string;
     total_terjual: number;
 }
 
@@ -308,7 +308,7 @@ const Dashboard: React.FC = () => {
                                                         {product.nama_produk}
                                                     </span>
                                                     <span className="text-xs text-muted-foreground truncate">
-                                                        {product.kode_produk}
+                                                        {product.kode_barang}
                                                     </span>
                                                 </div>
                                                 <div className="flex flex-col items-end">
