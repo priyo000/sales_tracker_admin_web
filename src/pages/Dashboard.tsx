@@ -160,30 +160,32 @@ const Dashboard: React.FC = () => {
             {/* Top Stat Cards */}
             <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
                 <Card className="bg-card hover:bg-muted/10 transition-colors">
-                    <CardHeader className="flex flex-row items-center justify-between pb-2 space-y-0">
+                    <CardHeader className="flex flex-row items-center justify-between space-y-0">
                         <CardTitle className="text-sm font-medium text-muted-foreground">Total Omset</CardTitle>
                         <div className="p-2 bg-emerald-100 rounded-lg">
                             <DollarSign className="w-4 h-4 text-emerald-600" />
                         </div>
                     </CardHeader>
                     <CardContent>
-                        <div className="flex items-center gap-2 mb-1">
-                            <span className="text-2xl font-bold">{formatCurrency(stats.total_omset)}</span>
+                        <div className="text-2xl font-bold mb-1 truncate" title={formatCurrency(stats.total_omset)}>
+                            {formatCurrency(stats.total_omset)}
+                        </div>
+                        <div className="flex items-center gap-1.5 flex-wrap">
                             {stats.omset_mom && (
-                                <Badge variant={stats.omset_mom.is_up ? "success" : "destructive"} className="text-[10px] px-1.5 py-0 h-4 flex items-center gap-0.5 rounded-sm">
-                                    {stats.omset_mom.is_up ? <ArrowUpRight className="w-3 h-3" /> : <ArrowDownRight className="w-3 h-3" />}
-                                    {stats.omset_mom.percentage}% (MoM)
+                                <Badge variant={stats.omset_mom.is_up ? "success" : "destructive"} className="text-[9px] px-1 py-0 h-4 flex items-center gap-0.5 rounded-sm shrink-0">
+                                    {stats.omset_mom.is_up ? <ArrowUpRight className="w-2.5 h-2.5" /> : <ArrowDownRight className="w-2.5 h-2.5" />}
+                                    {stats.omset_mom.percentage}%
                                 </Badge>
                             )}
+                            <p className="text-xs text-muted-foreground truncate">
+                                Perbandingan MoM
+                            </p>
                         </div>
-                        <p className="text-xs text-muted-foreground">
-                            Total pendapatan kumulatif
-                        </p>
                     </CardContent>
                 </Card>
 
                 <Card className="bg-card hover:bg-muted/10 transition-colors">
-                    <CardHeader className="flex flex-row items-center justify-between pb-2 space-y-0">
+                    <CardHeader className="flex flex-row items-center justify-between space-y-0">
                         <CardTitle className="text-sm font-medium text-muted-foreground">Pesanan Hari Ini</CardTitle>
                         <div className="p-2 bg-indigo-100 rounded-lg">
                             <ShoppingCart className="w-4 h-4 text-indigo-600" />
@@ -196,7 +198,7 @@ const Dashboard: React.FC = () => {
                 </Card>
 
                 <Card className="bg-card hover:bg-muted/10 transition-colors">
-                    <CardHeader className="flex flex-row items-center justify-between pb-2 space-y-0">
+                    <CardHeader className="flex flex-row items-center justify-between space-y-0">
                         <CardTitle className="text-sm font-medium text-muted-foreground">Pelanggan Aktif</CardTitle>
                         <div className="p-2 bg-pink-100 rounded-lg">
                             <Users className="w-4 h-4 text-pink-600" />
@@ -211,7 +213,7 @@ const Dashboard: React.FC = () => {
                 </Card>
                 
                 <Card className="bg-card hover:bg-muted/10 transition-colors">
-                    <CardHeader className="flex flex-row items-center justify-between pb-2 space-y-0">
+                    <CardHeader className="flex flex-row items-center justify-between space-y-0">
                         <CardTitle className="text-sm font-medium text-muted-foreground">Sales Tracking</CardTitle>
                         <div className="p-2 bg-orange-100 rounded-lg">
                             <Truck className="w-4 h-4 text-orange-600" />
