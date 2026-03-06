@@ -44,6 +44,7 @@ const PelangganPage: React.FC = () => {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [isImportModalOpen, setIsImportModalOpen] = useState(false);
   const [perPage, setPerPage] = useState(20);
+  const [page, setPage] = useState(1);
 
   const [confirmAction, setConfirmAction] = useState<{
     id: number;
@@ -55,25 +56,20 @@ const PelangganPage: React.FC = () => {
       fetchPelanggans({
         search,
         status: filterStatus,
-        page: pagination.currentPage,
+        page,
         per_page: perPage,
       });
     }, 300); // Debounce search
     return () => clearTimeout(timer);
-  }, [search, filterStatus, fetchPelanggans, pagination.currentPage, perPage]);
+  }, [search, filterStatus, fetchPelanggans, page, perPage]);
 
-  const handlePageChange = (page: number) => {
-    fetchPelanggans({ search, status: filterStatus, page, per_page: perPage });
+  const handlePageChange = (newPage: number) => {
+    setPage(newPage);
   };
 
   const handlePerPageChange = (newPerPage: number) => {
     setPerPage(newPerPage);
-    fetchPelanggans({
-      search,
-      status: filterStatus,
-      page: 1,
-      per_page: newPerPage,
-    });
+    setPage(1);
   };
 
   const handleAction = async () => {
@@ -151,15 +147,19 @@ const PelangganPage: React.FC = () => {
         pagination={pagination}
         onPageChange={handlePageChange}
         onPerPageChange={handlePerPageChange}
-        onSearchChange={setSearch}
+        onSearchChange={(val) => {
+          setSearch(val);
+          setPage(1);
+        }}
         toolbar={
           <div className="flex flex-wrap items-center gap-3">
             <div className="w-[180px]">
               <Select
                 value={filterStatus}
-                onValueChange={(val) =>
-                  setFilterStatus(val as PelangganStatus | "all")
-                }
+                onValueChange={(val) => {
+                  setFilterStatus(val as PelangganStatus | "all");
+                  setPage(1);
+                }}
               >
                 <SelectTrigger
                   className="w-full bg-background shadow-sm h-9"

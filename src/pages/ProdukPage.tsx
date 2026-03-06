@@ -1,4 +1,4 @@
-import React, { useEffect, useState, useCallback } from "react";
+import React, { useEffect, useState } from "react";
 import { Plus, Package, FileUp } from "lucide-react";
 import toast from "react-hot-toast";
 import { useProduk } from "../features/produk/hooks/useProduk";
@@ -27,20 +27,14 @@ const ProdukPage: React.FC = () => {
   const [isImportModalOpen, setIsImportModalOpen] = useState(false);
   const [editingProduct, setEditingProduct] = useState<Produk | null>(null);
   const [deletingId, setDeletingId] = useState<number | null>(null);
-
-  const loadData = useCallback(
-    async (page = 1, search = searchTerm) => {
-      await fetchProduks({ page, search });
-    },
-    [fetchProduks, searchTerm],
-  );
+  const [page, setPage] = useState(1);
 
   useEffect(() => {
     const timer = setTimeout(() => {
-      loadData(1, searchTerm);
+      fetchProduks({ page, search: searchTerm });
     }, 500);
     return () => clearTimeout(timer);
-  }, [searchTerm, loadData]);
+  }, [searchTerm, page, fetchProduks]);
 
   const handleOpenModal = () => {
     setEditingProduct(null);
@@ -66,7 +60,7 @@ const ProdukPage: React.FC = () => {
       );
       setIsModalOpen(false);
       setEditingProduct(null);
-      loadData(pagination.currentPage);
+      fetchProduks({ page, search: searchTerm });
     } else {
       toast.error(result.message || "Gagal menyimpan produk");
     }
@@ -82,7 +76,7 @@ const ProdukPage: React.FC = () => {
       if (result.success) {
         toast.success("Produk berhasil dihapus");
         setDeletingId(null);
-        loadData(pagination.currentPage);
+        fetchProduks({ page, search: searchTerm });
       } else {
         toast.error(result.message || "Gagal menghapus produk");
       }
@@ -91,7 +85,7 @@ const ProdukPage: React.FC = () => {
 
   const handleImportSuccess = async () => {
     setIsImportModalOpen(false);
-    loadData(1);
+    setPage(1);
   };
 
   return (
@@ -124,10 +118,10 @@ const ProdukPage: React.FC = () => {
         onEdit={handleEditProduct}
         onDelete={handleDeleteProduct}
         pagination={pagination}
-        onPageChange={(page) => loadData(page)}
+        onPageChange={setPage}
         onSearchChange={(val) => {
           setSearchTerm(val);
-          loadData(1, val);
+          setPage(1);
         }}
         toolbar={
           <div className="flex items-center gap-2">

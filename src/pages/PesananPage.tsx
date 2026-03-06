@@ -43,6 +43,7 @@ const PesananPage: React.FC = () => {
     from: undefined,
     to: undefined,
   });
+  const [page, setPage] = useState(1);
 
   const startDate = useMemo(() => 
     dateRange?.from ? formatFile(dateRange.from, "yyyy-MM-dd") : "", 
@@ -62,7 +63,7 @@ const PesananPage: React.FC = () => {
         status: statusFilter === "all" ? undefined : statusFilter,
         start_date: startDate,
         end_date: endDate,
-        page: pagination.currentPage,
+        page: page,
         per_page: perPage,
       });
     }, 300);
@@ -72,32 +73,18 @@ const PesananPage: React.FC = () => {
     statusFilter,
     startDate,
     endDate,
-    pagination.currentPage,
+    page,
     perPage,
     fetchPesanans,
   ]);
 
-  const handlePageChange = (page: number) => {
-    fetchPesanans({
-      search: searchTerm,
-      status: statusFilter === "all" ? undefined : statusFilter,
-      start_date: startDate,
-      end_date: endDate,
-      page,
-      per_page: perPage,
-    });
+  const handlePageChange = (newPage: number) => {
+    setPage(newPage);
   };
 
   const handlePerPageChange = (newPerPage: number) => {
     setPerPage(newPerPage);
-    fetchPesanans({
-      search: searchTerm,
-      status: statusFilter === "all" ? undefined : statusFilter,
-      start_date: startDate,
-      end_date: endDate,
-      page: 1,
-      per_page: newPerPage,
-    });
+    setPage(1);
   };
 
   const selectedOrder = useMemo(
@@ -167,7 +154,10 @@ const PesananPage: React.FC = () => {
         data={pesanans}
         loading={loading}
         onViewDetail={(id) => setSelectedOrderId(id)}
-        onSearchChange={setSearchTerm}
+        onSearchChange={(val) => {
+          setSearchTerm(val);
+          setPage(1);
+        }}
         pagination={pagination}
         onPageChange={handlePageChange}
         onPerPageChange={handlePerPageChange}
@@ -178,7 +168,7 @@ const PesananPage: React.FC = () => {
                 value={statusFilter}
                 onValueChange={(val: string) => {
                   setStatusFilter(val);
-                  handlePageChange(1);
+                  setPage(1);
                 }}
               >
                 <SelectTrigger
@@ -205,7 +195,7 @@ const PesananPage: React.FC = () => {
                 date={dateRange}
                 onChange={(range) => {
                   setDateRange(range);
-                  handlePageChange(1);
+                  setPage(1);
                 }}
               />
             </div>
@@ -219,7 +209,7 @@ const PesananPage: React.FC = () => {
                   setSearchTerm("");
                   setStatusFilter("all");
                   setDateRange(undefined);
-                  handlePageChange(1);
+                  setPage(1);
                 }}
               >
                 Reset Filter
