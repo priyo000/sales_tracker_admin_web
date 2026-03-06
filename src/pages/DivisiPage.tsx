@@ -16,14 +16,34 @@ const DivisiPage: React.FC = () => {
     createDivisi,
     updateDivisi,
     deleteDivisi,
+    pagination,
   } = useDivisi();
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [editingDivisi, setEditingDivisi] = useState<Divisi | null>(null);
   const [deletingId, setDeletingId] = useState<number | null>(null);
+  const [searchTerm, setSearchTerm] = useState("");
+  const [page, setPage] = useState(1);
+  const [perPage, setPerPage] = useState(20);
 
   useEffect(() => {
-    fetchDivisis();
-  }, [fetchDivisis]);
+    const timer = setTimeout(() => {
+      fetchDivisis({ 
+        search: searchTerm,
+        page,
+        per_page: perPage
+      });
+    }, 400);
+    return () => clearTimeout(timer);
+  }, [searchTerm, page, perPage, fetchDivisis]);
+
+  const handlePageChange = (p: number) => {
+    setPage(p);
+  };
+
+  const handlePerPageChange = (p: number) => {
+    setPerPage(p);
+    setPage(1);
+  };
 
   const handleOpenModal = () => {
     setEditingDivisi(null);
@@ -95,6 +115,13 @@ const DivisiPage: React.FC = () => {
         loading={loading}
         onEdit={handleEditDivisi}
         onDelete={handleDeleteDivisi}
+        onSearchChange={(val) => {
+          setSearchTerm(val);
+          setPage(1);
+        }}
+        pagination={pagination}
+        onPageChange={handlePageChange}
+        onPerPageChange={handlePerPageChange}
         toolbar={
           <Button onClick={handleOpenModal} className="gap-2 shadow-md h-9">
             <Plus className="h-4 w-4" /> Tambah Divisi

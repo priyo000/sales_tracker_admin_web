@@ -19,6 +19,14 @@ interface UserTableProps {
   onDelete: (id: number) => void;
   toolbar?: React.ReactNode;
   onSearchChange?: (value: string) => void;
+  pagination?: {
+    currentPage: number;
+    lastPage: number;
+    total: number;
+    perPage: number;
+  };
+  onPageChange?: (page: number) => void;
+  onPerPageChange?: (perPage: number) => void;
 }
 
 const ROLE_VARIANT: Record<
@@ -38,6 +46,9 @@ const UserTable: React.FC<UserTableProps> = ({
   onDelete,
   toolbar,
   onSearchChange,
+  pagination,
+  onPageChange,
+  onPerPageChange,
 }) => {
   const columns: ColumnDef<User>[] = [
     {
@@ -162,6 +173,18 @@ const UserTable: React.FC<UserTableProps> = ({
       emptyMessage="Belum ada data pengguna"
       toolbar={toolbar}
       onSearchChange={onSearchChange}
+      serverPagination={
+        pagination
+          ? {
+              currentPage: pagination.currentPage,
+              lastPage: pagination.lastPage,
+              total: pagination.total,
+              perPage: pagination.perPage,
+              onPageChange: onPageChange || (() => {}),
+              onPerPageChange: onPerPageChange,
+            }
+          : undefined
+      }
     />
   );
 };

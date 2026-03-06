@@ -21,6 +21,7 @@ const UserPage: React.FC = () => {
     createUser,
     updateUser,
     deleteUser,
+    pagination,
   } = useUser();
 
   const [availableEmployees, setAvailableEmployees] = useState<Karyawan[]>([]);
@@ -28,15 +29,30 @@ const UserPage: React.FC = () => {
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [editingUser, setEditingUser] = useState<User | null>(null);
   const [deletingId, setDeletingId] = useState<number | null>(null);
+  const [page, setPage] = useState(1);
+  const [perPage, setPerPage] = useState(20);
 
   const isSuperAdmin = currentUser?.peran === "super_admin";
 
   useEffect(() => {
     const timer = setTimeout(() => {
-      fetchUsers({ search: searchTerm });
+      fetchUsers({ 
+        search: searchTerm,
+        page,
+        per_page: perPage
+      });
     }, 500);
     return () => clearTimeout(timer);
-  }, [searchTerm, fetchUsers]);
+  }, [searchTerm, page, perPage, fetchUsers]);
+
+  const handlePageChange = (p: number) => {
+    setPage(p);
+  };
+
+  const handlePerPageChange = (p: number) => {
+    setPerPage(p);
+    setPage(1);
+  };
 
   useEffect(() => {
     if (isModalOpen && !editingUser) {
@@ -139,7 +155,13 @@ const UserPage: React.FC = () => {
         loading={loading}
         onEdit={handleEditUser}
         onDelete={handleDeleteUser}
-        onSearchChange={setSearchTerm}
+        onSearchChange={(val) => {
+          setSearchTerm(val);
+          setPage(1);
+        }}
+        pagination={pagination}
+        onPageChange={handlePageChange}
+        onPerPageChange={handlePerPageChange}
         toolbar={
           <Button onClick={handleOpenModal} className="gap-2 shadow-md h-9">
             <Plus className="h-4 w-4" /> Tambah User

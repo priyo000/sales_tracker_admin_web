@@ -8,16 +8,40 @@ export const useJadwal = () => {
     const [loading, setLoading] = useState(false);
     const [error, setError] = useState<string | null>(null);
 
+    const [pagination, setPagination] = useState<{
+        currentPage: number;
+        lastPage: number;
+        total: number;
+        perPage: number;
+    }>({
+        currentPage: 1,
+        lastPage: 1,
+        total: 0,
+        perPage: 20,
+    });
+
     // Options for Form
     const [karyawanOptions, setKaryawanOptions] = useState<KaryawanOption[]>([]);
     const [ruteOptions, setRuteOptions] = useState<RuteOption[]>([]);
 
-    const fetchJadwals = useCallback(async (params?: { date?: string, start_date?: string, end_date?: string, search?: string }) => {
+    const fetchJadwals = useCallback(async (params?: { date?: string, start_date?: string, end_date?: string, search?: string, page?: number, per_page?: number }) => {
         setLoading(true);
         setError(null);
         try {
             const response = await api.get('/jadwal-sales', { params });
-            setJadwals(response.data.data);
+            if (response.data.data && Array.isArray(response.data.data)) {
+                setJadwals(response.data.data);
+                if (response.data.current_page) {
+                    setPagination({
+                        currentPage: response.data.current_page,
+                        lastPage: response.data.last_page,
+                        total: response.data.total,
+                        perPage: response.data.per_page,
+                    });
+                }
+            } else {
+                setJadwals(response.data.data || []);
+            }
         } catch (err: unknown) {
             const error = err as AxiosError<{ message: string }>;
             setError(error.message || 'Gagal memuat jadwal.');
@@ -98,6 +122,7 @@ export const useJadwal = () => {
         fetchOptions,
         createJadwal,
         updateJadwal,
-        deleteJadwal
+        deleteJadwal,
+        pagination
     };
 };

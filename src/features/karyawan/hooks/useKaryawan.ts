@@ -7,24 +7,47 @@ export const useKaryawan = () => {
     const [karyawans, setKaryawans] = useState<Karyawan[]>([]);
     const [loading, setLoading] = useState(false);
     const [error, setError] = useState<string | null>(null);
+    const [pagination, setPagination] = useState<{
+        currentPage: number;
+        lastPage: number;
+        total: number;
+        perPage: number;
+    }>({
+        currentPage: 1,
+        lastPage: 1,
+        total: 0,
+        perPage: 20,
+    });
 
     const [divisiOptions, setDivisiOptions] = useState<{ id: number, nama_divisi: string }[]>([]);
 
     const fetchDivisiOptions = useCallback(async () => {
         try {
-            const response = await api.get('/divisi'); // Assuming this endpoint exists or should be created
+            const response = await api.get('/divisi', { params: { per_page: -1 } }); 
             setDivisiOptions(response.data.data);
         } catch (err) {
             console.error('Failed to fetch divisions', err);
         }
     }, []);
 
-    const fetchKaryawans = useCallback(async (params?: { search?: string }) => {
+    const fetchKaryawans = useCallback(async (params?: { search?: string, page?: number, per_page?: number }) => {
         setLoading(true);
         setError(null);
         try {
             const response = await api.get('/karyawan', { params });
-            setKaryawans(response.data.data);
+            if (response.data.data && Array.isArray(response.data.data)) {
+                setKaryawans(response.data.data);
+                if (response.data.current_page) {
+                    setPagination({
+                        currentPage: response.data.current_page,
+                        lastPage: response.data.last_page,
+                        total: response.data.total,
+                        perPage: response.data.per_page,
+                    });
+                }
+            } else {
+                setKaryawans(response.data.data || []);
+            }
         } catch (err) {
             const error = err as AxiosError<{ message: string }>;
             setError(error.response?.data?.message || error.message || 'Gagal memuat data karyawan.');
@@ -118,6 +141,7 @@ export const useKaryawan = () => {
         createKaryawan,
         updateKaryawan,
         deleteKaryawan,
-        importKaryawan
+        importKaryawan,
+        pagination
     };
 };

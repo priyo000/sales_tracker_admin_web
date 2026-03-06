@@ -12,6 +12,14 @@ interface PerusahaanTableProps {
   onDelete: (id: number) => void;
   toolbar?: React.ReactNode;
   onSearchChange?: (value: string) => void;
+  pagination?: {
+    currentPage: number;
+    lastPage: number;
+    total: number;
+    perPage: number;
+  };
+  onPageChange?: (page: number) => void;
+  onPerPageChange?: (perPage: number) => void;
 }
 
 const PerusahaanTable: React.FC<PerusahaanTableProps> = ({
@@ -21,6 +29,9 @@ const PerusahaanTable: React.FC<PerusahaanTableProps> = ({
   onDelete,
   toolbar,
   onSearchChange,
+  pagination,
+  onPageChange,
+  onPerPageChange,
 }) => {
   const columns: ColumnDef<Perusahaan>[] = [
     {
@@ -128,6 +139,18 @@ const PerusahaanTable: React.FC<PerusahaanTableProps> = ({
       emptyMessage="Belum ada data perusahaan"
       toolbar={toolbar}
       onSearchChange={onSearchChange}
+      serverPagination={
+        pagination
+          ? {
+              currentPage: pagination.currentPage,
+              lastPage: pagination.lastPage,
+              total: pagination.total,
+              perPage: pagination.perPage,
+              onPageChange: onPageChange || (() => {}),
+              onPerPageChange: onPerPageChange,
+            }
+          : undefined
+      }
     />
   );
 };

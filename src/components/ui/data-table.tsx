@@ -307,7 +307,7 @@ export function DataTable<T>({
           <div className="flex items-center gap-2">
             <span>Baris per halaman:</span>
             <Select value={String(perPage)} onValueChange={handlePerPageChange}>
-              <SelectTrigger className="h-8 w-[70px] bg-background">
+              <SelectTrigger className="h-8 w-24 bg-background">
                 <SelectValue />
               </SelectTrigger>
               <SelectContent>

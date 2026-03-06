@@ -30,6 +30,7 @@ const RutePage: React.FC = () => {
     updateRute,
     deleteRute,
     importRute,
+    pagination,
   } = useRute();
 
   const { divisis, fetchDivisis } = useDivisi();
@@ -40,6 +41,8 @@ const RutePage: React.FC = () => {
   const [editingRoute, setEditingRoute] = useState<Rute | null>(null);
   const [deletingId, setDeletingId] = useState<number | null>(null);
   const [isImportModalOpen, setIsImportModalOpen] = useState(false);
+  const [page, setPage] = useState(1);
+  const [perPage, setPerPage] = useState(20);
 
   // Initial Fetch & Search Debounce
   useEffect(() => {
@@ -53,10 +56,21 @@ const RutePage: React.FC = () => {
       fetchRutes({
         search,
         id_divisi: filterDivisi === "all" ? undefined : filterDivisi,
+        page,
+        per_page: perPage,
       });
     }, 300);
     return () => clearTimeout(timer);
-  }, [search, filterDivisi, fetchRutes]);
+  }, [search, filterDivisi, page, perPage, fetchRutes]);
+
+  const handlePageChange = (p: number) => {
+    setPage(p);
+  };
+
+  const handlePerPageChange = (p: number) => {
+    setPerPage(p);
+    setPage(1);
+  };
 
   const handleCreate = () => {
     setEditingRoute(null);
@@ -131,7 +145,13 @@ const RutePage: React.FC = () => {
         loading={loading}
         onEdit={handleEdit}
         onDelete={handleDeleteClick}
-        onSearchChange={setSearch}
+        onSearchChange={(val) => {
+          setSearch(val);
+          setPage(1);
+        }}
+        pagination={pagination}
+        onPageChange={handlePageChange}
+        onPerPageChange={handlePerPageChange}
         toolbar={
           <div className="flex flex-wrap items-center gap-3">
             {(user?.peran === "super_admin" ||

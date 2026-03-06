@@ -9,11 +9,35 @@ export const useUser = () => {
     const [loading, setLoading] = useState(false);
     const [error, setError] = useState<string | null>(null);
 
-    const fetchUsers = useCallback(async (params?: { search?: string; peran?: string }) => {
+    const [pagination, setPagination] = useState<{
+        currentPage: number;
+        lastPage: number;
+        total: number;
+        perPage: number;
+    }>({
+        currentPage: 1,
+        lastPage: 1,
+        total: 0,
+        perPage: 20,
+    });
+
+    const fetchUsers = useCallback(async (params?: { search?: string; peran?: string; page?: number; per_page?: number }) => {
         setLoading(true);
         try {
             const response = await api.get('/users', { params });
-            setUsers(response.data.data);
+            if (response.data.data && Array.isArray(response.data.data)) {
+                setUsers(response.data.data);
+                if (response.data.current_page) {
+                    setPagination({
+                        currentPage: response.data.current_page,
+                        lastPage: response.data.last_page,
+                        total: response.data.total,
+                        perPage: response.data.per_page,
+                    });
+                }
+            } else {
+                setUsers(response.data.data || []);
+            }
             setError(null);
         } catch (err) {
             const axiosError = err as AxiosError<{ message: string }>;
@@ -96,6 +120,7 @@ export const useUser = () => {
         fetchAvailableEmployees,
         createUser,
         updateUser,
-        deleteUser
+        deleteUser,
+        pagination
     };
 };

@@ -12,6 +12,14 @@ interface RouteTableProps {
   onDelete: (id: number) => void;
   toolbar?: React.ReactNode;
   onSearchChange?: (value: string) => void;
+  pagination?: {
+    currentPage: number;
+    lastPage: number;
+    total: number;
+    perPage: number;
+  };
+  onPageChange?: (page: number) => void;
+  onPerPageChange?: (perPage: number) => void;
 }
 
 const RouteTable: React.FC<RouteTableProps> = ({
@@ -21,6 +29,9 @@ const RouteTable: React.FC<RouteTableProps> = ({
   onDelete,
   toolbar,
   onSearchChange,
+  pagination,
+  onPageChange,
+  onPerPageChange,
 }) => {
   const columns: ColumnDef<Rute>[] = [
     {
@@ -111,6 +122,18 @@ const RouteTable: React.FC<RouteTableProps> = ({
       emptyMessage="Belum ada data rute"
       toolbar={toolbar}
       onSearchChange={onSearchChange}
+      serverPagination={
+        pagination
+          ? {
+              currentPage: pagination.currentPage,
+              lastPage: pagination.lastPage,
+              total: pagination.total,
+              perPage: pagination.perPage,
+              onPageChange: onPageChange || (() => {}),
+              onPerPageChange: onPerPageChange,
+            }
+          : undefined
+      }
     />
   );
 };

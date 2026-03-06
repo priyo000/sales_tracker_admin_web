@@ -20,6 +20,7 @@ const KaryawanPage: React.FC = () => {
     updateKaryawan,
     deleteKaryawan,
     importKaryawan,
+    pagination,
   } = useKaryawan();
 
   const { divisis, fetchDivisis } = useDivisi();
@@ -29,14 +30,32 @@ const KaryawanPage: React.FC = () => {
   const [isImportModalOpen, setIsImportModalOpen] = useState(false);
   const [editingEmployee, setEditingEmployee] = useState<Karyawan | null>(null);
   const [deletingId, setDeletingId] = useState<number | null>(null);
+  const [page, setPage] = useState(1);
+  const [perPage, setPerPage] = useState(20);
 
   useEffect(() => {
     fetchDivisis();
+  }, [fetchDivisis]);
+
+  useEffect(() => {
     const timer = setTimeout(() => {
-      fetchKaryawans({ search: searchTerm });
+      fetchKaryawans({ 
+        search: searchTerm,
+        page,
+        per_page: perPage
+      });
     }, 500);
     return () => clearTimeout(timer);
-  }, [searchTerm, fetchKaryawans, fetchDivisis]);
+  }, [searchTerm, page, perPage, fetchKaryawans]);
+
+  const handlePageChange = (p: number) => {
+    setPage(p);
+  };
+
+  const handlePerPageChange = (p: number) => {
+    setPerPage(p);
+    setPage(1);
+  };
 
   const handleOpenModal = () => {
     setEditingEmployee(null);
@@ -125,7 +144,13 @@ const KaryawanPage: React.FC = () => {
         loading={loading}
         onEdit={handleEditEmployee}
         onDelete={handleDeleteEmployee}
-        onSearchChange={setSearchTerm}
+        onSearchChange={(val) => {
+          setSearchTerm(val);
+          setPage(1);
+        }}
+        pagination={pagination}
+        onPageChange={handlePageChange}
+        onPerPageChange={handlePerPageChange}
         toolbar={
           <div className="flex items-center gap-2">
             <Button

@@ -270,7 +270,7 @@ const Dashboard: React.FC = () => {
                                 Total omset penjualan SUKSES per bulan.
                             </CardDescription>
                         </CardHeader>
-                        <CardContent className="px-2 flex-grow min-h-[250px] pb-6">
+                        <CardContent className="px-2 grow min-h-[250px] pb-6">
                             {stats.sales_chart && stats.sales_chart.length > 0 ? (
                                 <ResponsiveContainer width="100%" height="100%">
                                     <BarChart data={stats.sales_chart} margin={{ top: 10, right: 10, left: 15, bottom: 5 }} barCategoryGap="25%">

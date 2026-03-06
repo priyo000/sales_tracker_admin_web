@@ -25,7 +25,11 @@ const JadwalPage: React.FC = () => {
     createJadwal,
     updateJadwal,
     deleteJadwal,
+    pagination,
   } = useJadwal();
+
+  const [page, setPage] = useState(1);
+  const [perPage, setPerPage] = useState(20);
 
   const [activeTab, setActiveTab] = useState<"daily" | "recurring">("daily");
 
@@ -67,7 +71,12 @@ const JadwalPage: React.FC = () => {
           start_date?: string;
           end_date?: string;
           search?: string;
-        } = {};
+          page?: number;
+          per_page?: number;
+        } = {
+          page,
+          per_page: perPage
+        };
         if (startDate) params.start_date = startDate;
         if (endDate) params.end_date = endDate;
         if (searchTerm) params.search = searchTerm;
@@ -75,7 +84,16 @@ const JadwalPage: React.FC = () => {
       }, 500); // Debounce search
       return () => clearTimeout(timer);
     }
-  }, [startDate, endDate, searchTerm, activeTab, fetchJadwals]);
+  }, [startDate, endDate, searchTerm, activeTab, page, perPage, fetchJadwals]);
+
+  const handlePageChange = (p: number) => {
+    setPage(p);
+  };
+
+  const handlePerPageChange = (p: number) => {
+    setPerPage(p);
+    setPage(1);
+  };
 
   const handleOpenModal = () => {
     setEditingJadwal(null);
@@ -200,7 +218,13 @@ const JadwalPage: React.FC = () => {
             loading={loading}
             onEdit={handleEditJadwal}
             onDelete={handleDeleteJadwal}
-            onSearchChange={setSearchTerm}
+            onSearchChange={(val) => {
+              setSearchTerm(val);
+              setPage(1);
+            }}
+            pagination={pagination}
+            onPageChange={handlePageChange}
+            onPerPageChange={handlePerPageChange}
             toolbar={
               <div className="flex flex-wrap items-center gap-3 w-full">
                 <div className="flex items-center gap-1.5 min-w-[260px]">

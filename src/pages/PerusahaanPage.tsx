@@ -17,15 +17,35 @@ const PerusahaanPage: React.FC = () => {
     createPerusahaan,
     updatePerusahaan,
     deletePerusahaan,
+    pagination,
   } = usePerusahaan();
 
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [editingCompany, setEditingCompany] = useState<Perusahaan | null>(null);
   const [deletingId, setDeletingId] = useState<number | null>(null);
+  const [searchTerm, setSearchTerm] = useState("");
+  const [page, setPage] = useState(1);
+  const [perPage, setPerPage] = useState(20);
 
   useEffect(() => {
-    fetchPerusahaans();
-  }, [fetchPerusahaans]);
+    const timer = setTimeout(() => {
+      fetchPerusahaans({
+        search: searchTerm,
+        page,
+        per_page: perPage,
+      });
+    }, 400);
+    return () => clearTimeout(timer);
+  }, [searchTerm, page, perPage, fetchPerusahaans]);
+
+  const handlePageChange = (p: number) => {
+    setPage(p);
+  };
+
+  const handlePerPageChange = (p: number) => {
+    setPerPage(p);
+    setPage(1);
+  };
 
   const handleOpenModal = () => {
     setEditingCompany(null);
@@ -103,6 +123,13 @@ const PerusahaanPage: React.FC = () => {
         loading={loading}
         onEdit={handleEditCompany}
         onDelete={handleDeleteCompany}
+        onSearchChange={(val) => {
+          setSearchTerm(val);
+          setPage(1);
+        }}
+        pagination={pagination}
+        onPageChange={handlePageChange}
+        onPerPageChange={handlePerPageChange}
         toolbar={
           <Button onClick={handleOpenModal} className="gap-2 shadow-md h-9">
             <Plus className="h-4 w-4" /> Tambah Perusahaan
