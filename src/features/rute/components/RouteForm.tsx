@@ -7,7 +7,6 @@ import { useAuth } from "../../../hooks/useAuth";
 import RouteCustomerMap from "./RouteCustomerMap";
 import {
   Search,
-  Map as MapIcon,
   Info,
   CheckCircle2,
   User as UserIcon,

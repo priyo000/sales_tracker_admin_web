@@ -4,7 +4,6 @@ import {
   User,
   Building2,
   Phone,
-  Mail,
   MapPin,
   Camera,
   CreditCard,
@@ -16,15 +15,14 @@ import {
   Clock,
   Landmark,
   Image as LucideImage,
-  Calendar,
   Layers,
   CheckCircle2,
+  Save,
 } from "lucide-react";
 import { useDivisi } from "../../divisi/hooks/useDivisi";
 import { usePelanggan } from "../hooks/usePelanggan";
 import { Pelanggan, PelangganFormData } from "../types";
-import { BASE_URL } from "../../../services/api";
-import MapPicker from "../../../components/ui/MapPicker";
+import MapPicker from "./MapPicker";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
@@ -40,11 +38,10 @@ import { Card, CardContent } from "@/components/ui/card";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { FormField } from "@/components/ui/FormField";
 import { SectionHeader } from "@/components/ui/SectionHeader";
-import { cn } from "@/lib/utils";
 
 interface CustomerFormProps {
   initialData?: Pelanggan | null;
-  onSubmit: (data: FormData) => void;
+  onSubmit: (data: PelangganFormData) => void;
   onCancel: () => void;
   loading?: boolean;
 }
@@ -79,23 +76,21 @@ const CustomerForm: React.FC<CustomerFormProps> = ({
   const [formData, setFormData] = useState<PelangganFormData>({
     nama_toko: initialData?.nama_toko || "",
     nama_pemilik: initialData?.nama_pemilik || "",
-    id_divisi: initialData?.id_divisi?.toString() || "",
-    email: initialData?.email || "",
-    no_telp: initialData?.no_telp || "",
-    no_hp: initialData?.no_hp || "",
+    id_divisi: initialData?.id_divisi || 0,
+    no_hp_pribadi: initialData?.no_hp_pribadi || "",
     alamat_usaha: initialData?.alamat_usaha || "",
-    latitude: initialData?.latitude?.toString() || "",
-    longitude: initialData?.longitude?.toString() || "",
+    latitude: initialData?.latitude || 0,
+    longitude: initialData?.longitude || 0,
     cara_pembayaran: initialData?.cara_pembayaran || "Cash",
     sistem_pembayaran: initialData?.sistem_pembayaran || "Cash",
-    limit_kredit_awal: initialData?.limit_kredit_awal?.toString() || "0",
-    top_hari: initialData?.top_hari?.toString() || "0",
+    limit_kredit_awal: initialData?.limit_kredit_awal || 0,
+    top_hari: initialData?.top_hari || 0,
     nama_bank: initialData?.nama_bank || "",
     no_rekening: initialData?.no_rekening || "",
     atas_nama_rekening: initialData?.atas_nama_rekening || "",
     cabang_bank: initialData?.cabang_bank || "",
     catatan_lain: initialData?.catatan_lain || "",
-    id_sales_pembuat: initialData?.id_sales_pembuat?.toString() || "",
+    id_sales_pembuat: initialData?.id_sales_pembuat || 0,
     status: initialData?.status || "active",
   });
 
@@ -111,19 +106,11 @@ const CustomerForm: React.FC<CustomerFormProps> = ({
     foto_toko: string | null;
     foto_ktp: string | null;
   }>({
-    foto_toko: initialData?.foto_toko
-      ? initialData.foto_toko.startsWith("http")
-        ? initialData.foto_toko
-        : `${BASE_URL}/storage/${initialData.foto_toko}`
-      : null,
-    foto_ktp: initialData?.foto_ktp
-      ? initialData.foto_ktp.startsWith("http")
-        ? initialData.foto_ktp
-        : `${BASE_URL}/storage/${initialData.foto_ktp}`
-      : null,
+    foto_toko: initialData?.foto_toko_url || null,
+    foto_ktp: initialData?.foto_ktp_url || null,
   });
 
-  const handleChange = (name: string, value: string) => {
+  const handleChange = (name: string, value: string | number) => {
     setFormData((prev) => ({ ...prev, [name]: value }));
   };
 
@@ -142,38 +129,41 @@ const CustomerForm: React.FC<CustomerFormProps> = ({
     setFiles((prev) => ({ ...prev, [type]: null }));
     setPreviews((prev) => ({
       ...prev,
-      [type]: initialData?.[type]
-        ? initialData[type]!.startsWith("http")
-          ? initialData[type]!
-          : `${BASE_URL}/storage/${initialData[type]}`
-        : null,
+      [type]:
+        type === "foto_toko"
+          ? initialData?.foto_toko_url || null
+          : initialData?.foto_ktp_url || null,
     }));
   };
 
-  const handleLocationSelect = (lat: number, lng: number) => {
+  const handleLocationSelect = (
+    lat: number,
+    lng: number,
+    address?: string,
+    city?: string,
+    district?: string,
+    state?: string,
+  ) => {
     setFormData((prev) => ({
       ...prev,
-      latitude: lat.toString(),
-      longitude: lng.toString(),
+      latitude: lat,
+      longitude: lng,
+      alamat_usaha: address || prev.alamat_usaha,
+      provinsi_usaha: state || prev.provinsi_usaha,
+      kota_usaha: city || prev.kota_usaha,
+      kecamatan_usaha: district || prev.kecamatan_usaha,
     }));
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    const data = new FormData();
+    const finalData: PelangganFormData = {
+      ...formData,
+      foto_toko: files.foto_toko,
+      foto_ktp: files.foto_ktp,
+    };
 
-    Object.entries(formData).forEach(([key, value]) => {
-      if (value !== null && value !== undefined && value !== "") {
-        data.append(key, value);
-      }
-    });
-
-    if (files.foto_toko) data.append("foto_toko", files.foto_toko);
-    if (files.foto_ktp) data.append("foto_ktp", files.foto_ktp);
-
-    if (isEdit) data.append("_method", "PUT");
-
-    onSubmit(data);
+    onSubmit(finalData);
   };
 
   return (
@@ -238,8 +228,8 @@ const CustomerForm: React.FC<CustomerFormProps> = ({
 
                         <FormField label="Divisi Bisnis" icon={Layers} required>
                           <Select
-                            value={formData.id_divisi}
-                            onValueChange={(val) => handleChange("id_divisi", val)}
+                            value={formData.id_divisi.toString()}
+                            onValueChange={(val) => handleChange("id_divisi", parseInt(val))}
                             required
                           >
                             <SelectTrigger className="h-12 bg-muted/30 border-border/50 shadow-sm font-bold">
@@ -269,8 +259,9 @@ const CustomerForm: React.FC<CustomerFormProps> = ({
                               <SelectContent>
                                 <SelectItem value="active">🟢 Active</SelectItem>
                                 <SelectItem value="pending">🟡 Pending</SelectItem>
-                                <SelectItem value="inactive">🔴 Inactive</SelectItem>
-                                <SelectItem value="blacklist">⚫ Blacklist</SelectItem>
+                                <SelectItem value="nonactive">🔴 Inactive</SelectItem>
+                                <SelectItem value="rejected">⚫ Rejected</SelectItem>
+                                <SelectItem value="prospect">🔵 Prospect</SelectItem>
                               </SelectContent>
                             </Select>
                           </FormField>
@@ -330,8 +321,8 @@ const CustomerForm: React.FC<CustomerFormProps> = ({
                       <FormField label="WhatsApp / No HP" icon={Smartphone} required>
                         <Input
                           placeholder="0812XXXXXXXX"
-                          value={formData.no_hp}
-                          onChange={(e) => handleChange("no_hp", e.target.value)}
+                          value={formData.no_hp_pribadi}
+                          onChange={(e) => handleChange("no_hp_pribadi", e.target.value)}
                           required
                           className="h-12 bg-muted/30 border-border/50 text-sm font-bold"
                         />
@@ -340,18 +331,17 @@ const CustomerForm: React.FC<CustomerFormProps> = ({
                       <FormField label="Telepon Kantor" icon={Phone}>
                         <Input
                           placeholder="(021) XXXXXXXX"
-                          value={formData.no_telp}
-                          onChange={(e) => handleChange("no_telp", e.target.value)}
+                          value={formData.no_hp_kontak || ""}
+                          onChange={(e) => handleChange("no_hp_kontak", e.target.value)}
                           className="h-12 bg-muted/30 border-border/50 text-sm font-bold"
                         />
                       </FormField>
 
-                      <FormField label="Email" icon={Mail}>
+                      <FormField label="Nama Kontak Person" icon={User}>
                         <Input
-                          type="email"
-                          placeholder="outlet@email.com"
-                          value={formData.email}
-                          onChange={(e) => handleChange("email", e.target.value)}
+                          placeholder="Nama Kontak person"
+                          value={formData.nama_kontak_person || ""}
+                          onChange={(e) => handleChange("nama_kontak_person", e.target.value)}
                           className="h-12 bg-muted/30 border-border/50 text-sm font-bold"
                         />
                       </FormField>
@@ -384,7 +374,7 @@ const CustomerForm: React.FC<CustomerFormProps> = ({
                         <div className="grid grid-cols-2 gap-4">
                           <FormField label="Latitude" icon={MapPin}>
                             <Input
-                              value={formData.latitude}
+                              value={formData.latitude.toString()}
                               readOnly
                               placeholder="0.000000"
                               className="h-11 bg-muted/30 border-border/50 text-xs font-mono"
@@ -392,7 +382,7 @@ const CustomerForm: React.FC<CustomerFormProps> = ({
                           </FormField>
                           <FormField label="Longitude" icon={MapPin}>
                             <Input
-                              value={formData.longitude}
+                              value={formData.longitude.toString()}
                               readOnly
                               placeholder="0.000000"
                                className="h-11 bg-muted/30 border-border/50 text-xs font-mono"
@@ -409,19 +399,13 @@ const CustomerForm: React.FC<CustomerFormProps> = ({
 
                       <div className="relative h-[400px] rounded-2xl overflow-hidden border-2 border-border/50 shadow-inner group">
                         <MapPicker
-                          onLocationSelect={handleLocationSelect}
-                          initialLat={
-                            formData.latitude
-                              ? Number(formData.latitude)
-                              : undefined
-                          }
-                          initialLng={
-                            formData.longitude
-                              ? Number(formData.longitude)
-                              : undefined
-                          }
+                          lat={formData.latitude}
+                          lng={formData.longitude}
+                          onChange={handleLocationSelect}
+                          hideSearch={true}
+                          height="h-full"
                         />
-                        <div className="absolute top-4 left-4 right-4 z-[1000] pointer-events-none">
+                        <div className="absolute top-4 left-4 right-4 z-50 pointer-events-none">
                           <div className="bg-white/90 backdrop-blur shadow-lg border border-border/50 px-4 py-2 rounded-xl text-[10px] font-black uppercase tracking-widest text-primary text-center">
                             Geser Pin Untuk Menentukan Lokasi
                           </div>
@@ -484,7 +468,7 @@ const CustomerForm: React.FC<CustomerFormProps> = ({
                                   <Input
                                     type="number"
                                     value={formData.limit_kredit_awal}
-                                    onChange={(e) => handleChange("limit_kredit_awal", e.target.value)}
+                                    onChange={(e) => handleChange("limit_kredit_awal", parseFloat(e.target.value))}
                                     className="h-12 pl-12 bg-card border-border/50 text-sm font-bold"
                                   />
                                 </div>
@@ -495,7 +479,7 @@ const CustomerForm: React.FC<CustomerFormProps> = ({
                                   <Input
                                     type="number"
                                     value={formData.top_hari}
-                                    onChange={(e) => handleChange("top_hari", e.target.value)}
+                                    onChange={(e) => handleChange("top_hari", parseInt(e.target.value))}
                                     className="h-12 pr-14 bg-card border-border/50 text-sm font-bold"
                                   />
                                   <span className="absolute right-4 top-1/2 -translate-y-1/2 text-xs font-black text-muted-foreground uppercase">Hari</span>
@@ -569,8 +553,8 @@ const CustomerForm: React.FC<CustomerFormProps> = ({
                         <div className="pt-4">
                            <FormField label="Sales Representative" icon={User} required>
                             <Select
-                              value={formData.id_sales_pembuat}
-                              onValueChange={(val) => handleChange("id_sales_pembuat", val)}
+                              value={formData.id_sales_pembuat?.toString()}
+                              onValueChange={(val) => handleChange("id_sales_pembuat", parseInt(val))}
                               required
                             >
                               <SelectTrigger className="h-12 bg-muted/30 border-border/50 shadow-sm font-bold">

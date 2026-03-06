@@ -9,7 +9,6 @@ import {
   Save,
   X,
 } from "lucide-react";
-import { useAuth } from "@/hooks/useAuth";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { FormField } from "@/components/ui/FormField";
@@ -36,7 +35,6 @@ const UserForm: React.FC<UserFormProps> = ({
   onCancel,
   loading,
 }) => {
-  const { user: currentUser } = useAuth();
   const [formData, setFormData] = useState<UserFormData>({
     id_karyawan: initialData?.id_karyawan || 0,
     username: initialData?.username || "",
@@ -147,7 +145,7 @@ const UserForm: React.FC<UserFormProps> = ({
               onValueChange={(val) =>
                 setFormData((prev) => ({
                   ...prev,
-                  peran: val as "sales" | "admin_perusahaan" | "admin_divisi" | "super_admin",
+                  peran: val as "sales" | "admin_perusahaan" | "admin_divisi" | "manager",
                 }))
               }
               required
@@ -164,9 +162,7 @@ const UserForm: React.FC<UserFormProps> = ({
                   Admin Perusahaan
                 </SelectItem>
                 <SelectItem value="admin_divisi">Admin Divisi</SelectItem>
-                {currentUser?.peran === "super_admin" && (
-                  <SelectItem value="super_admin">Super Admin</SelectItem>
-                )}
+                <SelectItem value="manager">Manager</SelectItem>
               </SelectContent>
             </Select>
           </FormField>
