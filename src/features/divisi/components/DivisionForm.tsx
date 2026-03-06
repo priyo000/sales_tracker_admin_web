@@ -4,7 +4,6 @@ import {
   Building2,
   LocateFixed,
   Shield,
-  LucideIcon,
   Save,
   X,
   User,
@@ -13,7 +12,7 @@ import {
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
+import { FormField } from "@/components/ui/FormField";
 
 interface DivisionFormProps {
   initialData?: DivisiFormData;
@@ -21,27 +20,6 @@ interface DivisionFormProps {
   onCancel: () => void;
   loading?: boolean;
 }
-
-const FormField = ({
-  label,
-  required,
-  children,
-  icon: Icon,
-}: {
-  label: string;
-  required?: boolean;
-  children: React.ReactNode;
-  icon?: LucideIcon;
-}) => (
-  <div className="space-y-2">
-    <Label className="flex items-center gap-2 text-[11px] font-black uppercase tracking-widest text-muted-foreground/80">
-      {Icon && <Icon className="h-3 w-3 text-primary" />}
-      {label}
-      {required && <span className="text-destructive ml-0.5">*</span>}
-    </Label>
-    {children}
-  </div>
-);
 
 const DivisionForm: React.FC<DivisionFormProps> = ({
   initialData,
@@ -80,7 +58,12 @@ const DivisionForm: React.FC<DivisionFormProps> = ({
           />
         </FormField>
 
-        <FormField label="Radiu Toleransi Check-in" icon={LocateFixed} required>
+        <FormField 
+          label="Radius Toleransi Check-in" 
+          icon={LocateFixed} 
+          required
+          description="* Maksimal jarak yang diperbolehkan saat sales check-in di lokasi toko."
+        >
           <div className="relative">
             <Input
               type="number"
@@ -97,10 +80,6 @@ const DivisionForm: React.FC<DivisionFormProps> = ({
               </span>
             </div>
           </div>
-          <p className="text-[10px] text-muted-foreground font-medium italic mt-1 uppercase tracking-tight">
-            * Maksimal jarak yang diperbolehkan saat sales check-in di lokasi
-            toko.
-          </p>
         </FormField>
 
         <FormField

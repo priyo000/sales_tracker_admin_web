@@ -2,7 +2,6 @@ import React, { useState } from "react";
 import { Jadwal, JadwalFormData, KaryawanOption, RuteOption } from "../types";
 import toast from "react-hot-toast";
 import { Button } from "@/components/ui/button";
-import { Label } from "@/components/ui/label";
 import {
   Select,
   SelectContent,
@@ -10,9 +9,10 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { Calendar as CalendarIcon, User, Navigation, LucideIcon, Save, X } from "lucide-react";
+import { Calendar as CalendarIcon, User, Navigation, Save, X } from "lucide-react";
 import { DatePicker } from "@/components/ui/date-picker";
 import { parse, format } from "date-fns";
+import { FormField } from "@/components/ui/FormField";
 
 interface JadwalFormProps {
   onSubmit: (data: JadwalFormData) => void;
@@ -24,27 +24,6 @@ interface JadwalFormProps {
   initialData?: Jadwal;
   existingJadwals?: Jadwal[];
 }
-
-const FormField = ({
-  label,
-  required,
-  children,
-  icon: Icon,
-}: {
-  label: string;
-  required?: boolean;
-  children: React.ReactNode;
-  icon?: LucideIcon;
-}) => (
-  <div className="space-y-2">
-    <Label className="flex items-center gap-2 text-[11px] font-black uppercase tracking-widest text-muted-foreground/80">
-      {Icon && <Icon className="h-3 w-3 text-primary" />}
-      {label}
-      {required && <span className="text-destructive ml-0.5">*</span>}
-    </Label>
-    {children}
-  </div>
-);
 
 const JadwalForm: React.FC<JadwalFormProps> = ({
   onSubmit,
@@ -172,19 +151,19 @@ const JadwalForm: React.FC<JadwalFormProps> = ({
         </FormField>
       </div>
 
-      <div className="flex items-center justify-end gap-3 pt-6 border-t">
+      <div className="flex items-center justify-end gap-3 pt-6 border-t font-bold">
         <Button
           type="button"
           variant="ghost"
           onClick={onCancel}
-          className="h-11 px-6 text-xs font-black uppercase tracking-widest text-muted-foreground hover:text-foreground"
+          className="h-12 px-8 text-xs font-black uppercase tracking-widest text-muted-foreground hover:text-foreground"
           disabled={loading}
         >
           <X className="mr-2 h-4 w-4" /> Batal
         </Button>
         <Button
           type="submit"
-          className="h-11 px-10 text-xs font-black uppercase tracking-widest shadow-lg shadow-primary/20 bg-primary hover:bg-primary/90 text-white"
+          className="h-12 px-10 text-xs font-black uppercase tracking-widest shadow-lg shadow-primary/20 bg-primary hover:bg-primary/90 text-white"
           disabled={loading}
         >
           {loading ? (

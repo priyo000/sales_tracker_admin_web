@@ -10,14 +10,12 @@ import {
   Trophy,
   Info,
   CheckCircle2,
-  LucideIcon,
 } from "lucide-react";
 import { NotifikasiFormData } from "../types";
 import { useKaryawan } from "@/features/karyawan/hooks/useKaryawan";
 import { useDivisi } from "@/features/divisi/hooks/useDivisi";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import {
   Select,
@@ -26,33 +24,13 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
+import { FormField } from "@/components/ui/FormField";
 
 interface NotifikasiFormProps {
   onSubmit: (data: NotifikasiFormData) => void;
   onCancel: () => void;
   loading?: boolean;
 }
-
-const FormField = ({
-  label,
-  required,
-  children,
-  icon: Icon,
-}: {
-  label: string;
-  required?: boolean;
-  children: React.ReactNode;
-  icon?: LucideIcon;
-}) => (
-  <div className="space-y-2">
-    <Label className="flex items-center gap-2 text-[11px] font-black uppercase tracking-widest text-muted-foreground/80">
-      {Icon && <Icon className="h-3 w-3 text-primary" />}
-      {label}
-      {required && <span className="text-destructive ml-0.5">*</span>}
-    </Label>
-    {children}
-  </div>
-);
 
 const NotifikasiForm: React.FC<NotifikasiFormProps> = ({
   onSubmit,
@@ -244,7 +222,7 @@ const NotifikasiForm: React.FC<NotifikasiFormProps> = ({
         <Button
           type="submit"
           disabled={loading}
-          className="h-11 px-10 text-xs font-black uppercase tracking-widest shadow-lg shadow-primary/20 bg-primary hover:bg-primary/90"
+          className="h-11 px-10 text-xs font-black uppercase tracking-widest shadow-lg shadow-primary/20 bg-primary hover:bg-primary/90 text-white"
         >
           {loading ? (
             <span className="flex items-center gap-2">

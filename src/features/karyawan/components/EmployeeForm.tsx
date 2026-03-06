@@ -11,7 +11,6 @@ import {
   Calendar,
   Activity,
   MapPin,
-  LucideIcon,
   Save,
   X,
 } from "lucide-react";
@@ -19,7 +18,6 @@ import { parse, format } from "date-fns";
 import { DatePicker } from "@/components/ui/date-picker";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import {
   Select,
@@ -28,6 +26,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
+import { FormField } from "@/components/ui/FormField";
 
 interface EmployeeFormProps {
   initialData?: Karyawan | null;
@@ -36,27 +35,6 @@ interface EmployeeFormProps {
   onCancel: () => void;
   loading?: boolean;
 }
-
-const FormField = ({
-  label,
-  required,
-  children,
-  icon: Icon,
-}: {
-  label: string;
-  required?: boolean;
-  children: React.ReactNode;
-  icon?: LucideIcon;
-}) => (
-  <div className="space-y-2">
-    <Label className="flex items-center gap-2 text-[11px] font-black uppercase tracking-widest text-muted-foreground/80">
-      {Icon && <Icon className="h-3 w-3 text-primary" />}
-      {label}
-      {required && <span className="text-destructive ml-0.5">*</span>}
-    </Label>
-    {children}
-  </div>
-);
 
 const EmployeeForm: React.FC<EmployeeFormProps> = ({
   initialData,
@@ -205,7 +183,7 @@ const EmployeeForm: React.FC<EmployeeFormProps> = ({
               onChange={(date) => 
                 handleChange("tanggal_bergabung", date ? format(date, "yyyy-MM-dd") : "")
               }
-              className="w-full h-12 bg-card border-border/50 shadow-sm font-bold"
+              className="w-full h-12 bg-card border-border/50 shadow-sm font-bold text-left"
               placeholder="Pilih Tanggal Bergabung"
             />
           </FormField>

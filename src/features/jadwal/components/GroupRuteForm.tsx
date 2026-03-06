@@ -11,7 +11,14 @@ import { RuteOption, GroupRuteMingguan } from "../types";
 import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
+import { FormField } from "@/components/ui/FormField";
 
 interface GroupRuteFormProps {
   ruteOptions: RuteOption[];
@@ -40,7 +47,6 @@ const GroupRuteForm: React.FC<GroupRuteFormProps> = ({
 }) => {
   const [namaGroup, setNamaGroup] = useState(initialData?.nama_group || "");
 
-  // Convert details array to object map: { [hari]: ruteId }
   const initialDetails =
     initialData?.details.reduce(
       (acc, curr) => {
@@ -75,110 +81,108 @@ const GroupRuteForm: React.FC<GroupRuteFormProps> = ({
     details[dayId] !== "" && details[dayId] !== undefined;
 
   return (
-    <form
-      onSubmit={handleSubmit}
-      className="space-y-8 animate-in fade-in duration-300"
-    >
-      {/* Header Section */}
-      <div className="bg-primary/5 p-6 rounded-2xl border border-primary/10 shadow-inner">
-        <Label className="flex items-center gap-2 text-[10px] font-black text-primary uppercase tracking-widest mb-3">
-          <LayoutList className="h-4 w-4" />
-          Nama Template / Paket Rute
-        </Label>
-        <Input
-          type="text"
-          className="h-12 bg-card border-border/50 text-sm font-bold uppercase tracking-tight focus:ring-primary/20 transition-all rounded-xl"
-          placeholder="Contoh: Rute Area Utara - Minggu 1"
-          value={namaGroup}
-          onChange={(e) => setNamaGroup(e.target.value)}
-          required
-        />
-        <p className="text-[10px] text-muted-foreground font-bold uppercase tracking-tight mt-2 opacity-60">
-          Gunakan nama yang deskriptif untuk paket rute mingguan ini.
-        </p>
-      </div>
-
-      {/* Days Grid */}
-      <div className="space-y-4">
-        <div className="flex items-center justify-between px-1">
-          <h4 className="flex items-center gap-2 text-[11px] font-black text-foreground uppercase tracking-widest">
-            <Calendar className="h-4 w-4 text-primary" />
-            Konfigurasi Hari (Setiap Minggu)
-          </h4>
-          <span className="text-[10px] text-muted-foreground font-black uppercase tracking-widest opacity-50">
-            Total: {Object.values(details).filter((v) => v !== "").length} Hari
-            Set
-          </span>
+    <form onSubmit={handleSubmit} className="space-y-8 py-2">
+      <div className="space-y-6">
+        {/* Header Section */}
+        <div className="bg-primary/5 p-6 rounded-2xl border border-primary/10 shadow-inner">
+          <FormField label="Nama Template / Paket Rute" icon={LayoutList} required>
+            <Input
+              type="text"
+              className="h-12 bg-card border-border/50 text-sm font-bold uppercase tracking-tight focus:ring-primary/20 transition-all rounded-xl"
+              placeholder="Contoh: Rute Area Utara - Minggu 1"
+              value={namaGroup}
+              onChange={(e) => setNamaGroup(e.target.value)}
+              required
+            />
+            <p className="text-[10px] text-muted-foreground font-bold uppercase tracking-tight mt-2 opacity-60">
+              Gunakan nama yang deskriptif untuk paket rute mingguan ini.
+            </p>
+          </FormField>
         </div>
 
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
-          {DAYS.map((day) => (
-            <div
-              key={day.id}
-              className={cn(
-                "relative group flex flex-col gap-3 p-4 rounded-2xl border-2 transition-all duration-300",
-                isDaySelected(day.id)
-                  ? "bg-primary/5 border-primary shadow-sm"
-                  : "bg-card border-border/50 hover:border-primary/30 hover:shadow-md",
-              )}
-            >
-              <div className="flex items-center justify-between">
-                <span
-                  className={cn(
-                    "text-[10px] font-black uppercase tracking-widest flex items-center gap-2",
-                    isDaySelected(day.id)
-                      ? "text-primary"
-                      : "text-muted-foreground",
-                  )}
-                >
-                  <div
-                    className={cn(
-                      "w-2 h-2 rounded-full",
-                      isDaySelected(day.id)
-                        ? "bg-primary animate-pulse"
-                        : "bg-muted-foreground/30",
-                    )}
-                  />
-                  {day.label}
-                </span>
-                {isDaySelected(day.id) && (
-                  <CheckCircle2 className="h-4 w-4 text-primary" />
-                )}
-              </div>
+        {/* Days Grid */}
+        <div className="space-y-4">
+          <div className="flex items-center justify-between px-1">
+            <h4 className="flex items-center gap-2 text-[11px] font-black text-foreground uppercase tracking-widest">
+              <Calendar className="h-4 w-4 text-primary" />
+              Konfigurasi Hari (Setiap Minggu)
+            </h4>
+            <span className="text-[10px] text-muted-foreground font-black uppercase tracking-widest opacity-50">
+              Total: {Object.values(details).filter((v) => v !== "").length} Hari Set
+            </span>
+          </div>
 
-              <div className="relative">
-                <MapPin className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground pointer-events-none opacity-50" />
-                <select
-                  className={cn(
-                    "w-full h-11 pl-10 pr-3 py-2 text-[11px] rounded-xl border-2 outline-none appearance-none transition-all cursor-pointer font-black uppercase tracking-tight",
-                    isDaySelected(day.id)
-                      ? "bg-card border-primary text-primary focus:ring-primary/20"
-                      : "bg-muted/30 border-border/50 text-muted-foreground focus:bg-card focus:border-primary/50",
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
+            {DAYS.map((day) => (
+              <div
+                key={day.id}
+                className={cn(
+                  "relative group flex flex-col gap-3 p-4 rounded-2xl border-2 transition-all duration-300",
+                  isDaySelected(day.id)
+                    ? "bg-primary/5 border-primary shadow-sm"
+                    : "bg-card border-border/50 hover:border-primary/30 hover:shadow-md",
+                )}
+              >
+                <div className="flex items-center justify-between">
+                  <span
+                    className={cn(
+                      "text-[10px] font-black uppercase tracking-widest flex items-center gap-2",
+                      isDaySelected(day.id)
+                        ? "text-primary"
+                        : "text-muted-foreground",
+                    )}
+                  >
+                    <div
+                      className={cn(
+                        "w-2 h-2 rounded-full",
+                        isDaySelected(day.id)
+                          ? "bg-primary animate-pulse"
+                          : "bg-muted-foreground/30",
+                      )}
+                    />
+                    {day.label}
+                  </span>
+                  {isDaySelected(day.id) && (
+                    <CheckCircle2 className="h-4 w-4 text-primary" />
                   )}
-                  value={details[day.id] || ""}
-                  onChange={(e) =>
-                    setDetails({
-                      ...details,
-                      [day.id]: e.target.value ? Number(e.target.value) : "",
-                    })
-                  }
-                >
-                  <option value="">-- Kosong --</option>
-                  {ruteOptions.map((r) => (
-                    <option key={r.id} value={r.id}>
-                      {r.nama_rute}
-                    </option>
-                  ))}
-                </select>
+                </div>
+
+                <div className="relative">
+                  <Select
+                    value={details[day.id]?.toString() || "empty"}
+                    onValueChange={(val) => 
+                      setDetails({
+                        ...details,
+                        [day.id]: val === "empty" ? "" : Number(val)
+                      })
+                    }
+                  >
+                    <SelectTrigger className={cn(
+                      "h-11 pl-10 bg-card border-border/50 font-black uppercase tracking-tight text-[11px]",
+                      isDaySelected(day.id) && "border-primary text-primary"
+                    )}>
+                      <MapPin className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground opacity-50" />
+                      <SelectValue placeholder="-- Kosong --" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="empty">-- Kosong --</SelectItem>
+                      {ruteOptions.map((r) => (
+                        <SelectItem key={r.id} value={r.id.toString()}>
+                          {r.nama_rute}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                </div>
               </div>
-            </div>
-          ))}
+            ))}
+          </div>
         </div>
       </div>
 
       {/* Footer */}
-      <div className="pt-6 border-t flex flex-col sm:flex-row items-center justify-between gap-4">
-        <div className="text-[10px] text-muted-foreground font-bold uppercase tracking-tight flex items-center gap-2">
+      <div className="pt-6 border-t flex flex-col sm:flex-row items-center justify-between gap-4 font-bold">
+        <div className="text-[10px] text-muted-foreground font-black uppercase tracking-tight flex items-center gap-2">
           <div className="h-1.5 w-1.5 rounded-full bg-amber-500" />
           Hari Kosong tidak akan menimpa jadwal aktif sales.
         </div>

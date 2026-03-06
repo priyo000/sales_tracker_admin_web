@@ -6,14 +6,13 @@ import {
   Shield,
   User as UserIcon,
   UserCheck,
-  LucideIcon,
   Save,
   X,
 } from "lucide-react";
 import { useAuth } from "@/hooks/useAuth";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
+import { FormField } from "@/components/ui/FormField";
 import {
   Select,
   SelectContent,
@@ -29,27 +28,6 @@ interface UserFormProps {
   onCancel: () => void;
   loading?: boolean;
 }
-
-const FormField = ({
-  label,
-  required,
-  children,
-  icon: Icon,
-}: {
-  label: string;
-  required?: boolean;
-  children: React.ReactNode;
-  icon?: LucideIcon;
-}) => (
-  <div className="space-y-2">
-    <Label className="flex items-center gap-2 text-[11px] font-black uppercase tracking-widest text-muted-foreground/80">
-      {Icon && <Icon className="h-3 w-3 text-primary" />}
-      {label}
-      {required && <span className="text-destructive ml-0.5">*</span>}
-    </Label>
-    {children}
-  </div>
-);
 
 const UserForm: React.FC<UserFormProps> = ({
   initialData,
@@ -96,7 +74,12 @@ const UserForm: React.FC<UserFormProps> = ({
     <form onSubmit={handleSubmit} className="space-y-8 py-2">
       <div className="space-y-6">
         {!isEdit ? (
-          <FormField label="Pilih Karyawan" icon={UserIcon} required>
+          <FormField 
+            label="Pilih Karyawan" 
+            icon={UserIcon} 
+            required
+            description="* Hanya karyawan aktif yang belum memiliki akun yang muncul di sini."
+          >
             <Select
               value={
                 formData.id_karyawan === 0
@@ -125,10 +108,6 @@ const UserForm: React.FC<UserFormProps> = ({
                 ))}
               </SelectContent>
             </Select>
-            <p className="text-[10px] font-bold text-amber-600/70 uppercase tracking-tight italic mt-1">
-              * Hanya karyawan aktif yang belum memiliki akun yang muncul di
-              sini.
-            </p>
           </FormField>
         ) : (
           <div className="bg-primary/5 p-5 rounded-2xl border border-primary/10 flex items-center gap-4 shadow-inner">
@@ -136,9 +115,9 @@ const UserForm: React.FC<UserFormProps> = ({
               <UserCheck className="h-5 w-5" />
             </div>
             <div>
-              <Label className="text-[10px] font-black uppercase text-muted-foreground tracking-widest leading-none">
+              <div className="text-[10px] font-black uppercase text-muted-foreground tracking-widest leading-none">
                 Akses Karyawan
-              </Label>
+              </div>
               <div className="text-base font-black text-foreground uppercase tracking-tight mt-1">
                 {initialData.karyawan?.nama_lengkap}
               </div>
@@ -168,7 +147,7 @@ const UserForm: React.FC<UserFormProps> = ({
               onValueChange={(val) =>
                 setFormData((prev) => ({
                   ...prev,
-                  peran: val as User["peran"],
+                  peran: val as "sales" | "admin_perusahaan" | "admin_divisi" | "super_admin",
                 }))
               }
               required
@@ -193,7 +172,12 @@ const UserForm: React.FC<UserFormProps> = ({
           </FormField>
         </div>
 
-        <FormField label="Password Akses" icon={Key} required={!isEdit}>
+        <FormField 
+          label="Password Akses" 
+          icon={Key} 
+          required={!isEdit}
+          description={isEdit ? "* Kosongkan jika tidak ingin mengubah password lama." : undefined}
+        >
           <div className="relative group">
             <Input
               id="password"
@@ -208,11 +192,6 @@ const UserForm: React.FC<UserFormProps> = ({
               placeholder={isEdit ? "••••••••" : "Pilih password aman"}
             />
           </div>
-          {isEdit && (
-            <p className="text-[10px] text-muted-foreground font-bold uppercase italic mt-1">
-              * Kosongkan jika tidak ingin mengubah password lama.
-            </p>
-          )}
         </FormField>
       </div>
 

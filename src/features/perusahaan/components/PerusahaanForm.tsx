@@ -8,15 +8,14 @@ import {
   MapPin,
   Save,
   X,
-  LucideIcon,
   Calendar as CalendarIcon,
 } from "lucide-react";
 import { parse, format } from "date-fns";
 import { DatePicker } from "@/components/ui/date-picker";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
+import { FormField } from "@/components/ui/FormField";
 
 interface PerusahaanFormProps {
   initialData?: Perusahaan | null;
@@ -24,27 +23,6 @@ interface PerusahaanFormProps {
   onCancel: () => void;
   isLoading?: boolean;
 }
-
-const FormField = ({
-  label,
-  required,
-  children,
-  icon: Icon,
-}: {
-  label: string;
-  required?: boolean;
-  children: React.ReactNode;
-  icon?: LucideIcon;
-}) => (
-  <div className="space-y-2">
-    <Label className="flex items-center gap-2 text-[11px] font-black uppercase tracking-widest text-muted-foreground/80">
-      {Icon && <Icon className="h-3 w-3 text-primary" />}
-      {label}
-      {required && <span className="text-destructive ml-0.5">*</span>}
-    </Label>
-    {children}
-  </div>
-);
 
 const PerusahaanForm: React.FC<PerusahaanFormProps> = ({
   initialData,

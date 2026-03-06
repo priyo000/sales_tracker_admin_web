@@ -12,6 +12,10 @@ import {
   CheckCircle2,
   User as UserIcon,
   LayoutGrid,
+  X,
+  Type,
+  FileText,
+  Save,
 } from "lucide-react";
 import api from "../../../services/api";
 import { cn } from "@/lib/utils";
@@ -24,6 +28,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
+import { FormField } from "@/components/ui/FormField";
 
 interface RouteFormProps {
   initialData?: Rute | null;
@@ -165,14 +170,14 @@ const RouteForm: React.FC<RouteFormProps> = ({
           element.scrollIntoView({ behavior: "smooth", block: "center" });
           element.classList.add(
             "ring-4",
-            "ring-indigo-400",
+            "ring-primary/40",
             "ring-offset-2",
             "z-30",
           );
           setTimeout(() => {
             element.classList.remove(
               "ring-4",
-              "ring-indigo-400",
+              "ring-primary/40",
               "ring-offset-2",
               "z-30",
             );
@@ -213,28 +218,19 @@ const RouteForm: React.FC<RouteFormProps> = ({
   return (
     <form
       onSubmit={handleSubmit}
-      className="flex h-[80vh] w-full bg-white overflow-hidden"
+      className="flex h-[80vh] w-full bg-background overflow-hidden"
     >
       {/* LEFT SIDEBAR - CONTROL PANEL */}
-      <div className="w-[400px] flex flex-col border-r border-gray-200 bg-white z-10 shrink-0">
+      <div className="w-[400px] flex flex-col border-r border-border bg-card z-10 shrink-0">
         {/* Header Section */}
-        <div className="p-6 border-b border-gray-100 bg-white space-y-4">
-          <div className="flex items-center gap-3 mb-2">
-            <div>
-              <p className="text-xs text-gray-500">
-                Isi detail rute dan pilih pelanggan.
-              </p>
-            </div>
-          </div>
-
-          <div className="space-y-3">
+        <div className="p-6 border-b border-border bg-background space-y-6">
+          <div className="space-y-4">
             {(user?.peran === "super_admin" ||
               user?.peran === "admin_perusahaan") && (
-              <div className="relative">
+              <FormField label="Divisi Rute" icon={LayoutGrid} required>
                 <Select value={idDivisi} onValueChange={setIdDivisi} required>
-                  <SelectTrigger className="w-full pl-10 bg-gray-50 border-gray-200 h-11 rounded-lg">
-                    <LayoutGrid className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-gray-400" />
-                    <SelectValue placeholder="Pilih Divisi Rute" />
+                  <SelectTrigger className="h-11 bg-card border-border/50">
+                    <SelectValue placeholder="Pilih Divisi..." />
                   </SelectTrigger>
                   <SelectContent>
                     {divisis.map((div) => (
@@ -244,89 +240,91 @@ const RouteForm: React.FC<RouteFormProps> = ({
                     ))}
                   </SelectContent>
                 </Select>
-              </div>
+              </FormField>
             )}
-            <div>
+
+            <FormField label="Nama Rute" icon={Type} required>
               <Input
                 name="nama_rute"
                 type="text"
                 required
-                className="block w-full rounded-lg border-gray-200 bg-gray-50 px-3 py-2 text-sm focus:border-indigo-500 focus:bg-white focus:ring-1 focus:ring-indigo-500 transition-all font-medium placeholder:font-normal h-11"
+                className="h-11 bg-card border-border/50 font-bold"
                 value={namaRute}
                 onChange={(e) => setNamaRute(e.target.value)}
-                placeholder="Nama Rute (Ex: Rute Senin Barat)"
+                placeholder="Ex: Rute Senin Barat"
               />
-            </div>
-            <div>
+            </FormField>
+
+            <FormField label="Keterangan Rute" icon={FileText}>
               <Input
                 name="deskripsi"
-                className="block w-full rounded-lg border-gray-200 bg-gray-50 px-3 py-2 text-sm focus:border-indigo-500 focus:bg-white focus:ring-1 focus:ring-indigo-500 transition-all placeholder:font-normal h-11"
+                className="h-11 bg-card border-border/50"
                 value={deskripsi}
                 onChange={(e) => setDeskripsi(e.target.value)}
-                placeholder="Keterangan / Deskripsi..."
+                placeholder="Contoh: Fokus toko besar"
               />
-            </div>
+            </FormField>
           </div>
         </div>
 
         {/* Search & List Header */}
-        <div className="px-4 py-3 bg-gray-50/80 border-b border-gray-200 backdrop-blur-sm sticky top-0 z-20 space-y-2">
-          <div className="relative">
-            <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-gray-400 z-10" />
+        <div className="px-4 py-4 bg-muted/30 border-b border-border space-y-3">
+          <div className="relative group">
+            <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground z-10 group-focus-within:text-primary transition-colors" />
             <Input
               type="text"
               placeholder="Cari Toko atau Alamat..."
-              className="w-full pl-9 pr-3 py-2 text-sm border-gray-200 rounded-lg focus:border-indigo-500 focus:ring-indigo-500 shadow-sm bg-white h-10"
+              className="w-full pl-10 pr-3 h-11 bg-card border-border/50 focus-visible:ring-primary"
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
             />
           </div>
 
-          <div className="relative">
+          <FormField label="Filter Berdasarkan Sales" icon={UserIcon} className="space-y-1">
             <Select
               value={selectedKaryawanId.toString()}
               onValueChange={(val) =>
                 setSelectedKaryawanId(val === "all" ? "all" : Number(val))
               }
             >
-              <SelectTrigger className="w-full pl-9 bg-white border-gray-200 h-10">
-                <UserIcon className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-gray-400" />
+              <SelectTrigger className="w-full bg-card border-border/50 h-10 text-xs">
                 <SelectValue placeholder="Semua Sales (Karyawan)" />
               </SelectTrigger>
               <SelectContent>
                 <SelectItem value="all">Semua Sales (Karyawan)</SelectItem>
                 {filterOptions.map((opt) => (
                   <SelectItem key={opt.id} value={opt.id.toString()}>
-                    {opt.nama_lengkap} {!opt.has_account ? "(No Account)" : ""}{" "}
+                    {opt.nama_lengkap} {!opt.has_account ? "(Belum Ada Akun)" : ""}{" "}
                     {opt.has_data ? "✓" : ""}
                   </SelectItem>
                 ))}
               </SelectContent>
             </Select>
-          </div>
-          <div className="flex items-center justify-between text-xs text-gray-500 px-1">
-            <span>Menampilkan {filteredCustomers.length} pelanggan</span>
+          </FormField>
+
+          <div className="flex items-center justify-between text-[10px] font-black uppercase tracking-widest text-muted-foreground px-1">
+            <span>{filteredCustomers.length} Pelanggan</span>
             <span
               className={cn(
-                "font-medium",
-                selectedCount > 0 ? "text-indigo-600" : "",
+                "transition-colors",
+                selectedCount > 0 ? "text-primary" : "",
               )}
             >
-              Total: {selectedCount} Terpilih
+              {selectedCount} Terpilih
             </span>
           </div>
         </div>
 
-        <div className="flex-1 overflow-y-auto p-3 space-y-2 bg-gray-50/30">
+        <div className="flex-1 overflow-y-auto p-3 space-y-2 bg-muted/10">
           {pelanggansLoading ? (
-            <div className="flex flex-col items-center justify-center h-40 text-gray-400 space-y-2">
-              <div className="animate-spin h-6 w-6 border-2 border-indigo-500 border-t-transparent rounded-full"></div>
-              <span className="text-xs">Memuat data pelanggan...</span>
+            <div className="flex flex-col items-center justify-center h-40 text-muted-foreground space-y-3">
+              <div className="animate-spin h-6 w-6 border-2 border-primary border-t-transparent rounded-full" />
+              <span className="text-[10px] font-black uppercase tracking-widest">Memuat database...</span>
             </div>
           ) : filteredCustomers.length === 0 ? (
-            <div className="flex flex-col items-center justify-center h-40 text-gray-400 space-y-2">
-              <Info className="h-8 w-8 opacity-20" />
-              <span className="text-xs">Tidak ada pelanggan ditemukan.</span>
+            <div className="flex flex-col items-center justify-center h-40 text-muted-foreground space-y-2 opacity-50">
+              <Info className="h-8 w-8" />
+              <span className="text-[10px] font-black uppercase tracking-widest">Tidak ada data</span>
             </div>
           ) : (
             <CustomerListItems
@@ -338,36 +336,45 @@ const RouteForm: React.FC<RouteFormProps> = ({
         </div>
 
         {/* FOOTER ACTIONS */}
-        <div className="p-4 border-t border-gray-200 bg-white shadow-[0_-4px_6px_-1px_rgba(0,0,0,0.05)] z-20 space-y-3">
-          <div className="flex items-center justify-between text-xs text-gray-500 mb-1">
+        <div className="p-4 border-t border-border bg-background shadow-[0_-4px_10px_rgba(0,0,0,0.05)] z-20 space-y-4 font-bold">
+          <div className="flex items-center justify-between text-[11px] font-black uppercase tracking-widest text-muted-foreground">
             <span>Total Rute:</span>
-            <span className="font-bold text-gray-800">
+            <span className="text-foreground">
               {selectedCount} Stop Points
             </span>
           </div>
           <div className="grid grid-cols-2 gap-3">
             <Button
               type="button"
-              variant="outline"
+              variant="ghost"
               onClick={onCancel}
               disabled={isLoading}
-              className="w-full py-2.5 rounded-lg border border-gray-200 text-gray-600 font-semibold text-sm hover:bg-gray-50 hover:text-gray-800 transition-colors h-11"
+              className="h-11 text-xs font-black uppercase tracking-widest text-muted-foreground hover:text-foreground"
             >
-              Batal
+              <X className="mr-2 h-4 w-4" /> Batal
             </Button>
             <Button
               type="submit"
               disabled={isLoading}
-              className="w-full py-2.5 rounded-lg bg-indigo-600 text-white font-semibold text-sm hover:bg-indigo-700 shadow-md shadow-indigo-200 disabled:opacity-70 disabled:shadow-none transition-all active:scale-[0.98] h-11"
+              className="h-11 text-xs font-black uppercase tracking-widest shadow-lg shadow-primary/20 bg-primary hover:bg-primary/90 text-white"
             >
-              {isLoading ? "Menyimpan..." : "Simpan Rute"}
+              {isLoading ? (
+                <span className="flex items-center gap-2">
+                  <div className="h-4 w-4 animate-spin rounded-full border-2 border-white border-t-transparent" />
+                  ...
+                </span>
+              ) : (
+                <span className="flex items-center gap-2">
+                  <Save className="h-4 w-4" /> Simpan
+                </span>
+              )}
             </Button>
           </div>
         </div>
       </div>
 
       {/* RIGHT MAIN - MAP */}
-      <div className="flex-1 relative bg-slate-100">
+      <div className="flex-1 relative bg-muted/20">
         <RouteCustomerMap
           customers={pelanggans}
           selectedIds={selectedIdsSet}
@@ -377,12 +384,10 @@ const RouteForm: React.FC<RouteFormProps> = ({
         />
 
         {/* Floating Map Hint */}
-        <div className="absolute top-4 left-4 right-4 z-50 pointer-events-none flex justify-center">
-          <div className="bg-white/90 backdrop-blur shadow-lg border border-gray-200 px-4 py-2 rounded-full text-xs font-medium text-gray-600 flex items-center gap-2 animate-in slide-in-from-top-4 fade-in duration-500">
-            <MapIcon className="w-3.5 h-3.5 text-indigo-500" />
-            <span>
-              Klik marker di peta untuk memilih/hapus pelanggan dari rute
-            </span>
+        <div className="absolute top-6 left-1/2 -translate-x-1/2 z-50 pointer-events-none w-max">
+          <div className="bg-background/90 backdrop-blur shadow-2xl border border-border/50 px-6 py-3 rounded-2xl text-[10px] font-black uppercase tracking-widest text-foreground flex items-center gap-3 animate-in slide-in-from-top-4 duration-700">
+            <div className="h-2 w-2 rounded-full bg-primary animate-pulse" />
+            <span>Klik marker di peta untuk pilih pelanggan</span>
           </div>
         </div>
       </div>
@@ -439,75 +444,69 @@ const CustomerItem = memo(
         id={`customer-item-${customer.id}`}
         onClick={() => onToggle(customer.id)}
         className={cn(
-          "relative p-3 rounded-xl border transition-all duration-300 cursor-pointer hover:shadow-md group",
+          "relative p-4 rounded-2xl border transition-all duration-300 cursor-pointer group mb-2 last:mb-0",
           isSelected
-            ? "bg-indigo-50 border-indigo-200 shadow-sm ring-1 ring-indigo-200"
-            : "bg-white border-gray-100 hover:border-indigo-200",
+            ? "bg-primary/5 border-primary shadow-sm ring-1 ring-primary/20"
+            : "bg-card border-border/50 hover:border-primary/30 hover:shadow-md",
         )}
       >
-        <div className="flex items-start gap-3">
+        <div className="flex items-start gap-4">
           <div
             className={cn(
-              "mt-0.5 w-5 h-5 rounded-full flex items-center justify-center shrink-0 transition-all",
+              "mt-0.5 w-6 h-6 rounded-full flex items-center justify-center shrink-0 transition-all",
               isSelected
-                ? "bg-indigo-600 text-white shadow-sm scale-110"
-                : "bg-gray-100 text-gray-300 group-hover:bg-indigo-100 group-hover:text-indigo-400",
+                ? "bg-primary text-white shadow-lg scale-110"
+                : "bg-muted text-muted-foreground group-hover:bg-primary/10 group-hover:text-primary",
             )}
           >
             {isSelected ? (
-              <CheckCircle2 className="w-3.5 h-3.5" />
+              <CheckCircle2 className="w-4 h-4" />
             ) : (
-              <div className="w-2 h-2 rounded-full bg-current" />
+              <div className="w-2.5 h-2.5 rounded-full bg-current opacity-30" />
             )}
           </div>
           <div className="min-w-0 flex-1">
-            <div className="flex justify-between items-start">
-              <h4
-                className={cn(
-                  "text-sm font-bold truncate pr-2",
-                  isSelected ? "text-indigo-900" : "text-gray-800",
-                )}
-              >
-                {customer.nama_toko}
-              </h4>
-            </div>
-            <p className="text-xs text-gray-500 line-clamp-2 mt-0.5 leading-relaxed">
+            <h4
+              className={cn(
+                "text-xs font-black uppercase tracking-tight truncate pr-2",
+                isSelected ? "text-primary" : "text-foreground",
+              )}
+            >
+              {customer.nama_toko}
+            </h4>
+            <p className="text-[10px] text-muted-foreground font-medium line-clamp-2 mt-1 leading-relaxed italic pr-4">
               {customer.alamat_usaha}
             </p>
 
-            <div className="flex flex-wrap gap-1 mt-2">
+            <div className="flex flex-wrap gap-1.5 mt-3">
               {customer.details_rute && customer.details_rute.length > 0 && (
-                <div className="w-full flex flex-wrap gap-1 mb-1">
+                <div className="w-full flex flex-wrap gap-1.5 mb-1.5">
                   {customer.details_rute.map((dr) => (
                     <span
                       key={dr.id}
-                      className="inline-flex items-center px-1.5 py-0.5 rounded text-[9px] font-bold bg-amber-100 text-amber-800 border border-amber-200"
+                      className="inline-flex items-center px-2 py-0.5 rounded-lg text-[9px] font-black uppercase bg-amber-100/50 text-amber-700 border border-amber-200/50"
                     >
-                      Rute: {dr.rute?.nama_rute || "Unknown"}
+                      Rute: {dr.rute?.nama_rute || "N/A"}
                     </span>
                   ))}
                 </div>
               )}
               {customer.divisi && (
-                <span className="inline-flex items-center px-1.5 py-0.5 rounded text-[10px] font-medium bg-gray-100 text-gray-600 border border-gray-200">
+                <span className="inline-flex items-center px-2 py-0.5 rounded-lg text-[9px] font-bold uppercase bg-muted text-muted-foreground border border-border/50">
                   {customer.divisi.nama_divisi}
                 </span>
               )}
-              {customer.status === "active" && (
-                <span className="inline-flex items-center px-1.5 py-0.5 rounded text-[10px] font-medium bg-green-50 text-green-700 border border-green-100">
-                  Active
-                </span>
-              )}
-              {customer.status === "pending" && (
-                <span className="inline-flex items-center px-1.5 py-0.5 rounded text-[10px] font-medium bg-amber-50 text-amber-700 border border-amber-100">
-                  Pending
-                </span>
-              )}
+              <span className={cn(
+                "inline-flex items-center px-2 py-0.5 rounded-lg text-[9px] font-bold uppercase border",
+                customer.status === "active" ? "bg-green-50 text-green-700 border-green-200" : "bg-amber-50 text-amber-700 border-amber-200"
+              )}>
+                {customer.status}
+              </span>
             </div>
           </div>
         </div>
         {isSelected && (
-          <div className="absolute right-0 top-0 bottom-0 w-1 bg-indigo-500 rounded-r-xl" />
+          <div className="absolute right-0 top-0 bottom-0 w-1.5 bg-primary rounded-r-2xl" />
         )}
       </div>
     );
