@@ -9,8 +9,12 @@ import {
     Activity,
     Truck,
     DollarSign,
-    Star
+    Star,
+    ArrowUpRight,
+    ArrowDownRight,
+    Trophy
 } from 'lucide-react';
+
 
 import toast from 'react-hot-toast';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
@@ -28,6 +32,13 @@ interface BestSellingProduct {
     nama_produk: string;
     kode_barang: string;
     total_terjual: number;
+}
+
+interface TopSalesman {
+    id: number;
+    nama: string;
+    total_penjualan: number;
+    jumlah_pesanan: number;
 }
 
 interface RecentOrder {
@@ -50,6 +61,11 @@ interface DashboardStats {
     recent_orders: RecentOrder[];
     sales_chart?: SalesChartData[];
     best_selling_products?: BestSellingProduct[];
+    top_salesman?: TopSalesman[];
+    omset_mom?: {
+        percentage: number;
+        is_up: boolean;
+    };
 }
 
 const Dashboard: React.FC = () => {
@@ -145,9 +161,17 @@ const Dashboard: React.FC = () => {
                         </div>
                     </CardHeader>
                     <CardContent>
-                        <div className="text-2xl font-bold mb-1">{formatCurrency(stats.total_omset)}</div>
+                        <div className="flex items-end gap-2 mb-1">
+                            <span className="text-2xl font-bold">{formatCurrency(stats.total_omset)}</span>
+                            {stats.omset_mom && (
+                                <Badge variant={stats.omset_mom.is_up ? "success" : "destructive"} className="text-[10px] px-1.5 h-5 flex items-center gap-0.5 mb-1.5 rounded-sm">
+                                    {stats.omset_mom.is_up ? <ArrowUpRight className="w-3 h-3" /> : <ArrowDownRight className="w-3 h-3" />}
+                                    {stats.omset_mom.percentage}% (MoM)
+                                </Badge>
+                            )}
+                        </div>
                         <p className="text-xs text-muted-foreground flex items-center gap-1">
-                            Total pendapatan diakumulasi
+                            Total pendapatan kumulatif
                         </p>
                     </CardContent>
                 </Card>
@@ -194,46 +218,50 @@ const Dashboard: React.FC = () => {
                 </Card>
             </div>
 
-            <div className="grid gap-4 lg:grid-cols-7">
+            <div className="grid gap-4 lg:grid-cols-6">
                 {/* Chart Section */}
-                <Card className="col-span-1 lg:col-span-4 lg:row-span-2 shadow-sm order-2 lg:order-1 flex flex-col">
+                <Card className="col-span-1 lg:col-span-4 lg:row-span-2 shadow-sm order-2 lg:order-1 flex flex-col h-[400px]">
                     <CardHeader>
-                        <CardTitle>Omset Tahunan</CardTitle>
+                        <CardTitle className="flex items-center justify-between">
+                            <div>Omset Tahunan</div>
+                            <div className="bg-muted px-2 py-1 rounded-md text-xs font-semibold text-muted-foreground">
+                                Tahun {new Date().getFullYear()}
+                            </div>
+                        </CardTitle>
                         <CardDescription>
-                            Total omset penjualan SUKSES per bulan untuk tahun ini.
+                            Total omset penjualan SUKSES per bulan.
                         </CardDescription>
                     </CardHeader>
-                    <CardContent className="px-2 flex-grow min-h-[300px]">
+                    <CardContent className="px-2 flex-grow min-h-[250px] pb-6">
                         {stats.sales_chart && stats.sales_chart.length > 0 ? (
                             <ResponsiveContainer width="100%" height="100%">
-                                <BarChart data={stats.sales_chart} margin={{ top: 10, right: 10, left: 20, bottom: 5 }}>
-                                    <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#e5e7eb" />
+                                <BarChart data={stats.sales_chart} margin={{ top: 10, right: 10, left: 15, bottom: 5 }} barCategoryGap="25%">
+                                    <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#f3f4f6" />
                                     <XAxis 
                                         dataKey="name" 
-                                        axisLine={false} 
+                                        axisLine={{stroke: '#e5e7eb'}} 
                                         tickLine={false} 
                                         tick={{ fill: '#6b7280', fontSize: 13 }}
                                         dy={10}
                                     />
                                     <YAxis 
-                                        axisLine={false} 
+                                        axisLine={{stroke: '#e5e7eb'}}
                                         tickLine={false} 
                                         tick={{ fill: '#6b7280', fontSize: 13 }}
-                                        tickFormatter={(value) => `Rp${value / 1000000}M`}
-                                        width={80}
+                                        tickFormatter={(value) => `Rp${(value / 1000000).toFixed(0)}M`}
+                                        width={65}
                                     />
                                     <RechartsTooltip 
                                         cursor={{ fill: 'rgba(0,0,0,0.05)' }} 
                                         // eslint-disable-next-line @typescript-eslint/no-explicit-any
                                         formatter={(value: any) => [formatCurrency(Number(value) || 0), "Omset"]}
-                                        contentStyle={{ borderRadius: '8px', border: '1px solid #e5e7eb', boxShadow: '0 4px 6px -1px rgb(0 0 0 / 0.1)' }}
+                                        contentStyle={{ borderRadius: '8px', border: 'none', boxShadow: '0 10px 15px -3px rgb(0 0 0 / 0.1), 0 4px 6px -4px rgb(0 0 0 / 0.1)' }}
                                         labelStyle={{ fontWeight: 'bold', color: '#111827', marginBottom: '4px' }}
                                     />
                                     <Bar 
                                         dataKey="total" 
                                         fill="hsl(var(--primary))" 
                                         radius={[4, 4, 0, 0]} 
-                                        maxBarSize={50}
                                     />
                                 </BarChart>
                             </ResponsiveContainer>
@@ -246,7 +274,7 @@ const Dashboard: React.FC = () => {
                 </Card>
 
                 {/* Data Master Stats */}
-                <div className="col-span-1 lg:col-span-3 order-1 lg:order-2 flex flex-col gap-4">
+                <div className="col-span-1 lg:col-span-2 order-1 lg:order-2 flex flex-col gap-4">
                     <Card>
                         <CardHeader className="pb-3">
                             <CardTitle>Statistik Master</CardTitle>
@@ -323,6 +351,55 @@ const Dashboard: React.FC = () => {
                         </CardContent>
                     </Card>
                 </div>
+                
+                {/* Top Salesman List */}
+                <Card className="col-span-1 lg:col-span-3 order-4">
+                    <CardHeader className="pb-3 border-b">
+                        <CardTitle className="text-base flex justify-between items-center">
+                            Top Salesman
+                            <Badge variant="outline" className="font-normal text-xs bg-indigo-50 text-indigo-600 border-indigo-200">
+                                <Trophy className="w-3 h-3 mr-1 fill-indigo-200" />
+                                Omset Tertinggi
+                            </Badge>
+                        </CardTitle>
+                    </CardHeader>
+                    <CardContent className="px-0 py-0">
+                        <ScrollArea className="h-[250px]">
+                            {!stats.top_salesman || stats.top_salesman.length === 0 ? (
+                                <div className="flex h-[200px] items-center justify-center text-sm text-muted-foreground">
+                                    Belum ada data sales.
+                                </div>
+                            ) : (
+                                <div className="space-y-0">
+                                    {stats.top_salesman.map((sales) => (
+                                        <div key={sales.id} className="group flex items-center gap-4 p-4 border-b last:border-0 hover:bg-muted/40 transition-colors">
+                                            <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-indigo-100 text-indigo-700 font-bold">
+                                                {sales.nama.charAt(0).toUpperCase()}
+                                            </div>
+                                            <div className="flex flex-col flex-1 min-w-0 pr-2">
+                                                <div className="flex items-center justify-between mb-1">
+                                                    <span className="text-sm font-semibold truncate text-foreground pr-2">
+                                                        {sales.nama}
+                                                    </span>
+                                                </div>
+                                                <div className="flex items-center text-xs text-muted-foreground">
+                                                    <Badge variant="secondary" className="px-1.5 py-0 h-4 text-[10px] mr-2 font-normal">
+                                                        {sales.jumlah_pesanan} Transaksi
+                                                    </Badge>
+                                                </div>
+                                            </div>
+                                            <div className="text-right">
+                                                <div className="font-bold text-sm text-emerald-600">
+                                                    {formatCurrency(sales.total_penjualan)}
+                                                </div>
+                                            </div>
+                                        </div>
+                                    ))}
+                                </div>
+                            )}
+                        </ScrollArea>
+                    </CardContent>
+                </Card>
 
                 {/* Recent Orders List */}
                 <Card className="col-span-1 lg:col-span-3 order-3">
