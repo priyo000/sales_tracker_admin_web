@@ -186,7 +186,7 @@ const Dashboard: React.FC = () => {
                                 </Badge>
                             )}
                             <p className="text-xs text-muted-foreground truncate">
-                                Perbandingan MoM
+                                Dibanding Bulan Lalu
                             </p>
                         </div>
                     </CardContent>
@@ -209,7 +209,7 @@ const Dashboard: React.FC = () => {
                                 </Badge>
                             )}
                             <p className="text-xs text-muted-foreground truncate">
-                                Perbandingan MoM
+                                Dibanding Bulan Lalu
                             </p>
                         </div>
                     </CardContent>
@@ -232,7 +232,7 @@ const Dashboard: React.FC = () => {
                 
                 <Card className="bg-card hover:bg-muted/10 transition-colors">
                     <CardHeader className="flex flex-row items-center justify-between pb-2 space-y-0">
-                        <CardTitle className="text-sm font-medium text-muted-foreground">Pelanggan Baru</CardTitle>
+                        <CardTitle className="text-sm font-medium text-muted-foreground">Pelanggan Baru Bulan Ini</CardTitle>
                         <div className="p-2 bg-orange-100 rounded-lg">
                             <Users className="w-4 h-4 text-orange-600" />
                         </div>
@@ -247,7 +247,7 @@ const Dashboard: React.FC = () => {
                                 </Badge>
                             )}
                             <p className="text-xs text-muted-foreground truncate">
-                                Perbandingan MoM
+                                Dibanding Bulan Lalu
                             </p>
                         </div>
                     </CardContent>
