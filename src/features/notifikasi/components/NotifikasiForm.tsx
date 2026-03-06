@@ -82,10 +82,10 @@ const NotifikasiForm: React.FC<NotifikasiFormProps> = ({
   };
 
   return (
-    <form onSubmit={handleSubmit} className="space-y-8 py-4">
-      <div className="space-y-6">
+    <form onSubmit={handleSubmit} className="space-y-6 py-2">
+      <div className="space-y-4">
         <FormField label="Siapa Target Penerima?" icon={Users}>
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
             {[
               { id: "all", label: "Semua", icon: Users },
               { id: "division", label: "Divisi", icon: Building2 },
@@ -97,18 +97,18 @@ const NotifikasiForm: React.FC<NotifikasiFormProps> = ({
                 onClick={() =>
                   setTargetType(option.id as "all" | "division" | "specific")
                 }
-                className={`flex items-center gap-3 p-4 rounded-xl border-2 transition-all text-left ${
+                className={`flex items-center gap-2.5 p-3 rounded-lg border-2 transition-all text-left ${
                   targetType === option.id
-                    ? "border-primary bg-primary/5 shadow-md"
+                    ? "border-primary bg-primary/5 shadow-sm"
                     : "border-border/50 bg-card hover:bg-muted/50"
                 }`}
               >
                 <div
-                  className={`p-2 rounded-lg ${targetType === option.id ? "bg-primary text-white" : "bg-muted text-muted-foreground"}`}
+                  className={`p-1.5 rounded-md ${targetType === option.id ? "bg-primary text-white" : "bg-muted text-muted-foreground"}`}
                 >
-                  <option.icon className="h-4 w-4" />
+                  <option.icon className="h-3.5 w-3.5" />
                 </div>
-                <span className="text-xs font-bold uppercase tracking-tight">
+                <span className="text-[10px] font-bold uppercase tracking-wider">
                   {option.label}
                 </span>
               </button>
@@ -117,15 +117,15 @@ const NotifikasiForm: React.FC<NotifikasiFormProps> = ({
         </FormField>
 
         {targetType === "division" && (
-          <div className="animate-in fade-in slide-in-from-top-2 duration-300">
+          <div className="animate-in fade-in slide-in-from-top-1 duration-200">
             <FormField label="Pilih Divisi" icon={Building2} required>
               <Select
                 value={idDivisi?.toString() || ""}
                 onValueChange={(val) => setIdDivisi(Number(val))}
                 required
               >
-                <SelectTrigger className="h-11 bg-card border-border/50">
-                  <SelectValue placeholder="Pilih Divisi Penerima..." />
+                <SelectTrigger className="h-10 bg-card border-border/50 font-semibold">
+                  <SelectValue placeholder="Pilih Divisi..." />
                 </SelectTrigger>
                 <SelectContent>
                   {divisis.map((d) => (
@@ -140,15 +140,15 @@ const NotifikasiForm: React.FC<NotifikasiFormProps> = ({
         )}
 
         {targetType === "specific" && (
-          <div className="animate-in fade-in slide-in-from-top-2 duration-300">
+          <div className="animate-in fade-in slide-in-from-top-1 duration-200">
             <FormField label="Pilih Karyawan" icon={User} required>
               <Select
                 value={idKaryawan?.toString() || ""}
                 onValueChange={(val) => setIdKaryawan(Number(val))}
                 required
               >
-                <SelectTrigger className="h-11 bg-card border-border/50">
-                  <SelectValue placeholder="Pilih Karyawan Penerima..." />
+                <SelectTrigger className="h-10 bg-card border-border/50 font-semibold">
+                  <SelectValue placeholder="Pilih Karyawan..." />
                 </SelectTrigger>
                 <SelectContent>
                   {karyawans.map((k) => (
@@ -162,22 +162,18 @@ const NotifikasiForm: React.FC<NotifikasiFormProps> = ({
           </div>
         )}
 
-        <div className="grid grid-cols-1 md:grid-cols-12 gap-6">
+        <div className="grid grid-cols-1 md:grid-cols-12 gap-4">
           <div className="md:col-span-4">
-            <FormField label="Tipe Notifikasi" icon={getJenisIcon(jenis)}>
+            <FormField label="Tipe" icon={getJenisIcon(jenis)}>
               <Select value={jenis} onValueChange={(val) => setJenis(val)}>
-                <SelectTrigger className="h-11 bg-card border-border/50">
+                <SelectTrigger className="h-10 bg-card border-border/50 font-semibold">
                   <SelectValue />
                 </SelectTrigger>
                 <SelectContent>
                   <SelectItem value="info">Informasi Umum</SelectItem>
-                  <SelectItem value="broadcast">
-                    Pengumuman (Broadcast)
-                  </SelectItem>
-                  <SelectItem value="reminder">Pengingat (Reminder)</SelectItem>
-                  <SelectItem value="gamifikasi">
-                    Reward / Gamifikasi
-                  </SelectItem>
+                  <SelectItem value="broadcast">Pengumuman</SelectItem>
+                  <SelectItem value="reminder">Pengingat</SelectItem>
+                  <SelectItem value="gamifikasi">Reward</SelectItem>
                 </SelectContent>
               </Select>
             </FormField>
@@ -188,41 +184,41 @@ const NotifikasiForm: React.FC<NotifikasiFormProps> = ({
               <Input
                 required
                 maxLength={255}
-                placeholder="Contoh: Pengumuman Rapat Mingguan"
+                placeholder="Judul"
                 value={judul}
                 onChange={(e) => setJudul(e.target.value)}
-                className="h-11 bg-card border-border/50 focus-visible:ring-primary shadow-sm"
+                className="h-10 bg-card border-border/50 focus-visible:ring-primary shadow-sm font-semibold"
               />
             </FormField>
           </div>
         </div>
 
-        <FormField label="Isi Pesan Notifikasi" icon={MessageSquare} required>
+        <FormField label="Isi Pesan" icon={MessageSquare} required>
           <Textarea
             required
-            rows={5}
-            placeholder="Tulis detail pesan di sini. Usahakan singkat dan jelas agar mudah dibaca di notifikasi HP."
+            rows={3}
+            placeholder="Tulis detail pesan..."
             value={pesan}
             onChange={(e) => setPesan(e.target.value)}
-            className="bg-card border-border/50 focus-visible:ring-primary shadow-sm resize-none"
+            className="bg-card border-border/50 focus-visible:ring-primary shadow-sm resize-none font-semibold text-xs"
           />
         </FormField>
       </div>
 
-      <div className="flex items-center justify-end gap-3 pt-6 border-t">
+      <div className="flex items-center justify-end gap-3 pt-4 border-t font-semibold">
         <Button
           type="button"
           variant="ghost"
           onClick={onCancel}
           disabled={loading}
-          className="h-11 px-6 text-xs font-black uppercase tracking-widest text-muted-foreground hover:text-foreground"
+          className="h-10 px-8 text-[10px] font-bold uppercase tracking-wider text-muted-foreground hover:text-foreground rounded-lg"
         >
           Batal
         </Button>
         <Button
           type="submit"
           disabled={loading}
-          className="h-11 px-10 text-xs font-black uppercase tracking-widest shadow-lg shadow-primary/20 bg-primary hover:bg-primary/90 text-white"
+          className="h-10 px-10 text-[10px] font-bold uppercase tracking-wider shadow-md shadow-primary/20 bg-primary hover:bg-primary/90 text-white rounded-lg"
         >
           {loading ? (
             <span className="flex items-center gap-2">

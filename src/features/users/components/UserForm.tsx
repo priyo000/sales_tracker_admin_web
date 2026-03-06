@@ -69,14 +69,14 @@ const UserForm: React.FC<UserFormProps> = ({
   };
 
   return (
-    <form onSubmit={handleSubmit} className="space-y-8 py-2">
-      <div className="space-y-6">
+    <form onSubmit={handleSubmit} className="space-y-6 py-2">
+      <div className="space-y-4">
         {!isEdit ? (
           <FormField 
             label="Pilih Karyawan" 
             icon={UserIcon} 
             required
-            description="* Hanya karyawan aktif yang belum memiliki akun yang muncul di sini."
+            description="* Hanya karyawan aktif yang belum memiliki akun."
           >
             <Select
               value={
@@ -89,15 +89,15 @@ const UserForm: React.FC<UserFormProps> = ({
             >
               <SelectTrigger
                 id="id_karyawan"
-                className="h-12 bg-card border-border/50 shadow-sm"
+                className="h-10 bg-card border-border/50 shadow-sm font-semibold"
               >
-                <SelectValue placeholder="Pilih Karyawan yang belum punya akun..." />
+                <SelectValue placeholder="Pilih Karyawan..." />
               </SelectTrigger>
               <SelectContent>
                 {availableEmployees.map((emp) => (
                   <SelectItem key={emp.id} value={emp.id.toString()}>
                     <div className="flex flex-col">
-                      <span className="font-bold">{emp.nama_lengkap}</span>
+                      <span className="font-semibold">{emp.nama_lengkap}</span>
                       <span className="text-[10px] text-muted-foreground uppercase">
                         {emp.kode_karyawan || emp.jabatan}
                       </span>
@@ -108,34 +108,34 @@ const UserForm: React.FC<UserFormProps> = ({
             </Select>
           </FormField>
         ) : (
-          <div className="bg-primary/5 p-5 rounded-2xl border border-primary/10 flex items-center gap-4 shadow-inner">
-            <div className="p-3 bg-primary text-white rounded-xl shadow-lg shadow-primary/20">
-              <UserCheck className="h-5 w-5" />
+          <div className="bg-primary/5 p-4 rounded-xl border border-primary/10 flex items-center gap-4 shadow-inner">
+            <div className="p-2.5 bg-primary text-white rounded-lg shadow-md shadow-primary/20">
+              <UserCheck className="h-4 w-4" />
             </div>
             <div>
-              <div className="text-[10px] font-black uppercase text-muted-foreground tracking-widest leading-none">
+              <div className="text-[9px] font-bold uppercase text-muted-foreground tracking-widest leading-none">
                 Akses Karyawan
               </div>
-              <div className="text-base font-black text-foreground uppercase tracking-tight mt-1">
+              <div className="text-sm font-bold text-foreground uppercase tracking-tight mt-1">
                 {initialData.karyawan?.nama_lengkap}
               </div>
             </div>
           </div>
         )}
 
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
           <FormField label="Username" icon={UserIcon} required>
             <Input
               id="username"
               name="username"
               type="text"
               required
-              className="h-12 bg-card border-border/50 focus-visible:ring-primary shadow-sm font-bold"
+              className="h-10 bg-card border-border/50 focus-visible:ring-primary shadow-sm font-semibold"
               value={formData.username}
               onChange={(e) =>
                 setFormData((prev) => ({ ...prev, username: e.target.value }))
               }
-              placeholder="contoh: john.doe"
+              placeholder="Username"
             />
           </FormField>
 
@@ -152,14 +152,14 @@ const UserForm: React.FC<UserFormProps> = ({
             >
               <SelectTrigger
                 id="peran"
-                className="h-12 bg-card border-border/50 shadow-sm font-bold"
+                className="h-10 bg-card border-border/50 shadow-sm font-semibold"
               >
                 <SelectValue placeholder="Pilih Role" />
               </SelectTrigger>
               <SelectContent>
                 <SelectItem value="sales">Sales (Mobile App)</SelectItem>
                 <SelectItem value="admin_perusahaan">
-                  Admin Perusahaan
+                   Admin Perusahaan
                 </SelectItem>
                 <SelectItem value="admin_divisi">Admin Divisi</SelectItem>
                 <SelectItem value="manager">Manager</SelectItem>
@@ -172,7 +172,7 @@ const UserForm: React.FC<UserFormProps> = ({
           label="Password Akses" 
           icon={Key} 
           required={!isEdit}
-          description={isEdit ? "* Kosongkan jika tidak ingin mengubah password lama." : undefined}
+          description={isEdit ? "* Kosongkan jika tidak ingin mengubah password." : undefined}
         >
           <div className="relative group">
             <Input
@@ -180,31 +180,31 @@ const UserForm: React.FC<UserFormProps> = ({
               name="password"
               type="password"
               required={!isEdit}
-              className="h-12 bg-card border-border/50 focus-visible:ring-primary shadow-sm pr-10"
+              className="h-10 bg-card border-border/50 focus-visible:ring-primary shadow-sm pr-10"
               value={formData.password}
               onChange={(e) =>
                 setFormData((prev) => ({ ...prev, password: e.target.value }))
               }
-              placeholder={isEdit ? "••••••••" : "Pilih password aman"}
+              placeholder={isEdit ? "••••••••" : "Password"}
             />
           </div>
         </FormField>
       </div>
 
-      <div className="flex items-center justify-end gap-3 pt-6 border-t font-bold">
+      <div className="flex items-center justify-end gap-3 pt-4 border-t font-semibold">
         <Button
           type="button"
           variant="ghost"
           onClick={onCancel}
-          className="h-12 px-8 text-xs font-black uppercase tracking-widest text-muted-foreground hover:text-foreground"
+          className="h-10 px-8 text-[10px] font-bold uppercase tracking-wider text-muted-foreground hover:text-foreground rounded-lg"
           disabled={loading}
         >
-          <X className="mr-2 h-4 w-4" /> Batal
+          <X className="mr-2 h-3.5 w-3.5" /> Batal
         </Button>
         <Button
           type="submit"
           disabled={loading}
-          className="h-12 px-10 text-xs font-black uppercase tracking-widest shadow-lg shadow-primary/20 bg-primary hover:bg-primary/90 text-white"
+          className="h-10 px-10 text-[10px] font-bold uppercase tracking-wider shadow-md shadow-primary/20 bg-primary hover:bg-primary/90 text-white rounded-lg"
         >
           {loading ? (
             <span className="flex items-center gap-2">

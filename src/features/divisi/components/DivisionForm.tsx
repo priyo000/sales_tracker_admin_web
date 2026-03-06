@@ -45,37 +45,37 @@ const DivisionForm: React.FC<DivisionFormProps> = ({
   };
 
   return (
-    <form onSubmit={handleSubmit} className="space-y-8 py-2">
-      <div className="space-y-6">
+    <form onSubmit={handleSubmit} className="space-y-6 py-2">
+      <div className="space-y-4">
         <FormField label="Nama Divisi" icon={Building2} required>
           <Input
             type="text"
             required
-            className="h-12 bg-card border-border/50 focus-visible:ring-primary shadow-sm font-bold"
-            placeholder="Contoh: Sales & Marketing, Gudang, Logistik..."
+            className="h-10 bg-card border-border/50 focus-visible:ring-primary shadow-sm font-semibold"
+            placeholder="Sales, Marketing, Gudang..."
             value={namaDivisi}
             onChange={(e) => setNamaDivisi(e.target.value)}
           />
         </FormField>
 
         <FormField 
-          label="Radius Toleransi Check-in" 
+          label="Radius Toleransi (Meter)" 
           icon={LocateFixed} 
           required
-          description="* Maksimal jarak yang diperbolehkan saat sales check-in di lokasi toko."
+          description="* Jarak maksimal check-in."
         >
           <div className="relative">
             <Input
               type="number"
               min="0"
               required
-              className="h-12 bg-card border-border/50 focus-visible:ring-primary shadow-sm font-bold pr-16"
-              placeholder="Contoh: 100"
+              className="h-10 bg-card border-border/50 focus-visible:ring-primary shadow-sm font-semibold pr-16"
+              placeholder="100"
               value={radiusToleransi}
               onChange={(e) => setRadiusToleransi(Number(e.target.value))}
             />
             <div className="absolute inset-y-0 right-0 flex items-center pr-4 pointer-events-none">
-              <span className="text-[10px] font-black uppercase text-muted-foreground">
+              <span className="text-[10px] font-bold uppercase text-muted-foreground">
                 meter
               </span>
             </div>
@@ -83,28 +83,28 @@ const DivisionForm: React.FC<DivisionFormProps> = ({
         </FormField>
 
         <FormField
-          label="Jangkauan Data Pelanggan (View Scope)"
+          label="Jangkauan Data Pelanggan"
           icon={Shield}
           required
         >
-          <div className="grid grid-cols-1 gap-3">
+          <div className="grid grid-cols-1 gap-2">
             {[
               {
                 id: "SELF",
                 label: "Hanya Diri Sendiri",
-                desc: "Sales hanya melihat pelanggan miliknya sendiri.",
+                desc: "Hanya pelanggan milik sales tersebut.",
                 icon: User,
               },
               {
                 id: "DIVISION",
                 label: "Satu Divisi",
-                desc: "Sales melihat semua pelanggan dalam satu divisi.",
+                desc: "Semua pelanggan dalam divisi ini.",
                 icon: Users,
               },
               {
                 id: "COMPANY",
                 label: "Satu Perusahaan",
-                desc: "Sales melihat semua data pelanggan perusahaan.",
+                desc: "Semua data pelanggan perusahaan.",
                 icon: Globe,
               },
             ].map((opt) => (
@@ -114,20 +114,20 @@ const DivisionForm: React.FC<DivisionFormProps> = ({
                 onClick={() =>
                   setViewScope(opt.id as "SELF" | "DIVISION" | "COMPANY")
                 }
-                className={`flex items-start gap-4 p-4 rounded-2xl border-2 transition-all text-left ${
+                className={`flex items-start gap-3 p-3 rounded-xl border-2 transition-all text-left ${
                   viewScope === opt.id
-                    ? "border-primary bg-primary/5 shadow-md"
+                    ? "border-primary bg-primary/5 shadow-sm"
                     : "border-border/50 bg-card hover:bg-muted/50"
                 }`}
               >
                 <div
-                  className={`p-2.5 rounded-xl ${viewScope === opt.id ? "bg-primary text-white" : "bg-muted text-muted-foreground"}`}
+                  className={`p-2 rounded-lg ${viewScope === opt.id ? "bg-primary text-white" : "bg-muted text-muted-foreground"}`}
                 >
-                  <opt.icon className="h-4 w-4" />
+                  <opt.icon className="h-3.5 w-3.5" />
                 </div>
                 <div>
                   <span
-                    className={`block text-xs font-black uppercase tracking-tight ${viewScope === opt.id ? "text-primary" : "text-foreground"}`}
+                    className={`block text-[11px] font-bold uppercase tracking-tight ${viewScope === opt.id ? "text-primary" : "text-foreground"}`}
                   >
                     {opt.label}
                   </span>
@@ -141,20 +141,20 @@ const DivisionForm: React.FC<DivisionFormProps> = ({
         </FormField>
       </div>
 
-      <div className="flex items-center justify-end gap-3 pt-6 border-t font-bold">
+      <div className="flex items-center justify-end gap-3 pt-4 border-t font-semibold">
         <Button
           type="button"
           variant="ghost"
           onClick={onCancel}
-          className="h-12 px-8 text-xs font-black uppercase tracking-widest text-muted-foreground hover:text-foreground"
+          className="h-10 px-8 text-[10px] font-bold uppercase tracking-wider text-muted-foreground hover:text-foreground rounded-lg"
           disabled={loading}
         >
-          <X className="mr-2 h-4 w-4" /> Batal
+          <X className="mr-2 h-3.5 w-3.5" /> Batal
         </Button>
         <Button
           type="submit"
           disabled={loading}
-          className="h-12 px-10 text-xs font-black uppercase tracking-widest shadow-lg shadow-primary/20 bg-primary hover:bg-primary/90 text-white"
+          className="h-10 px-10 text-[10px] font-bold uppercase tracking-wider shadow-md shadow-primary/20 bg-primary hover:bg-primary/90 text-white rounded-lg"
         >
           {loading ? (
             <span className="flex items-center gap-2">
@@ -164,7 +164,7 @@ const DivisionForm: React.FC<DivisionFormProps> = ({
           ) : (
             <span className="flex items-center gap-2">
               <Save className="h-4 w-4" />
-              {initialData ? "Simpan Perubahan" : "Tambah Divisi Sekarang"}
+              {initialData ? "Simpan Perubahan" : "Simpan Divisi"}
             </span>
           )}
         </Button>

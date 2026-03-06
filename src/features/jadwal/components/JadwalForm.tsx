@@ -68,8 +68,8 @@ const JadwalForm: React.FC<JadwalFormProps> = ({
   };
 
   return (
-    <form onSubmit={handleSubmit} className="space-y-8 py-2">
-      <div className="space-y-6">
+    <form onSubmit={handleSubmit} className="space-y-6 py-2">
+      <div className="space-y-4">
         <FormField label="Tanggal Kunjungan" icon={CalendarIcon} required>
           <DatePicker
             date={formData.tanggal ? parse(formData.tanggal, "yyyy-MM-dd", new Date()) : undefined}
@@ -79,7 +79,7 @@ const JadwalForm: React.FC<JadwalFormProps> = ({
                 tanggal: date ? format(date, "yyyy-MM-dd") : "" 
               })
             }
-            className="w-full h-12 bg-card border-border/50 text-sm font-bold"
+            className="w-full h-10 bg-card border-border/50 text-[13px] font-semibold"
           />
         </FormField>
 
@@ -93,7 +93,7 @@ const JadwalForm: React.FC<JadwalFormProps> = ({
           >
             <SelectTrigger
               id="sales"
-              className="h-12 bg-card border-border/50 shadow-sm text-sm"
+              className="h-10 bg-card border-border/50 shadow-sm text-[13px] font-semibold"
             >
               <SelectValue placeholder="Pilih Sales..." />
             </SelectTrigger>
@@ -101,8 +101,8 @@ const JadwalForm: React.FC<JadwalFormProps> = ({
               {karyawanOptions.map((k) => (
                 <SelectItem key={k.id} value={k.id.toString()}>
                   <div className="flex flex-col">
-                    <span className="font-bold">{k.nama_lengkap}</span>
-                    <span className="text-[10px] text-muted-foreground uppercase">
+                    <span className="font-semibold">{k.nama_lengkap}</span>
+                    <span className="text-[9px] text-muted-foreground uppercase">
                       {k.kode_karyawan}
                     </span>
                   </div>
@@ -111,10 +111,10 @@ const JadwalForm: React.FC<JadwalFormProps> = ({
             </SelectContent>
           </Select>
           {karyawanOptions.length === 0 && (
-            <div className="flex items-center gap-2 p-3 rounded-lg bg-amber-50 border border-amber-100 mt-2">
-              <div className="h-2 w-2 rounded-full bg-amber-500 animate-pulse" />
-              <p className="text-[10px] text-amber-700 font-bold uppercase tracking-tight">
-                Opps! Belum ada karyawan dengan role 'Sales'.
+            <div className="flex items-center gap-2 p-2 rounded-lg bg-amber-50 border border-amber-100 mt-1.5">
+              <div className="h-1.5 w-1.5 rounded-full bg-amber-500 animate-pulse" />
+              <p className="text-[9px] text-amber-700 font-bold uppercase tracking-tight">
+                Belum ada karyawan dengan role 'Sales'.
               </p>
             </div>
           )}
@@ -128,53 +128,53 @@ const JadwalForm: React.FC<JadwalFormProps> = ({
           >
             <SelectTrigger
               id="rute"
-              className="h-12 bg-card border-border/50 shadow-sm text-sm"
+              className="h-10 bg-card border-border/50 shadow-sm text-[13px] font-semibold"
             >
               <SelectValue placeholder="Pilih Rute..." />
             </SelectTrigger>
             <SelectContent>
               {ruteOptions.map((r) => (
                 <SelectItem key={r.id} value={r.id.toString()}>
-                  {r.nama_rute}
+                  <span className="font-semibold">{r.nama_rute}</span>
                 </SelectItem>
               ))}
             </SelectContent>
           </Select>
           {ruteOptions.length === 0 && (
-            <div className="flex items-center gap-2 p-3 rounded-lg bg-amber-50 border border-amber-100 mt-2">
-              <div className="h-2 w-2 rounded-full bg-amber-500 animate-pulse" />
-              <p className="text-[10px] text-amber-700 font-bold uppercase tracking-tight">
-                Opps! Belum ada rute tersedia.
+            <div className="flex items-center gap-2 p-2 rounded-lg bg-amber-50 border border-amber-100 mt-1.5">
+              <div className="h-1.5 w-1.5 rounded-full bg-amber-500 animate-pulse" />
+              <p className="text-[9px] text-amber-700 font-bold uppercase tracking-tight">
+                Belum ada rute tersedia.
               </p>
             </div>
           )}
         </FormField>
       </div>
 
-      <div className="flex items-center justify-end gap-3 pt-6 border-t font-bold">
+      <div className="flex items-center justify-end gap-3 pt-4 border-t font-semibold">
         <Button
           type="button"
           variant="ghost"
           onClick={onCancel}
-          className="h-12 px-8 text-xs font-black uppercase tracking-widest text-muted-foreground hover:text-foreground"
+          className="h-10 px-8 text-[10px] font-bold uppercase tracking-wider text-muted-foreground hover:text-foreground rounded-lg"
           disabled={loading}
         >
-          <X className="mr-2 h-4 w-4" /> Batal
+          <X className="mr-2 h-3.5 w-3.5" /> Batal
         </Button>
         <Button
           type="submit"
-          className="h-12 px-10 text-xs font-black uppercase tracking-widest shadow-lg shadow-primary/20 bg-primary hover:bg-primary/90 text-white"
+          className="h-10 px-10 text-[10px] font-bold uppercase tracking-wider shadow-md shadow-primary/20 bg-primary hover:bg-primary/90 text-white rounded-lg"
           disabled={loading}
         >
           {loading ? (
             <span className="flex items-center gap-2">
               <div className="h-4 w-4 animate-spin rounded-full border-2 border-white border-t-transparent" />
-              Menyimpan...
+              ...
             </span>
           ) : (
             <span className="flex items-center gap-2">
               <Save className="h-4 w-4" />
-              {initialData ? "Update Jadwal" : "Simpan Jadwal"}
+              {initialData ? "Update" : "Simpan"}
             </span>
           )}
         </Button>

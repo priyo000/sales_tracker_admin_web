@@ -2,7 +2,7 @@ import React, { useState } from "react";
 import { Modal } from "../../../components/ui/Modal";
 import { Button } from "@/components/ui/button";
 import { Checkbox } from "@/components/ui/checkbox";
-import { Download, AlertCircle } from "lucide-react";
+import { Download, AlertCircle, Info } from "lucide-react";
 import { DateRange } from "react-day-picker";
 import { format as formatFile } from "date-fns";
 import { DatePickerWithRange } from "@/components/ui/date-range-picker";
@@ -59,48 +59,45 @@ export const ExportOrderModal: React.FC<ExportOrderModalProps> = ({
 
   return (
     <Modal isOpen={isOpen} onClose={onClose} title="Export Pesanan ke Excel" size="md">
-      <div className="space-y-6">
-        <div className="space-y-5">
-          <div>
-            <h3 className="text-sm font-medium leading-none">Pilih Tanggal Transaksi</h3>
-            <p className="text-sm text-muted-foreground mt-1 mb-3">
-              Pilih rentang tanggal transaksi yang ingin diexport.
-            </p>
-            <DatePickerWithRange date={dateRange} onChange={setDateRange} />
+      <div className="space-y-4">
+        <div className="space-y-4">
+          <div className="space-y-2">
+            <h3 className="text-[10px] font-bold uppercase tracking-wider text-muted-foreground flex items-center gap-2">
+              <AlertCircle className="h-3 w-3" /> Rentang Tanggal
+            </h3>
+            <DatePickerWithRange date={dateRange} onChange={setDateRange} className="w-full" />
           </div>
           
-          <div className="pt-2">
-            <h3 className="text-sm font-medium leading-none">Pilih Status</h3>
-            <p className="text-sm text-muted-foreground mt-1 mb-3">
-              Pilih satu atau lebih status pesanan yang ingin Anda export. Kosongkan untuk mengekspor semua status.
-            </p>
-
-            <div className="rounded-lg border bg-card/50 p-4 space-y-3">
-              <div className="flex items-center space-x-2 pb-3 border-b border-border/50">
+          <div className="pt-2 space-y-2">
+            <h3 className="text-[10px] font-bold uppercase tracking-wider text-muted-foreground">Pilih Status</h3>
+            <div className="rounded-xl border bg-card/50 p-3 space-y-2">
+              <div className="flex items-center space-x-2 pb-2 border-b border-border/50">
                 <Checkbox
                   id="select-all"
                   checked={selectedStatuses.length === STATUS_OPTIONS.length}
                   onCheckedChange={toggleAll}
+                  className="rounded-sm"
                 />
                 <label
                   htmlFor="select-all"
-                  className="text-sm font-bold leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70 cursor-pointer"
+                  className="text-[11px] font-bold uppercase tracking-tight cursor-pointer"
                 >
                   Pilih Semua
                 </label>
               </div>
               
-              <div className="grid grid-cols-2 gap-3 pt-1">
+              <div className="grid grid-cols-2 gap-2 pt-1">
                 {STATUS_OPTIONS.map((status) => (
                   <div key={status.id} className="flex items-center space-x-2">
                     <Checkbox
                       id={`status-${status.id}`}
                       checked={selectedStatuses.includes(status.id)}
                       onCheckedChange={() => toggleStatus(status.id)}
+                      className="rounded-sm"
                     />
                     <label
                       htmlFor={`status-${status.id}`}
-                      className="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70 cursor-pointer"
+                      className="text-[10px] font-semibold cursor-pointer"
                     >
                       {status.label}
                     </label>
@@ -112,22 +109,31 @@ export const ExportOrderModal: React.FC<ExportOrderModalProps> = ({
         </div>
 
         {selectedStatuses.length === 0 && (
-          <div className="flex items-center gap-2 p-3 text-sm text-blue-700 bg-blue-50 dark:bg-blue-900/20 dark:text-blue-400 rounded-lg">
-            <AlertCircle className="h-4 w-4" />
-            <span>Semua status akan di-export karena tidak ada yang dipilih.</span>
+          <div className="flex items-center gap-2 p-2 text-[9px] font-bold uppercase tracking-tight text-blue-700 bg-blue-50/50 rounded-lg border border-blue-100 italic">
+            <Info className="h-3 w-3" />
+            <span>Semua status akan di-export otomatis.</span>
           </div>
         )}
 
         <div className="flex justify-end gap-2 pt-4 border-t">
-          <Button variant="outline" onClick={onClose} disabled={isLoading}>
+          <Button 
+            variant="ghost" 
+            onClick={onClose} 
+            disabled={isLoading}
+            className="h-9 px-6 text-[10px] font-bold uppercase tracking-wider text-muted-foreground rounded-lg"
+          >
             Batal
           </Button>
           <Button 
             onClick={handleExport} 
             disabled={isLoading}
-            className="gap-2"
+            className="h-9 px-8 text-[10px] font-bold uppercase tracking-wider bg-primary hover:bg-primary/90 text-white rounded-lg gap-2 shadow-md shadow-primary/20"
           >
-            <Download className="h-4 w-4" />
+            {isLoading ? (
+              <div className="h-3.5 w-3.5 animate-spin rounded-full border-2 border-white border-t-transparent" />
+            ) : (
+              <Download className="h-3.5 w-3.5" />
+            )}
             {isLoading ? "Memproses..." : "Download Excel"}
           </Button>
         </div>

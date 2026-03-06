@@ -45,14 +45,14 @@ const PerusahaanForm: React.FC<PerusahaanFormProps> = ({
   };
 
   return (
-    <form onSubmit={handleSubmit} className="space-y-8 py-2">
-      <div className="space-y-6">
+    <form onSubmit={handleSubmit} className="space-y-6 py-2">
+      <div className="space-y-4">
         <FormField label="Nama Perusahaan" icon={Building2} required>
           <Input
             type="text"
             required
-            className="h-12 bg-card border-border/50 focus-visible:ring-primary shadow-sm font-bold"
-            placeholder="Contoh: PT. Maju Jaya Bersama"
+            className="h-10 bg-card border-border/50 focus-visible:ring-primary shadow-sm font-semibold"
+            placeholder="Nama perusahaan"
             value={formData.nama_perusahaan}
             onChange={(e) =>
               setFormData({ ...formData, nama_perusahaan: e.target.value })
@@ -60,12 +60,12 @@ const PerusahaanForm: React.FC<PerusahaanFormProps> = ({
           />
         </FormField>
 
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
           <FormField label="Email Kontak" icon={Mail} required>
             <Input
               type="email"
               required
-              className="h-12 bg-card border-border/50 focus-visible:ring-primary shadow-sm font-bold"
+              className="h-10 bg-card border-border/50 focus-visible:ring-primary shadow-sm font-semibold"
               placeholder="email@perusahaan.com"
               value={formData.email_kontak}
               onChange={(e) =>
@@ -73,11 +73,11 @@ const PerusahaanForm: React.FC<PerusahaanFormProps> = ({
               }
             />
           </FormField>
-          <FormField label="Nomor Telepon Kantor" icon={Phone} required>
+          <FormField label="Nomor Telepon" icon={Phone} required>
             <Input
               type="text"
               required
-              className="h-12 bg-card border-border/50 focus-visible:ring-primary shadow-sm font-bold"
+              className="h-10 bg-card border-border/50 focus-visible:ring-primary shadow-sm font-semibold"
               placeholder="021-xxxx"
               value={formData.no_telp}
               onChange={(e) =>
@@ -87,9 +87,9 @@ const PerusahaanForm: React.FC<PerusahaanFormProps> = ({
           </FormField>
         </div>
 
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
           <FormField label="Status Langganan" icon={Activity} required>
-            <div className="grid grid-cols-2 gap-3">
+            <div className="grid grid-cols-2 gap-2">
               {["aktif", "non_aktif"].map((status) => (
                 <button
                   key={status}
@@ -100,9 +100,9 @@ const PerusahaanForm: React.FC<PerusahaanFormProps> = ({
                       status_langganan: status as "aktif" | "non_aktif",
                     })
                   }
-                  className={`h-12 rounded-xl border-2 transition-all text-[11px] font-black uppercase tracking-widest ${
+                  className={`h-10 rounded-lg border-2 transition-all text-[10px] font-bold uppercase tracking-wider ${
                     formData.status_langganan === status
-                      ? "border-primary bg-primary/5 text-primary shadow-md"
+                      ? "border-primary bg-primary/5 text-primary shadow-sm"
                       : "border-border/50 bg-card text-muted-foreground hover:bg-muted/50"
                   }`}
                 >
@@ -117,7 +117,7 @@ const PerusahaanForm: React.FC<PerusahaanFormProps> = ({
               onChange={(date) => 
                 setFormData({ ...formData, tanggal_bergabung: date ? format(date, "yyyy-MM-dd") : "" })
               }
-              className="w-full h-12 bg-card border-border/50 shadow-sm font-bold text-left"
+              className="w-full h-10 bg-card border-border/50 shadow-sm font-semibold text-left"
               placeholder="Pilih Tanggal"
             />
           </FormField>
@@ -125,9 +125,9 @@ const PerusahaanForm: React.FC<PerusahaanFormProps> = ({
 
         <FormField label="Alamat Kantor Pusat" icon={MapPin}>
           <Textarea
-            rows={3}
-            placeholder="Tulis alamat lengkap kantor..."
-            className="bg-card border-border/50 focus-visible:ring-primary shadow-sm font-bold min-h-[100px] resize-none"
+            rows={2}
+            placeholder="Alamat kantor..."
+            className="bg-card border-border/50 focus-visible:ring-primary shadow-sm font-semibold min-h-[80px] resize-none text-xs"
             value={formData.alamat}
             onChange={(e) =>
               setFormData({ ...formData, alamat: e.target.value })
@@ -136,20 +136,20 @@ const PerusahaanForm: React.FC<PerusahaanFormProps> = ({
         </FormField>
       </div>
 
-      <div className="flex items-center justify-end gap-3 pt-6 border-t font-bold">
+      <div className="flex items-center justify-end gap-3 pt-4 border-t font-semibold">
         <Button
           type="button"
           variant="ghost"
           onClick={onCancel}
-          className="h-12 px-8 text-xs font-black uppercase tracking-widest text-muted-foreground hover:text-foreground"
+          className="h-10 px-8 text-[10px] font-bold uppercase tracking-wider text-muted-foreground hover:text-foreground rounded-lg"
           disabled={isLoading}
         >
-          <X className="mr-2 h-4 w-4" /> Batal
+          <X className="mr-2 h-3.5 w-3.5" /> Batal
         </Button>
         <Button
           type="submit"
           disabled={isLoading}
-          className="h-12 px-10 text-xs font-black uppercase tracking-widest shadow-lg shadow-primary/20 bg-primary hover:bg-primary/90 text-white"
+          className="h-10 px-10 text-[10px] font-bold uppercase tracking-wider shadow-md shadow-primary/20 bg-primary hover:bg-primary/90 text-white rounded-lg"
         >
           {isLoading ? (
             <span className="flex items-center gap-2">
@@ -159,7 +159,7 @@ const PerusahaanForm: React.FC<PerusahaanFormProps> = ({
           ) : (
             <span className="flex items-center gap-2">
               <Save className="h-4 w-4" />
-              {initialData ? "Simpan Perubahan" : "Tambah Perusahaan"}
+              {initialData ? "Simpan Perubahan" : "Simpan Perusahaan"}
             </span>
           )}
         </Button>

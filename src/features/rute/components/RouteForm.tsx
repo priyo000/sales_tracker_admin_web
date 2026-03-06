@@ -220,15 +220,15 @@ const RouteForm: React.FC<RouteFormProps> = ({
       className="flex h-[80vh] w-full bg-background overflow-hidden"
     >
       {/* LEFT SIDEBAR - CONTROL PANEL */}
-      <div className="w-[400px] flex flex-col border-r border-border bg-card z-10 shrink-0">
+      <div className="w-[350px] flex flex-col border-r border-border bg-card z-10 shrink-0">
         {/* Header Section */}
-        <div className="p-6 border-b border-border bg-background space-y-6">
-          <div className="space-y-4">
+        <div className="p-5 border-b border-border bg-background space-y-4">
+          <div className="space-y-3">
             {(user?.peran === "super_admin" ||
               user?.peran === "admin_perusahaan") && (
               <FormField label="Divisi Rute" icon={LayoutGrid} required>
                 <Select value={idDivisi} onValueChange={setIdDivisi} required>
-                  <SelectTrigger className="h-11 bg-card border-border/50">
+                  <SelectTrigger className="h-9 bg-card border-border/50 font-semibold">
                     <SelectValue placeholder="Pilih Divisi..." />
                   </SelectTrigger>
                   <SelectContent>
@@ -247,7 +247,7 @@ const RouteForm: React.FC<RouteFormProps> = ({
                 name="nama_rute"
                 type="text"
                 required
-                className="h-11 bg-card border-border/50 font-bold"
+                className="h-9 bg-card border-border/50 font-semibold"
                 value={namaRute}
                 onChange={(e) => setNamaRute(e.target.value)}
                 placeholder="Ex: Rute Senin Barat"
@@ -257,7 +257,7 @@ const RouteForm: React.FC<RouteFormProps> = ({
             <FormField label="Keterangan Rute" icon={FileText}>
               <Input
                 name="deskripsi"
-                className="h-11 bg-card border-border/50"
+                className="h-9 bg-card border-border/50 text-xs"
                 value={deskripsi}
                 onChange={(e) => setDeskripsi(e.target.value)}
                 placeholder="Contoh: Fokus toko besar"
@@ -267,13 +267,13 @@ const RouteForm: React.FC<RouteFormProps> = ({
         </div>
 
         {/* Search & List Header */}
-        <div className="px-4 py-4 bg-muted/30 border-b border-border space-y-3">
+        <div className="px-4 py-3 bg-muted/30 border-b border-border space-y-3">
           <div className="relative group">
             <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground z-10 group-focus-within:text-primary transition-colors" />
             <Input
               type="text"
               placeholder="Cari Toko atau Alamat..."
-              className="w-full pl-10 pr-3 h-11 bg-card border-border/50 focus-visible:ring-primary"
+              className="w-full pl-10 pr-3 h-9 bg-card border-border/50 focus-visible:ring-primary text-xs"
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
             />
@@ -286,14 +286,14 @@ const RouteForm: React.FC<RouteFormProps> = ({
                 setSelectedKaryawanId(val === "all" ? "all" : Number(val))
               }
             >
-              <SelectTrigger className="w-full bg-card border-border/50 h-10 text-xs">
-                <SelectValue placeholder="Semua Sales (Karyawan)" />
+              <SelectTrigger className="w-full bg-card border-border/50 h-9 text-[10px] font-semibold">
+                <SelectValue placeholder="Semua Sales" />
               </SelectTrigger>
               <SelectContent>
-                <SelectItem value="all">Semua Sales (Karyawan)</SelectItem>
+                <SelectItem value="all">Semua Sales</SelectItem>
                 {filterOptions.map((opt) => (
                   <SelectItem key={opt.id} value={opt.id.toString()}>
-                    {opt.nama_lengkap} {!opt.has_account ? "(Belum Ada Akun)" : ""}{" "}
+                    {opt.nama_lengkap} {!opt.has_account ? "(No Acc)" : ""}{" "}
                     {opt.has_data ? "✓" : ""}
                   </SelectItem>
                 ))}
@@ -301,7 +301,7 @@ const RouteForm: React.FC<RouteFormProps> = ({
             </Select>
           </FormField>
 
-          <div className="flex items-center justify-between text-[10px] font-black uppercase tracking-widest text-muted-foreground px-1">
+          <div className="flex items-center justify-between text-[9px] font-bold uppercase tracking-wider text-muted-foreground px-1">
             <span>{filteredCustomers.length} Pelanggan</span>
             <span
               className={cn(
@@ -335,27 +335,27 @@ const RouteForm: React.FC<RouteFormProps> = ({
         </div>
 
         {/* FOOTER ACTIONS */}
-        <div className="p-4 border-t border-border bg-background shadow-[0_-4px_10px_rgba(0,0,0,0.05)] z-20 space-y-4 font-bold">
-          <div className="flex items-center justify-between text-[11px] font-black uppercase tracking-widest text-muted-foreground">
+        <div className="p-4 border-t border-border bg-background shadow-sm z-20 space-y-3 font-semibold">
+          <div className="flex items-center justify-between text-[10px] font-bold uppercase tracking-widest text-muted-foreground">
             <span>Total Rute:</span>
             <span className="text-foreground">
               {selectedCount} Stop Points
             </span>
           </div>
-          <div className="grid grid-cols-2 gap-3">
+          <div className="grid grid-cols-2 gap-2">
             <Button
               type="button"
               variant="ghost"
               onClick={onCancel}
               disabled={isLoading}
-              className="h-11 text-xs font-black uppercase tracking-widest text-muted-foreground hover:text-foreground"
+              className="h-10 text-[10px] font-bold uppercase tracking-widest text-muted-foreground hover:text-foreground rounded-lg"
             >
-              <X className="mr-2 h-4 w-4" /> Batal
+              <X className="mr-2 h-3.5 w-3.5" /> Batal
             </Button>
             <Button
               type="submit"
               disabled={isLoading}
-              className="h-11 text-xs font-black uppercase tracking-widest shadow-lg shadow-primary/20 bg-primary hover:bg-primary/90 text-white"
+              className="h-10 text-[10px] font-bold uppercase tracking-widest shadow-md shadow-primary/20 bg-primary hover:bg-primary/90 text-white rounded-lg"
             >
               {isLoading ? (
                 <span className="flex items-center gap-2">
@@ -383,10 +383,10 @@ const RouteForm: React.FC<RouteFormProps> = ({
         />
 
         {/* Floating Map Hint */}
-        <div className="absolute top-6 left-1/2 -translate-x-1/2 z-50 pointer-events-none w-max">
-          <div className="bg-background/90 backdrop-blur shadow-2xl border border-border/50 px-6 py-3 rounded-2xl text-[10px] font-black uppercase tracking-widest text-foreground flex items-center gap-3 animate-in slide-in-from-top-4 duration-700">
-            <div className="h-2 w-2 rounded-full bg-primary animate-pulse" />
-            <span>Klik marker di peta untuk pilih pelanggan</span>
+        <div className="absolute top-4 left-1/2 -translate-x-1/2 z-50 pointer-events-none w-max">
+          <div className="bg-background/90 backdrop-blur shadow-xl border border-border/50 px-5 py-2 rounded-xl text-[9px] font-bold uppercase tracking-widest text-foreground flex items-center gap-3 animate-in slide-in-from-top-4 duration-700">
+            <div className="h-1.5 w-1.5 rounded-full bg-primary animate-pulse" />
+            <span>Klik marker untuk pilih</span>
           </div>
         </div>
       </div>
@@ -443,9 +443,9 @@ const CustomerItem = memo(
         id={`customer-item-${customer.id}`}
         onClick={() => onToggle(customer.id)}
         className={cn(
-          "relative p-4 rounded-2xl border transition-all duration-300 cursor-pointer group mb-2 last:mb-0",
+          "relative p-3 rounded-xl border transition-all duration-300 cursor-pointer group mb-2 last:mb-0",
           isSelected
-            ? "bg-primary/5 border-primary shadow-sm ring-1 ring-primary/20"
+            ? "bg-primary/5 border-primary shadow-sm"
             : "bg-card border-border/50 hover:border-primary/30 hover:shadow-md",
         )}
       >
@@ -467,7 +467,7 @@ const CustomerItem = memo(
           <div className="min-w-0 flex-1">
             <h4
               className={cn(
-                "text-xs font-black uppercase tracking-tight truncate pr-2",
+                "text-[11px] font-bold uppercase tracking-tight truncate pr-2",
                 isSelected ? "text-primary" : "text-foreground",
               )}
             >
@@ -505,7 +505,7 @@ const CustomerItem = memo(
           </div>
         </div>
         {isSelected && (
-          <div className="absolute right-0 top-0 bottom-0 w-1.5 bg-primary rounded-r-2xl" />
+          <div className="absolute right-0 top-0 bottom-0 w-1 bg-primary rounded-r-xl" />
         )}
       </div>
     );

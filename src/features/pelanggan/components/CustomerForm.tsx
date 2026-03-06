@@ -173,46 +173,46 @@ const CustomerForm: React.FC<CustomerFormProps> = ({
         onValueChange={setActiveTab}
         className="flex flex-col flex-1"
       >
-        <div className="px-6 py-4 bg-background border-b border-border/50 sticky top-0 z-10">
-          <TabsList className="grid w-full grid-cols-2 max-w-md mx-auto h-12 bg-muted/50 p-1.5 rounded-2xl">
+        <div className="px-6 py-3 bg-background border-b border-border/50 sticky top-0 z-10">
+          <TabsList className="grid w-full grid-cols-2 max-w-md mx-auto h-10 bg-muted/50 p-1 rounded-xl">
             <TabsTrigger
               value="profil"
-              className="rounded-xl data-[state=active]:bg-primary data-[state=active]:text-white data-[state=active]:shadow-lg transition-all font-black text-[10px] uppercase tracking-widest gap-2"
+              className="rounded-lg data-[state=active]:bg-primary data-[state=active]:text-white data-[state=active]:shadow-md transition-all font-bold text-[10px] uppercase tracking-wider gap-2"
             >
-              <Building2 className="h-4 w-4" /> Profil & Alamat
+              <Building2 className="h-3.5 w-3.5" /> Profil & Alamat
             </TabsTrigger>
             <TabsTrigger
               value="administrasi"
-              className="rounded-xl data-[state=active]:bg-primary data-[state=active]:text-white data-[state=active]:shadow-lg transition-all font-black text-[10px] uppercase tracking-widest gap-2"
+              className="rounded-lg data-[state=active]:bg-primary data-[state=active]:text-white data-[state=active]:shadow-md transition-all font-bold text-[10px] uppercase tracking-wider gap-2"
             >
-              <Shield className="h-4 w-4" /> Administrasi & Finansial
+              <Shield className="h-3.5 w-3.5" /> Administrasi & Finansial
             </TabsTrigger>
           </TabsList>
         </div>
 
         <div className="flex-1 overflow-hidden">
           <ScrollArea className="h-full">
-            <div className="p-8 max-w-5xl mx-auto pb-12">
-              <TabsContent value="profil" className="m-0 space-y-10 focus:outline-none">
+            <div className="p-6 max-w-5xl mx-auto pb-10">
+              <TabsContent value="profil" className="m-0 space-y-6 focus:outline-none">
                 {/* Toko Info Card */}
-                <Card className="border-none shadow-2xl bg-card overflow-hidden">
-                  <div className="h-2 bg-primary" />
-                  <CardContent className="p-8 space-y-8">
+                <Card className="border-none shadow-xl bg-card overflow-hidden">
+                  <div className="h-1.5 bg-primary" />
+                  <CardContent className="p-6 space-y-6">
                     <SectionHeader
                       icon={Store}
                       title="Informasi Toko / Outlet"
-                      description="Data dasar pelanggan dan identitas outlet"
+                      description="Data dasar pelanggan"
                     />
 
-                    <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
-                      <div className="space-y-6">
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                      <div className="space-y-4">
                         <FormField label="Nama Toko / Outlet" icon={Store} required>
                           <Input
                             placeholder="Contoh: Toko Berkah Jaya"
                             value={formData.nama_toko}
                             onChange={(e) => handleChange("nama_toko", e.target.value)}
                             required
-                            className="h-12 bg-muted/30 border-border/50 text-sm font-bold focus-visible:ring-primary shadow-sm"
+                            className="h-10 bg-muted/30 border-border/50 text-sm font-semibold focus-visible:ring-primary shadow-sm"
                           />
                         </FormField>
 
@@ -222,7 +222,7 @@ const CustomerForm: React.FC<CustomerFormProps> = ({
                             value={formData.nama_pemilik}
                             onChange={(e) => handleChange("nama_pemilik", e.target.value)}
                             required
-                            className="h-12 bg-muted/30 border-border/50 text-sm font-bold focus-visible:ring-primary shadow-sm"
+                            className="h-10 bg-muted/30 border-border/50 text-sm font-semibold focus-visible:ring-primary shadow-sm"
                           />
                         </FormField>
 
@@ -232,7 +232,7 @@ const CustomerForm: React.FC<CustomerFormProps> = ({
                             onValueChange={(val) => handleChange("id_divisi", parseInt(val))}
                             required
                           >
-                            <SelectTrigger className="h-12 bg-muted/30 border-border/50 shadow-sm font-bold">
+                            <SelectTrigger className="h-10 bg-muted/30 border-border/50 shadow-sm font-semibold">
                               <SelectValue placeholder="Pilih Divisi" />
                             </SelectTrigger>
                             <SelectContent>
@@ -246,14 +246,14 @@ const CustomerForm: React.FC<CustomerFormProps> = ({
                         </FormField>
                       </div>
 
-                      <div className="space-y-6">
-                        <div className="grid grid-cols-1 gap-6">
+                      <div className="space-y-4">
+                        <div className="grid grid-cols-1 gap-4">
                           <FormField label="Status Outlet" icon={CheckCircle2}>
                             <Select
                               value={formData.status}
                               onValueChange={(val) => handleChange("status", val)}
                             >
-                              <SelectTrigger className="h-12 bg-muted/30 border-border/50 shadow-sm font-bold">
+                              <SelectTrigger className="h-10 bg-muted/30 border-border/50 shadow-sm font-semibold">
                                 <SelectValue />
                               </SelectTrigger>
                               <SelectContent>
@@ -267,8 +267,8 @@ const CustomerForm: React.FC<CustomerFormProps> = ({
                           </FormField>
                         </div>
 
-                        <div className="flex flex-col items-center gap-4 p-6 bg-muted/20 rounded-2xl border-2 border-dashed border-border/50 group transition-all hover:bg-muted/30">
-                          <div className="relative h-40 w-full rounded-xl overflow-hidden shadow-md">
+                        <div className="flex flex-col items-center gap-3 p-4 bg-muted/20 rounded-xl border-2 border-dashed border-border/50 group transition-all hover:bg-muted/30">
+                          <div className="relative h-28 w-full rounded-lg overflow-hidden shadow-sm">
                             {previews.foto_toko ? (
                               <>
                                 <img
@@ -282,16 +282,16 @@ const CustomerForm: React.FC<CustomerFormProps> = ({
                                     variant="destructive"
                                     size="icon"
                                     onClick={() => clearFile("foto_toko")}
-                                    className="rounded-full"
+                                    className="h-8 w-8 rounded-full"
                                   >
-                                    <X className="h-4 w-4" />
+                                    <X className="h-3.5 w-3.5" />
                                   </Button>
                                 </div>
                               </>
                             ) : (
                               <label className="flex flex-col items-center justify-center w-full h-full cursor-pointer bg-muted/10">
-                                <Camera className="h-10 w-10 text-muted-foreground group-hover:text-primary transition-colors" />
-                                <span className="mt-2 text-[10px] font-black uppercase tracking-widest text-muted-foreground">
+                                <Camera className="h-8 w-8 text-muted-foreground group-hover:text-primary transition-colors" />
+                                <span className="mt-1 text-[9px] font-bold uppercase tracking-wider text-muted-foreground">
                                   Upload Foto Toko
                                 </span>
                                 <input
@@ -311,20 +311,20 @@ const CustomerForm: React.FC<CustomerFormProps> = ({
 
                 {/* Contact Info Card */}
                 <Card className="border-none shadow-xl bg-card">
-                  <CardContent className="p-8 space-y-8">
+                  <CardContent className="p-6 space-y-6">
                     <SectionHeader
                       icon={Phone}
                       title="Kontak & Komunikasi"
-                      description="Nomor telepon dan alamat email aktif"
+                      description="Data komunikasi aktif"
                     />
-                    <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+                    <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
                       <FormField label="WhatsApp / No HP" icon={Smartphone} required>
                         <Input
                           placeholder="0812XXXXXXXX"
                           value={formData.no_hp_pribadi}
                           onChange={(e) => handleChange("no_hp_pribadi", e.target.value)}
                           required
-                          className="h-12 bg-muted/30 border-border/50 text-sm font-bold"
+                          className="h-10 bg-muted/30 border-border/50 text-sm font-semibold"
                         />
                       </FormField>
 
@@ -333,7 +333,7 @@ const CustomerForm: React.FC<CustomerFormProps> = ({
                           placeholder="(021) XXXXXXXX"
                           value={formData.no_hp_kontak || ""}
                           onChange={(e) => handleChange("no_hp_kontak", e.target.value)}
-                          className="h-12 bg-muted/30 border-border/50 text-sm font-bold"
+                          className="h-10 bg-muted/30 border-border/50 text-sm font-semibold"
                         />
                       </FormField>
 
@@ -342,7 +342,7 @@ const CustomerForm: React.FC<CustomerFormProps> = ({
                           placeholder="Nama Kontak person"
                           value={formData.nama_kontak_person || ""}
                           onChange={(e) => handleChange("nama_kontak_person", e.target.value)}
-                          className="h-12 bg-muted/30 border-border/50 text-sm font-bold"
+                          className="h-10 bg-muted/30 border-border/50 text-sm font-semibold"
                         />
                       </FormField>
                     </div>
@@ -351,7 +351,7 @@ const CustomerForm: React.FC<CustomerFormProps> = ({
 
                 {/* Location Card */}
                 <Card className="border-none shadow-xl bg-card overflow-hidden">
-                  <CardContent className="p-8 space-y-8">
+                  <CardContent className="p-6 space-y-6">
                     <SectionHeader
                       icon={MapPin}
                       title="Alamat & Geolocation"
@@ -371,13 +371,13 @@ const CustomerForm: React.FC<CustomerFormProps> = ({
                           />
                         </FormField>
 
-                        <div className="grid grid-cols-2 gap-4">
+                        <div className="grid grid-cols-2 gap-3">
                           <FormField label="Latitude" icon={MapPin}>
                             <Input
                               value={formData.latitude.toString()}
                               readOnly
                               placeholder="0.000000"
-                              className="h-11 bg-muted/30 border-border/50 text-xs font-mono"
+                              className="h-9 bg-muted/30 border-border/50 text-[10px] font-mono"
                             />
                           </FormField>
                           <FormField label="Longitude" icon={MapPin}>
@@ -385,19 +385,19 @@ const CustomerForm: React.FC<CustomerFormProps> = ({
                               value={formData.longitude.toString()}
                               readOnly
                               placeholder="0.000000"
-                               className="h-11 bg-muted/30 border-border/50 text-xs font-mono"
+                               className="h-9 bg-muted/30 border-border/50 text-[10px] font-mono"
                             />
                           </FormField>
                         </div>
-                        <div className="p-4 bg-amber-50 border border-amber-100 rounded-xl flex gap-3 italic">
-                          <Info className="h-5 w-5 text-amber-500 shrink-0 mt-0.5" />
-                          <p className="text-[10px] text-amber-700 font-bold uppercase tracking-tight leading-relaxed">
-                            Pastikan Pin Lokasi Di Peta Akurat. Ini Akan Mempengaruhi Rute Kunjungan Sales Dan Verifikasi Check-in.
+                        <div className="p-3 bg-amber-50 border border-amber-100 rounded-lg flex gap-2 italic">
+                          <Info className="h-4 w-4 text-amber-500 shrink-0 mt-0.5" />
+                          <p className="text-[9px] text-amber-700 font-semibold uppercase tracking-tight leading-relaxed">
+                            Pastikan Pin Lokasi Di Peta Akurat. Digunakan untuk verifikasi kunjungan sales.
                           </p>
                         </div>
                       </div>
 
-                      <div className="relative h-[400px] rounded-2xl overflow-hidden border-2 border-border/50 shadow-inner group">
+                      <div className="relative h-[300px] rounded-xl overflow-hidden border-2 border-border/50 shadow-inner group">
                         <MapPicker
                           lat={formData.latitude}
                           lng={formData.longitude}
@@ -405,8 +405,8 @@ const CustomerForm: React.FC<CustomerFormProps> = ({
                           hideSearch={true}
                           height="h-full"
                         />
-                        <div className="absolute top-4 left-4 right-4 z-50 pointer-events-none">
-                          <div className="bg-white/90 backdrop-blur shadow-lg border border-border/50 px-4 py-2 rounded-xl text-[10px] font-black uppercase tracking-widest text-primary text-center">
+                        <div className="absolute top-3 left-3 right-3 z-50 pointer-events-none">
+                          <div className="bg-white/90 backdrop-blur shadow-md border border-border/50 px-3 py-1.5 rounded-lg text-[9px] font-bold uppercase tracking-widest text-primary text-center">
                             Geser Pin Untuk Menentukan Lokasi
                           </div>
                         </div>
@@ -421,20 +421,20 @@ const CustomerForm: React.FC<CustomerFormProps> = ({
                   <div className="space-y-10">
                     {/* Payment Settings Card */}
                     <Card className="border-none shadow-xl bg-card">
-                      <CardContent className="p-8 space-y-6">
+                      <CardContent className="p-6 space-y-4">
                         <SectionHeader
                           icon={CreditCard}
                           title="Kebijakan Pembayaran"
-                          description="Pengaturan termin dan limit transaksi"
+                          description="Termin & limit transaksi"
                         />
 
-                        <div className="grid grid-cols-1 md:grid-cols-2 gap-6 pt-4">
+                        <div className="grid grid-cols-1 md:grid-cols-2 gap-4 pt-2">
                           <FormField label="Metode Transaksi" icon={Briefcase}>
                             <Select
                               value={formData.cara_pembayaran}
                               onValueChange={(val) => handleChange("cara_pembayaran", val)}
                             >
-                              <SelectTrigger className="h-12 bg-muted/30 border-border/50 shadow-sm font-bold">
+                              <SelectTrigger className="h-10 bg-muted/30 border-border/50 shadow-sm font-semibold">
                                 <SelectValue placeholder="Pilih Cara" />
                               </SelectTrigger>
                               <SelectContent>
@@ -450,7 +450,7 @@ const CustomerForm: React.FC<CustomerFormProps> = ({
                               value={formData.sistem_pembayaran}
                               onValueChange={(val) => handleChange("sistem_pembayaran", val)}
                             >
-                              <SelectTrigger className="h-12 bg-muted/30 border-border/50 shadow-sm font-bold">
+                              <SelectTrigger className="h-10 bg-muted/30 border-border/50 shadow-sm font-semibold">
                                 <SelectValue placeholder="Pilih Sistem" />
                               </SelectTrigger>
                               <SelectContent>
@@ -461,15 +461,15 @@ const CustomerForm: React.FC<CustomerFormProps> = ({
                           </FormField>
 
                           {formData.sistem_pembayaran === "Kredit" && (
-                            <div className="md:col-span-2 grid grid-cols-1 md:grid-cols-2 gap-6 p-6 bg-primary/5 rounded-2xl border border-primary/20 animate-in zoom-in-95 duration-500 shadow-inner">
+                            <div className="md:col-span-2 grid grid-cols-1 md:grid-cols-2 gap-4 p-5 bg-primary/5 rounded-xl border border-primary/20 animate-in zoom-in-95 duration-500 shadow-inner">
                               <FormField label="Limit Kredit Awal" icon={CreditCard}>
                                 <div className="relative">
-                                  <span className="absolute left-4 top-1/2 -translate-y-1/2 text-xs font-black text-muted-foreground uppercase">Rp</span>
+                                  <span className="absolute left-3 top-1/2 -translate-y-1/2 text-[10px] font-bold text-muted-foreground uppercase">Rp</span>
                                   <Input
                                     type="number"
                                     value={formData.limit_kredit_awal}
                                     onChange={(e) => handleChange("limit_kredit_awal", parseFloat(e.target.value))}
-                                    className="h-12 pl-12 bg-card border-border/50 text-sm font-bold"
+                                    className="h-10 pl-10 bg-card border-border/50 text-sm font-semibold"
                                   />
                                 </div>
                               </FormField>
@@ -480,9 +480,9 @@ const CustomerForm: React.FC<CustomerFormProps> = ({
                                     type="number"
                                     value={formData.top_hari}
                                     onChange={(e) => handleChange("top_hari", parseInt(e.target.value))}
-                                    className="h-12 pr-14 bg-card border-border/50 text-sm font-bold"
+                                    className="h-10 pr-12 bg-card border-border/50 text-sm font-semibold"
                                   />
-                                  <span className="absolute right-4 top-1/2 -translate-y-1/2 text-xs font-black text-muted-foreground uppercase">Hari</span>
+                                  <span className="absolute right-3 top-1/2 -translate-y-1/2 text-[10px] font-bold text-muted-foreground uppercase">Hari</span>
                                 </div>
                               </FormField>
                             </div>
@@ -494,20 +494,20 @@ const CustomerForm: React.FC<CustomerFormProps> = ({
                     {/* Bank Account Info Card */}
                     {(formData.cara_pembayaran === "Transfer" || formData.cara_pembayaran === "Giro") && (
                       <Card className="border-none shadow-xl bg-card animate-in slide-in-from-left-4 duration-500">
-                        <CardContent className="p-8 space-y-6">
+                        <CardContent className="p-6 space-y-4">
                           <SectionHeader
                             icon={Landmark}
-                            title="Detail Rekening Bank"
-                            description="Informasi rekening untuk pelaporan transfer"
+                            title="Rekening Bank"
+                            description="Info transfer"
                           />
 
-                          <div className="grid grid-cols-1 md:grid-cols-2 gap-6 pt-4">
+                          <div className="grid grid-cols-1 md:grid-cols-2 gap-4 pt-2">
                             <FormField label="Nama Bank">
                               <Input
                                 placeholder="Misal: BCA, Mandiri, BRI"
                                 value={formData.nama_bank}
                                 onChange={(e) => handleChange("nama_bank", e.target.value)}
-                                className="h-11 bg-muted/30 border-border/50 text-sm font-bold"
+                                className="h-10 bg-muted/30 border-border/50 text-sm font-semibold"
                               />
                             </FormField>
                             <FormField label="Kantor Cabang">
@@ -515,7 +515,7 @@ const CustomerForm: React.FC<CustomerFormProps> = ({
                                 placeholder="Nama Cabang"
                                 value={formData.cabang_bank}
                                 onChange={(e) => handleChange("cabang_bank", e.target.value)}
-                                className="h-11 bg-muted/30 border-border/50 text-sm font-bold"
+                                className="h-10 bg-muted/30 border-border/50 text-sm font-semibold"
                               />
                             </FormField>
                             <FormField label="Nomor Rekening">
@@ -523,7 +523,7 @@ const CustomerForm: React.FC<CustomerFormProps> = ({
                                 placeholder="XXXXXXXXXXXX"
                                 value={formData.no_rekening}
                                 onChange={(e) => handleChange("no_rekening", e.target.value)}
-                                className="h-11 bg-muted/30 border-border/50 font-mono text-sm font-bold tracking-widest"
+                                className="h-10 bg-muted/30 border-border/50 font-mono text-sm font-semibold tracking-wider"
                               />
                             </FormField>
                             <FormField label="Atas Nama Pemilik">
@@ -531,7 +531,7 @@ const CustomerForm: React.FC<CustomerFormProps> = ({
                                 placeholder="Nama sesuai buku tabungan"
                                 value={formData.atas_nama_rekening}
                                 onChange={(e) => handleChange("atas_nama_rekening", e.target.value)}
-                                className="h-11 bg-muted/30 border-border/50 text-sm font-bold"
+                                className="h-10 bg-muted/30 border-border/50 text-sm font-semibold"
                               />
                             </FormField>
                           </div>
@@ -543,21 +543,21 @@ const CustomerForm: React.FC<CustomerFormProps> = ({
                   <div className="space-y-10">
                     {/* Sales Assignment Card */}
                     <Card className="border-none shadow-xl bg-card">
-                      <CardContent className="p-8 space-y-6">
+                      <CardContent className="p-6 space-y-4">
                         <SectionHeader
                           icon={User}
-                          title="Penanggung Jawab Sales"
-                          description="Tentukan sales person utama untuk outlet ini"
+                          title="Penanggung Jawab"
+                          description="Tentukan sales person utama"
                         />
 
-                        <div className="pt-4">
+                        <div className="pt-1">
                            <FormField label="Sales Representative" icon={User} required>
                             <Select
                               value={formData.id_sales_pembuat?.toString()}
                               onValueChange={(val) => handleChange("id_sales_pembuat", parseInt(val))}
                               required
                             >
-                              <SelectTrigger className="h-12 bg-muted/30 border-border/50 shadow-sm font-bold">
+                              <SelectTrigger className="h-10 bg-muted/30 border-border/50 shadow-sm font-semibold">
                                 <SelectValue placeholder="Pilih Sales Person" />
                               </SelectTrigger>
                               <SelectContent>
@@ -575,16 +575,16 @@ const CustomerForm: React.FC<CustomerFormProps> = ({
 
                     {/* KTP Card */}
                     <Card className="border-none shadow-xl bg-card">
-                      <CardContent className="p-8 space-y-6">
+                      <CardContent className="p-6 space-y-4">
                         <SectionHeader
                           icon={LucideImage}
-                          title="Dokumen Identitas"
-                          description="Foto KTP pemilik untuk verifikasi administrasi"
+                          title="Identitas"
+                          description="Foto KTP pemilik"
                         />
 
-                        <div className="pt-4">
-                           <div className="flex flex-col items-center gap-4 p-8 bg-muted/20 rounded-2xl border-2 border-dashed border-border/50 group transition-all hover:bg-muted/30">
-                            <div className="relative h-48 w-full max-w-sm rounded-xl overflow-hidden shadow-2xl bg-black/5">
+                        <div className="pt-1">
+                           <div className="flex flex-col items-center gap-3 p-6 bg-muted/20 rounded-xl border-2 border-dashed border-border/50 group transition-all hover:bg-muted/30">
+                            <div className="relative h-32 w-full max-w-sm rounded-lg overflow-hidden shadow-lg bg-black/5">
                               {previews.foto_ktp ? (
                                 <>
                                   <img
@@ -598,16 +598,16 @@ const CustomerForm: React.FC<CustomerFormProps> = ({
                                       variant="destructive"
                                       size="icon"
                                       onClick={() => clearFile("foto_ktp")}
-                                      className="rounded-full"
+                                      className="h-8 w-8 rounded-full"
                                     >
-                                      <X className="h-4 w-4" />
+                                      <X className="h-3.5 w-3.5" />
                                     </Button>
                                   </div>
                                 </>
                               ) : (
                                 <label className="flex flex-col items-center justify-center w-full h-full cursor-pointer">
-                                  <LucideImage className="h-12 w-12 text-muted-foreground group-hover:text-primary transition-colors mb-3 opacity-50" />
-                                  <span className="text-[10px] font-black uppercase tracking-widest text-muted-foreground text-center px-4">
+                                  <LucideImage className="h-8 w-8 text-muted-foreground group-hover:text-primary transition-colors mb-2 opacity-50" />
+                                  <span className="text-[9px] font-bold uppercase tracking-wider text-muted-foreground text-center px-4">
                                     Ambil Foto KTP (Landscape)
                                   </span>
                                   <input
@@ -630,11 +630,11 @@ const CustomerForm: React.FC<CustomerFormProps> = ({
                     {/* Notes Field */}
                     <FormField label="Catatan Internal / Khusus" icon={Info}>
                       <Textarea
-                        placeholder="Contoh: Owner hanya ada di siang hari, toko buka jam 10..."
+                        placeholder="Catatan tambahan..."
                         value={formData.catatan_lain}
                         onChange={(e) => handleChange("catatan_lain", e.target.value)}
-                        rows={6}
-                        className="bg-muted/30 border-border/50 focus-visible:ring-primary shadow-sm resize-none text-sm font-medium"
+                        rows={4}
+                        className="bg-muted/30 border-border/50 focus-visible:ring-primary shadow-sm resize-none text-xs font-semibold"
                       />
                     </FormField>
                   </div>
@@ -645,29 +645,29 @@ const CustomerForm: React.FC<CustomerFormProps> = ({
         </div>
 
         {/* Form Actions Footer */}
-        <div className="px-8 py-6 bg-background border-t border-border flex items-center justify-end gap-4 shrink-0 shadow-[0_-10px_40px_rgba(0,0,0,0.03)] font-bold">
+        <div className="px-8 py-4 bg-background border-t border-border flex items-center justify-end gap-3 shrink-0 shadow-sm font-semibold">
           <Button
             type="button"
             variant="ghost"
             onClick={onCancel}
             disabled={loading}
-            className="h-14 px-10 text-xs font-black uppercase tracking-widest text-muted-foreground hover:text-foreground hover:bg-muted/50 transition-all rounded-2xl"
+            className="h-10 px-8 text-[10px] font-bold uppercase tracking-wider text-muted-foreground hover:text-foreground hover:bg-muted/50 transition-all rounded-lg"
           >
-            <X className="mr-2 h-4 w-4" /> Batal
+            <X className="mr-2 h-3.5 w-3.5" /> Batal
           </Button>
           <Button
             type="submit"
             disabled={loading}
-            className="h-14 px-14 text-xs font-black uppercase tracking-widest bg-primary hover:bg-primary/90 text-white shadow-2xl shadow-primary/30 transition-all hover:scale-[1.02] active:scale-[0.98] rounded-2xl"
+            className="h-10 px-10 text-[10px] font-bold uppercase tracking-wider bg-primary hover:bg-primary/90 text-white shadow-lg shadow-primary/20 transition-all hover:scale-[1.01] active:scale-[0.99] rounded-lg"
           >
             {loading ? (
-              <span className="flex items-center gap-3">
-                <div className="h-5 w-5 animate-spin rounded-full border-2 border-white border-t-transparent" />
+              <span className="flex items-center gap-2">
+                <div className="h-4 w-4 animate-spin rounded-full border-2 border-white border-t-transparent" />
                 Processing...
               </span>
             ) : (
-              <span className="flex items-center gap-3">
-                <Save className="h-5 w-5" /> {isEdit ? "Update Database" : "Simpan Pelanggan"}
+              <span className="flex items-center gap-2">
+                <Save className="h-4 w-4" /> {isEdit ? "Update Database" : "Simpan Pelanggan"}
               </span>
             )}
           </Button>
