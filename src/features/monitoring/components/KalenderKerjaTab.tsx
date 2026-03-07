@@ -141,6 +141,7 @@ const MonthCard: React.FC<MonthCardProps> = ({ tahun, bulan, kumpulanWeek, onSav
                 date={week.date}
                 onChange={(range) => handleChangeDate(week.id, range)}
                 className="w-full text-xs"
+                defaultMonth={new Date(tahun, bulan - 1, 1)}
               />
             </div>
           ))}

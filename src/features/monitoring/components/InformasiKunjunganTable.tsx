@@ -57,7 +57,7 @@ const InformasiKunjunganTable: React.FC<InformasiKunjunganTableProps> = ({
     },
     {
       key: "visited",
-      header: "VISITED",
+      header: "DIKUNJUNGI",
       className: "text-center",
       cell: (row) => (
         <span className="text-sm font-semibold">

@@ -18,12 +18,14 @@ interface DatePickerWithRangeProps {
   date: DateRange | undefined
   onChange: (date: DateRange | undefined) => void
   className?: string
+  defaultMonth?: Date
 }
 
 export function DatePickerWithRange({
   date,
   onChange,
   className,
+  defaultMonth,
 }: DatePickerWithRangeProps) {
   return (
     <div className={cn("grid gap-2", className)}>
@@ -56,7 +58,7 @@ export function DatePickerWithRange({
           <Calendar
             initialFocus
             mode="range"
-            defaultMonth={date?.from}
+            defaultMonth={defaultMonth || date?.from}
             selected={date}
             onSelect={onChange}
             numberOfMonths={2}
