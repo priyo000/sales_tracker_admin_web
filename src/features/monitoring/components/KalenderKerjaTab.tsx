@@ -127,11 +127,11 @@ const MonthCard: React.FC<MonthCardProps> = ({ tahun, bulan, kumpulanWeek, onSav
             <div key={week.id} className="flex flex-col gap-1 w-full bg-background border p-2 rounded-lg relative group">
               <div className="flex justify-between items-center mb-1">
                  <span className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">Minggu ke-{idx + 1}</span>
-                 {weeks.length > 1 && (
+                 {idx === weeks.length - 1 && (
                     <button
                         onClick={() => handleRemoveWeek(week.id)}
                         className="text-destructive/50 hover:text-destructive hover:bg-destructive/10 p-1 rounded-sm transition-colors"
-                        title="Hapus Minggu"
+                        title="Hapus Minggu Terakhir"
                     >
                         <Trash2 className="h-3.5 w-3.5" />
                     </button>
@@ -161,13 +161,16 @@ const MonthCard: React.FC<MonthCardProps> = ({ tahun, bulan, kumpulanWeek, onSav
           <Button 
             size="sm" 
             onClick={handleSave} 
-            disabled={isSaving || weeks.length === 0}
+            disabled={isSaving || (weeks.length === 0 && !isComplete)}
+            variant={weeks.length === 0 && isComplete ? "destructive" : "default"}
             className="flex-1 h-8 text-xs font-semibold"
           >
             {isSaving ? (
                 <>
                 <Loader2 className="h-3.5 w-3.5 mr-1.5 animate-spin" /> Saving
                 </>
+            ) : weeks.length === 0 && isComplete ? (
+                "Reset Bulan"
             ) : (
                 "Simpan"
             )}
