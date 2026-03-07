@@ -5,7 +5,6 @@ import {
     ShoppingCart, 
     Package, 
     Map as MapIcon, 
-    CheckCircle,
     Activity,
     DollarSign,
     ArrowUpRight,
@@ -51,6 +50,7 @@ interface RecentOrder {
 interface DashboardStats {
     total_pesanan: number;
     pesanan_bulan_ini: number;
+    orderan_pending_bulan_ini: number;
     total_omset: number;
     total_pelanggan: number;
     total_produk: number;
@@ -194,6 +194,23 @@ const Dashboard: React.FC = () => {
 
                 <Card className="bg-card hover:bg-muted/10 transition-colors">
                     <CardHeader className="flex flex-row items-center justify-between pb-2 space-y-0">
+                        <CardTitle className="text-sm font-medium text-muted-foreground">Orderan Pending Bulan Ini</CardTitle>
+                        <div className="p-2 bg-amber-100 rounded-lg">
+                            <Activity className="w-4 h-4 text-amber-600" />
+                        </div>
+                    </CardHeader>
+                    <CardContent>
+                        <div className="text-2xl font-bold mb-1 truncate" title={formatCurrency(stats.orderan_pending_bulan_ini)}>
+                            {formatCurrency(stats.orderan_pending_bulan_ini)}
+                        </div>
+                        <p className="text-xs text-muted-foreground truncate">
+                            Estimasi omset dari pesanan tertunda
+                        </p>
+                    </CardContent>
+                </Card>
+
+                <Card className="bg-card hover:bg-muted/10 transition-colors">
+                    <CardHeader className="flex flex-row items-center justify-between pb-2 space-y-0">
                         <CardTitle className="text-sm font-medium text-muted-foreground">Pesanan Bulan Ini</CardTitle>
                         <div className="p-2 bg-indigo-100 rounded-lg">
                             <ShoppingCart className="w-4 h-4 text-indigo-600" />
@@ -212,21 +229,6 @@ const Dashboard: React.FC = () => {
                                 Dibanding Bulan Lalu
                             </p>
                         </div>
-                    </CardContent>
-                </Card>
-
-                <Card className="bg-card hover:bg-muted/10 transition-colors">
-                    <CardHeader className="flex flex-row items-center justify-between pb-2 space-y-0">
-                        <CardTitle className="text-sm font-medium text-muted-foreground">Pelanggan Aktif</CardTitle>
-                        <div className="p-2 bg-pink-100 rounded-lg">
-                            <Users className="w-4 h-4 text-pink-600" />
-                        </div>
-                    </CardHeader>
-                    <CardContent>
-                        <div className="text-2xl font-bold mb-1">{stats.total_pelanggan}</div>
-                        <p className="text-xs text-muted-foreground">
-                            Toko / Customer terdaftar
-                        </p>
                     </CardContent>
                 </Card>
                 
@@ -375,11 +377,11 @@ const Dashboard: React.FC = () => {
                         <CardContent className="p-0">
                             <div className="grid grid-cols-1 sm:grid-cols-3 divide-y sm:divide-y-0 sm:divide-x border-t">
                                 <div className="flex flex-col items-center justify-center p-6 bg-muted/10 hover:bg-muted/30 transition-colors">
-                                    <div className="p-3 bg-teal-100/50 rounded-full mb-3">
-                                        <CheckCircle className="w-6 h-6 text-teal-600" />
+                                    <div className="p-3 bg-pink-100/50 rounded-full mb-3">
+                                        <Users className="w-6 h-6 text-pink-600" />
                                     </div>
-                                    <span className="text-2xl font-bold">{stats.total_pesanan}</span>
-                                    <span className="text-[10px] sm:text-xs text-muted-foreground uppercase tracking-widest mt-1 font-semibold text-center">Pesanan</span>
+                                    <span className="text-2xl font-bold">{stats.total_pelanggan}</span>
+                                    <span className="text-[10px] sm:text-xs text-muted-foreground uppercase tracking-widest mt-1 font-semibold text-center truncate w-full px-1">Pelanggan Aktif</span>
                                 </div>
                                 <div className="flex flex-col items-center justify-center p-6 bg-muted/10 hover:bg-muted/30 transition-colors">
                                     <div className="p-3 bg-indigo-100/50 rounded-full mb-3">
