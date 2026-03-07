@@ -30,8 +30,8 @@ const InformasiKunjunganPage: React.FC = () => {
 
   useEffect(() => {
     fetchData({
-      start_date: startDate,
-      end_date: endDate,
+      start_date: startDate || undefined,
+      end_date: endDate || undefined,
       page,
       per_page: perPage,
     });
