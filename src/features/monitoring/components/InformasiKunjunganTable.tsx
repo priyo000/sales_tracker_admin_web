@@ -90,9 +90,9 @@ const InformasiKunjunganTable: React.FC<InformasiKunjunganTableProps> = ({
       key: "total_penjualan",
       header: "TOTAL QTY PRODUK",
       sortable: true,
-      className: "text-right",
+      className: "text-center",
       cell: (row) => (
-        <span className="text-sm font-bold text-right block tabular-nums text-foreground/80">
+        <span className="text-sm font-bold text-center block tabular-nums text-foreground/80">
           {Number(row.total_penjualan || 0).toLocaleString("id-ID")}
         </span>
       ),
