@@ -32,7 +32,7 @@ export interface ColumnDef<T> {
   header: string;
   sortable?: boolean;
   filterable?: boolean;
-  cell?: (row: T) => React.ReactNode;
+  cell?: (row: T, index: number) => React.ReactNode;
   className?: string;
 }
 
@@ -294,7 +294,7 @@ export function DataTable<T>({
                       className={cn("py-3", col.className)}
                     >
                       {col.cell
-                        ? col.cell(row)
+                        ? col.cell(row, i)
                         : String(getValue(row, col.key as string) ?? "-")}
                     </TableCell>
                   ))}

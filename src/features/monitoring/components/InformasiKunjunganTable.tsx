@@ -32,8 +32,7 @@ const InformasiKunjunganTable: React.FC<InformasiKunjunganTableProps> = ({
     {
       key: "no",
       header: "NO",
-      cell: (row) => {
-        const index = data.indexOf(row);
+      cell: (_row, index) => {
         return (
           <span className="text-sm font-medium text-muted-foreground w-6 text-center inline-block">
             {(page - 1) * perPage + index + 1}
@@ -50,7 +49,6 @@ const InformasiKunjunganTable: React.FC<InformasiKunjunganTableProps> = ({
     {
       key: "nama",
       header: "NAMA",
-      sortable: true,
       cell: (row) => (
         <span className="text-sm font-semibold text-primary">
           {row.nama !== "-" ? row.nama.toUpperCase() : row.nama}
@@ -60,10 +58,9 @@ const InformasiKunjunganTable: React.FC<InformasiKunjunganTableProps> = ({
     {
       key: "visited",
       header: "VISITED",
-      sortable: true,
       className: "text-center",
       cell: (row) => (
-        <span className="text-sm font-bold text-indigo-600 bg-indigo-50 px-2 py-0.5 rounded-md">
+        <span className="text-sm font-semibold">
           {row.visited}
         </span>
       ),
@@ -71,7 +68,6 @@ const InformasiKunjunganTable: React.FC<InformasiKunjunganTableProps> = ({
     {
       key: "waktu_mulai",
       header: "WAKTU MULAI",
-      sortable: true,
       className: "text-center",
       cell: (row) => (
         <span className="text-sm text-muted-foreground">{row.waktu_mulai}</span>
@@ -80,7 +76,6 @@ const InformasiKunjunganTable: React.FC<InformasiKunjunganTableProps> = ({
     {
       key: "waktu_akhir",
       header: "WAKTU AKHIR",
-      sortable: true,
       className: "text-center",
       cell: (row) => (
         <span className="text-sm text-muted-foreground">{row.waktu_akhir}</span>
@@ -89,10 +84,9 @@ const InformasiKunjunganTable: React.FC<InformasiKunjunganTableProps> = ({
     {
       key: "total_penjualan",
       header: "TOTAL QTY PRODUK",
-      sortable: true,
       className: "text-center",
       cell: (row) => (
-        <span className="text-sm font-bold text-center block tabular-nums text-foreground/80">
+        <span className="text-sm font-bold text-primary bg-primary/5 px-4 py-0.5 rounded-md">
           {Number(row.total_penjualan || 0).toLocaleString("id-ID")}
         </span>
       ),
