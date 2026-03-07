@@ -98,7 +98,7 @@ const InformasiKunjunganPage: React.FC = () => {
       header: "NAMA",
       sortable: true,
       cell: (row) => (
-        <span className="text-sm font-semibold tracking-tight text-red-500/90 drop-shadow-sm">{row.nama !== '-' ? row.nama.toUpperCase() : row.nama}</span>
+        <span className="text-sm font-semibold text-primary">{row.nama !== '-' ? row.nama.toUpperCase() : row.nama}</span>
       ),
     },
     {
