@@ -12,6 +12,7 @@ interface MonthCardProps {
   tahun: number;
   bulan: number;
   kumpulanWeek: KalenderKerja[];
+  allData: KalenderKerja[];
   onSave: (tahun: number, bulan: number, weeks: KalenderKerjaWeek[]) => void;
   isSaving: boolean;
 }
@@ -21,7 +22,7 @@ const NAMA_BULAN = [
   "Juli", "Agustus", "September", "Oktober", "November", "Desember",
 ];
 
-const MonthCard: React.FC<MonthCardProps> = ({ tahun, bulan, kumpulanWeek, onSave, isSaving }) => {
+const MonthCard: React.FC<MonthCardProps> = ({ tahun, bulan, kumpulanWeek, allData, onSave, isSaving }) => {
   // Translate initial API text to DateRange structures for the UI
   const initialWeeks = useMemo(() => {
     return kumpulanWeek.map((kw, index) => {
@@ -123,28 +124,44 @@ const MonthCard: React.FC<MonthCardProps> = ({ tahun, bulan, kumpulanWeek, onSav
       
       <CardContent className="flex flex-col flex-1 pt-4 pb-4">
         <div className="flex-1 space-y-3">
-          {weeks.map((week, idx) => (
-            <div key={week.id} className="flex flex-col gap-1 w-full bg-background border p-2 rounded-lg relative group">
-              <div className="flex justify-between items-center mb-1">
-                 <span className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">Minggu ke-{idx + 1}</span>
-                 {idx === weeks.length - 1 && (
-                    <button
-                        onClick={() => handleRemoveWeek(week.id)}
-                        className="text-destructive/50 hover:text-destructive hover:bg-destructive/10 p-1 rounded-sm transition-colors"
-                        title="Hapus Minggu Terakhir"
-                    >
-                        <Trash2 className="h-3.5 w-3.5" />
-                    </button>
-                 )}
+          {weeks.map((week, idx) => {
+            const globalOtherDates = allData
+              .filter((kw) => kw.bulan !== bulan && kw.tanggal_mulai && kw.tanggal_akhir)
+              .map((kw) => ({
+                from: parseISO(kw.tanggal_mulai),
+                to: parseISO(kw.tanggal_akhir),
+              }));
+
+            const localOtherDates = weeks
+              .filter((w) => w.id !== week.id && w.date?.from && w.date?.to)
+              .map((w) => ({ from: w.date!.from!, to: w.date!.to! }));
+
+            const alreadySelectedDates = [...globalOtherDates, ...localOtherDates];
+
+            return (
+              <div key={week.id} className="flex flex-col gap-1 w-full bg-background border p-2 rounded-lg relative group">
+                <div className="flex justify-between items-center mb-1">
+                   <span className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">Minggu ke-{idx + 1}</span>
+                   {idx === weeks.length - 1 && (
+                      <button
+                          onClick={() => handleRemoveWeek(week.id)}
+                          className="text-destructive/50 hover:text-destructive hover:bg-destructive/10 p-1 rounded-sm transition-colors"
+                          title="Hapus Minggu Terakhir"
+                      >
+                          <Trash2 className="h-3.5 w-3.5" />
+                      </button>
+                   )}
+                </div>
+                <DatePickerWithRange
+                  date={week.date}
+                  onChange={(range) => handleChangeDate(week.id, range)}
+                  className="w-full text-xs"
+                  defaultMonth={new Date(tahun, bulan - 1, 1)}
+                  alreadySelected={alreadySelectedDates}
+                />
               </div>
-              <DatePickerWithRange
-                date={week.date}
-                onChange={(range) => handleChangeDate(week.id, range)}
-                className="w-full text-xs"
-                defaultMonth={new Date(tahun, bulan - 1, 1)}
-              />
-            </div>
-          ))}
+            );
+          })}
         </div>
 
         <div className="flex items-center justify-between gap-2 mt-5 pt-4 border-t">
@@ -248,6 +265,7 @@ export const KalenderKerjaTab: React.FC = () => {
                 tahun={tahun}
                 bulan={d.bulan}
                 kumpulanWeek={d.weeks}
+                allData={data}
                 onSave={saveMonth}
                 isSaving={saving === d.bulan}
             />

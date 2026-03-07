@@ -14,9 +14,12 @@ import {
   PopoverTrigger,
 } from "@/components/ui/popover"
 
+import { Matcher } from "react-day-picker"
+
 interface DatePickerWithRangeProps {
   date: DateRange | undefined
   onChange: (date: DateRange | undefined) => void
+  alreadySelected?: Matcher | Matcher[]
   className?: string
   defaultMonth?: Date
 }
@@ -24,6 +27,7 @@ interface DatePickerWithRangeProps {
 export function DatePickerWithRange({
   date,
   onChange,
+  alreadySelected,
   className,
   defaultMonth,
 }: DatePickerWithRangeProps) {
@@ -61,6 +65,8 @@ export function DatePickerWithRange({
             defaultMonth={defaultMonth || date?.from}
             selected={date}
             onSelect={onChange}
+            modifiers={{ booked: alreadySelected || [] }}
+            modifiersClassNames={{ booked: "bg-orange-100/50 text-orange-700/80 font-semibold ring-1 ring-inset ring-orange-200/50 underline decoration-orange-300 underline-offset-2" }}
             numberOfMonths={2}
             locale={id}
           />
