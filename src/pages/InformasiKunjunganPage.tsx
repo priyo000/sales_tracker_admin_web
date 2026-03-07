@@ -11,6 +11,8 @@ import InformasiKunjunganTable from "../features/monitoring/components/Informasi
 
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { KalenderKerjaTab } from "../features/monitoring/components/KalenderKerjaTab";
+import { ExportReportModal } from "../features/monitoring/components/ExportReportModal";
+import { FileDown } from "lucide-react";
 
 const InformasiKunjunganPage: React.FC = () => {
   const { data, loading, pagination, fetchData } = useInformasiKunjungan();
@@ -20,6 +22,7 @@ const InformasiKunjunganPage: React.FC = () => {
   });
   const [page, setPage] = useState(1);
   const [perPage, setPerPage] = useState(20);
+  const [isExportModalOpen, setIsExportModalOpen] = useState(false);
 
   const startDate = useMemo(
     () => (dateRange?.from ? formatFile(dateRange.from, "yyyy-MM-dd") : ""),
@@ -101,6 +104,18 @@ const InformasiKunjunganPage: React.FC = () => {
                     Reset Filter
                   </Button>
                 )}
+
+                <div className="h-6 w-px bg-border/60 mx-1 hidden sm:block" />
+
+                <Button
+                  variant="outline"
+                  size="sm"
+                  className="h-9 gap-2 text-xs font-semibold border-primary/20 text-primary hover:bg-primary/5 hover:text-primary transition-all shadow-sm"
+                  onClick={() => setIsExportModalOpen(true)}
+                >
+                  <FileDown className="h-4 w-4" />
+                  Export Laporan
+                </Button>
               </div>
             }
           />
@@ -110,6 +125,11 @@ const InformasiKunjunganPage: React.FC = () => {
           <KalenderKerjaTab />
         </TabsContent>
       </Tabs>
+
+      <ExportReportModal 
+        isOpen={isExportModalOpen} 
+        onClose={() => setIsExportModalOpen(false)} 
+      />
     </div>
   );
 };
