@@ -20,12 +20,12 @@ const InformasiKunjunganPage: React.FC = () => {
 
   const startDate = useMemo(
     () => (dateRange?.from ? formatFile(dateRange.from, "yyyy-MM-dd") : ""),
-    [dateRange?.from]
+    [dateRange]
   );
 
   const endDate = useMemo(
     () => (dateRange?.to ? formatFile(dateRange.to, "yyyy-MM-dd") : ""),
-    [dateRange?.to]
+    [dateRange]
   );
 
   useEffect(() => {
