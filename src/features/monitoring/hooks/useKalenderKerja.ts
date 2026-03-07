@@ -26,7 +26,7 @@ export function useKalenderKerja() {
   const fetchKalender = useCallback(async (tahun: number) => {
     setLoading(true);
     try {
-      const response = await api.get("/monitoring/kalender-kerja", {
+      const response = await api.get("/kalender-kerja", {
         params: { tahun },
       });
       if (response.data.status === "success") {
@@ -46,7 +46,7 @@ export function useKalenderKerja() {
     async (tahun: number, bulan: number, weeks: KalenderKerjaWeek[]) => {
       setSaving(bulan);
       try {
-        const response = await api.post("/monitoring/kalender-kerja", {
+        const response = await api.post("/kalender-kerja", {
           tahun,
           bulan,
           weeks,
