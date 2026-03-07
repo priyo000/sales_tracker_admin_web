@@ -23,6 +23,7 @@ import DivisiPage from "./pages/DivisiPage";
 import PerusahaanPage from "./pages/PerusahaanPage";
 import UserPage from "./pages/UserPage";
 import NotifikasiPage from "./pages/NotifikasiPage";
+import InformasiKunjunganPage from "./pages/InformasiKunjunganPage";
 
 /** Guard: harus login */
 const ProtectedRoute = ({ children }: { children: React.ReactNode }) => {
@@ -96,6 +97,7 @@ function App() {
                       <Route path="/pelanggan" element={<PelangganPage />} />
                       <Route path="/produk" element={<ProdukPage />} />
                       <Route path="/pesanan" element={<PesananPage />} />
+                      <Route path="/informasi-kunjungan" element={<InformasiKunjunganPage />} />
                       <Route path="/karyawan" element={<KaryawanPage />} />
                       <Route path="/divisi" element={<DivisiPage />} />
                       <Route path="/users" element={<UserPage />} />

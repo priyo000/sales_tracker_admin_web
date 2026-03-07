@@ -58,6 +58,7 @@ const Sidebar = () => {
       items: [
         { icon: Calendar, label: "Jadwal Sales", to: "/jadwal" },
         { icon: MapPin, label: "Monitoring Kunjungan", to: "/kunjungan" },
+        { icon: FileText, label: "Informasi Kunjungan", to: "/informasi-kunjungan" },
         { icon: Map, label: "Rute", to: "/rute" },
       ],
     },
