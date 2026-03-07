@@ -30,7 +30,7 @@ interface ExportReportModalProps {
 
 const JENIS_LAPORAN = [
   { id: "kunjungan-harian", name: "Kunjungan Harian", enabled: true },
-  { id: "laporan-kinerja", name: "Laporan Kinerja", enabled: false },
+  { id: "laporan-kinerja", name: "Laporan Kinerja Sales", enabled: true },
 ];
 
 const PERIODE_TYPE = [
@@ -67,10 +67,15 @@ export const ExportReportModal: React.FC<ExportReportModalProps> = ({
   const years = Array.from({ length: 5 }, (_, i) => String(new Date().getFullYear() - 2 + i));
 
   const handleExport = async () => {
-    if (jenisLaporan !== "kunjungan-harian") {
-      toast.error("Jenis laporan ini belum tersedia.");
-      return;
-    }
+    // Validation moved into shared block if needed per logic
+    const isPerformance = jenisLaporan === "laporan-kinerja";
+    const endpoint = isPerformance 
+      ? "/reports/export-laporan-kinerja" 
+      : "/reports/export-kunjungan-harian";
+    
+    const defaultFileName = isPerformance 
+      ? "Laporan_Kinerja_Sales.xlsx" 
+      : "Laporan_Kunjungan_Harian.xlsx";
 
     const params: Record<string, string> = { type: periodeType };
 
@@ -88,7 +93,7 @@ export const ExportReportModal: React.FC<ExportReportModalProps> = ({
 
     setLoading(true);
     try {
-      const response = await api.get("/reports/export-kunjungan-harian", {
+      const response = await api.get(endpoint, {
         params,
         responseType: "blob",
       });
@@ -99,7 +104,7 @@ export const ExportReportModal: React.FC<ExportReportModalProps> = ({
       link.href = url;
       
       const contentDisposition = response.headers["content-disposition"];
-      let fileName = "Laporan_Kunjungan_Harian.xlsx";
+      let fileName = defaultFileName;
       if (contentDisposition) {
         const fileNameMatch = contentDisposition.match(/filename="(.+)"/);
         if (fileNameMatch && fileNameMatch.length > 1) {
