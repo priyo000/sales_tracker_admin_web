@@ -23,8 +23,8 @@ export function useKalenderKerja() {
   const [loading, setLoading] = useState(false);
   const [saving, setSaving] = useState<number | null>(null);
 
-  const fetchKalender = useCallback(async (tahun: number) => {
-    setLoading(true);
+  const fetchKalender = useCallback(async (tahun: number, silent = false) => {
+    if (!silent) setLoading(true);
     try {
       const response = await api.get("/kalender-kerja", {
         params: { tahun },
@@ -38,7 +38,7 @@ export function useKalenderKerja() {
         err.response?.data?.message || "Gagal memuat data kalender kerja"
       );
     } finally {
-      setLoading(false);
+      if (!silent) setLoading(false);
     }
   }, []);
 
@@ -53,8 +53,8 @@ export function useKalenderKerja() {
         });
         if (response.data.status === "success") {
           toast.success(`Kalender bulan ${bulan} berhasil disimpan`);
-          // optionally refetch or update local state
-          fetchKalender(tahun);
+          // optionally refetch or update local state silently
+          fetchKalender(tahun, true);
         }
       } catch (error: unknown) {
         const err = error as { response?: { data?: { message?: string } } };
