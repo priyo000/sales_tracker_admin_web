@@ -9,13 +9,14 @@ import { Button } from "@/components/ui/button";
 import { useInformasiKunjungan } from "../features/monitoring/hooks/useInformasiKunjungan";
 import InformasiKunjunganTable from "../features/monitoring/components/InformasiKunjunganTable";
 
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { KalenderKerjaTab } from "../features/monitoring/components/KalenderKerjaTab";
 import { ExportReportModal } from "../features/monitoring/components/ExportReportModal";
 import { FileDown } from "lucide-react";
 
 const InformasiKunjunganPage: React.FC = () => {
   const { data, loading, pagination, fetchData } = useInformasiKunjungan();
+  const [activeTab, setActiveTab] = useState("rekap");
   const [dateRange, setDateRange] = useState<DateRange | undefined>({
     from: undefined,
     to: undefined,
@@ -61,13 +62,14 @@ const InformasiKunjunganPage: React.FC = () => {
         </div>
       </div>
 
-      <Tabs defaultValue="rekap" className="w-full">
+      <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
         <TabsList className="grid w-full grid-cols-2 max-w-[400px] mb-6">
           <TabsTrigger value="rekap">Rekap Kunjungan</TabsTrigger>
           <TabsTrigger value="kalender">Kalender Kerja</TabsTrigger>
         </TabsList>
 
-        <TabsContent value="rekap" className="space-y-6 animate-in fade-in slide-in-from-bottom-2 duration-500">
+        {/* Tab Rekap Kunjungan */}
+        <div className={activeTab === "rekap" ? "block animate-in fade-in slide-in-from-bottom-2 duration-500" : "hidden"}>
           <InformasiKunjunganTable
             data={data}
             loading={loading}
@@ -119,11 +121,12 @@ const InformasiKunjunganPage: React.FC = () => {
               </div>
             }
           />
-        </TabsContent>
+        </div>
 
-        <TabsContent value="kalender" className="space-y-6">
+        {/* Tab Kalender Kerja - Keep Alive Pattern */}
+        <div className={activeTab === "kalender" ? "block" : "hidden"}>
           <KalenderKerjaTab />
-        </TabsContent>
+        </div>
       </Tabs>
 
       <ExportReportModal 
