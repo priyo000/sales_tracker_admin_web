@@ -30,6 +30,7 @@ interface ExportReportModalProps {
 
 const JENIS_LAPORAN = [
   { id: "kunjungan-harian", name: "Kunjungan Harian", enabled: true },
+  { id: "kunjungan-pelanggan", name: "Kunjungan Pelanggan", enabled: true },
   { id: "laporan-kinerja", name: "Laporan Kinerja Sales", enabled: true },
 ];
 
@@ -69,13 +70,18 @@ export const ExportReportModal: React.FC<ExportReportModalProps> = ({
   const handleExport = async () => {
     // Validation moved into shared block if needed per logic
     const isPerformance = jenisLaporan === "laporan-kinerja";
-    const endpoint = isPerformance 
-      ? "/reports/export-laporan-kinerja" 
-      : "/reports/export-kunjungan-harian";
+    const isCustomerVisit = jenisLaporan === "kunjungan-pelanggan";
     
-    const defaultFileName = isPerformance 
-      ? "Laporan_Kinerja_Sales.xlsx" 
-      : "Laporan_Kunjungan_Harian.xlsx";
+    let endpoint = "/reports/export-kunjungan-harian";
+    let defaultFileName = "Laporan_Kunjungan_Harian.xlsx";
+
+    if (isPerformance) {
+      endpoint = "/reports/export-laporan-kinerja";
+      defaultFileName = "Laporan_Kinerja_Sales.xlsx";
+    } else if (isCustomerVisit) {
+      endpoint = "/reports/export-kunjungan-pelanggan";
+      defaultFileName = "Laporan_Kunjungan_Pelanggan.xlsx";
+    }
 
     const params: Record<string, string> = { type: periodeType };
 
