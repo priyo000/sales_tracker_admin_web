@@ -2,7 +2,9 @@ import React, { useState, useEffect } from 'react';
 import { MapContainer, TileLayer, Marker, useMap, useMapEvents } from 'react-leaflet';
 import L from 'leaflet';
 import 'leaflet/dist/leaflet.css';
-import { Search, MapPin } from 'lucide-react';
+import { Search, MapPin, Loader2 } from 'lucide-react';
+import { Input } from "@/components/ui/input";
+import { Button } from "@/components/ui/button";
 
 // Fix for default marker icon in Leaflet + Vite
 import icon from 'leaflet/dist/images/marker-icon.png';
@@ -24,7 +26,7 @@ interface MapPickerProps {
     height?: string;
 }
 
-const LocationMarker = ({ lat, lng, onChange }: MapPickerProps) => {
+const LocationMarker = ({ lat, lng, onChange }: { lat: number, lng: number, onChange: any }) => {
     const map = useMap();
     
     useMapEvents({
@@ -95,31 +97,36 @@ const MapPicker: React.FC<MapPickerProps> = ({ lat, lng, onChange, hideSearch = 
         <div className={hideSearch ? "h-full w-full" : "space-y-3"}>
             {!hideSearch && (
                 <div className="flex space-x-2">
-                    <div className="relative flex-1">
-                        <div className="absolute inset-y-0 left-0 flex items-center pl-3 pointer-events-none">
-                            <Search className="h-4 w-4 text-gray-400" />
+                    <div className="relative flex-1 group">
+                        <div className="absolute inset-y-0 left-0 flex items-center pl-3 pointer-events-none z-10">
+                            <Search className="h-4 w-4 text-muted-foreground group-focus-within:text-primary transition-colors" />
                         </div>
-                        <input
+                        <Input
                             type="text"
-                            className="block w-full rounded-lg border border-gray-300 bg-white py-2 pl-10 pr-3 text-sm placeholder-gray-400 focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500"
-                            placeholder="Cari lokasi atau alamat..."
+                            className="pl-10 h-10 bg-white border-border/50 text-sm font-semibold focus-visible:ring-primary shadow-sm"
+                            placeholder="Cari lokasi (contoh: Purwokerto)..."
                             value={searchQuery}
                             onChange={(e) => setSearchQuery(e.target.value)}
                             onKeyDown={(e) => e.key === 'Enter' && (e.preventDefault(), handleSearch())}
                         />
+                        {isSearching && (
+                            <div className="absolute inset-y-0 right-3 flex items-center">
+                                <Loader2 className="h-3.5 w-3.5 animate-spin text-primary" />
+                            </div>
+                        )}
                     </div>
-                    <button
+                    <Button
                         type="button"
                         onClick={handleSearch}
                         disabled={isSearching}
-                        className="inline-flex items-center rounded-lg bg-indigo-600 px-3 py-2 text-sm font-semibold text-white shadow-sm hover:bg-indigo-500 focus-visible:outline-2 focus-visible:outline-indigo-600 disabled:opacity-50"
+                        className="h-10 px-6 bg-primary hover:bg-primary/90 text-white font-bold text-[10px] uppercase tracking-wider rounded-lg shadow-md shadow-primary/20"
                     >
-                        {isSearching ? '...' : 'Cari'}
-                    </button>
+                        {isSearching ? '...' : 'Cari Lokasi'}
+                    </Button>
                 </div>
             )}
 
-            <div className={`${height} w-full rounded-lg overflow-hidden border border-gray-200 z-0 relative`}>
+            <div className={`${height} w-full rounded-xl overflow-hidden border-2 border-border/50 z-0 relative shadow-inner`}>
                 <MapContainer
                     center={[lat, lng]}
                     zoom={13}
@@ -139,13 +146,21 @@ const MapPicker: React.FC<MapPickerProps> = ({ lat, lng, onChange, hideSearch = 
                     <Updater lat={lat} lng={lng} />
                 </MapContainer>
                 {!hideSearch && (
-                    <div className="absolute bottom-2 left-2 z-1000 bg-white/90 px-2 py-1 rounded text-[10px] font-mono shadow-sm border border-gray-200">
-                        <MapPin className="h-3 w-3 inline mr-1 text-red-500" />
-                        {lat.toFixed(6)}, {lng.toFixed(6)}
+                    <div className="absolute bottom-3 left-3 z-[1000] bg-white/95 backdrop-blur-sm px-3 py-1.5 rounded-lg text-[9px] font-black uppercase tracking-widest shadow-xl border border-border/50 flex items-center gap-2">
+                        <div className="h-2 w-2 rounded-full bg-red-500 animate-pulse" />
+                        <span className="text-muted-foreground">Koordinat:</span>
+                        <span className="text-primary font-mono">{lat.toFixed(6)}, {lng.toFixed(6)}</span>
                     </div>
                 )}
             </div>
-            {!hideSearch && <p className="text-[10px] text-gray-400 italic">*Klik pada peta untuk mengubah koordinat secara presisi.</p>}
+            {!hideSearch && (
+                <div className="flex items-center gap-2 px-1">
+                    <MapPin className="h-3 w-3 text-primary/60" />
+                    <p className="text-[9px] text-muted-foreground font-semibold uppercase tracking-tight italic">
+                        *Klik di peta untuk memindah pin secara presisi
+                    </p>
+                </div>
+            )}
         </div>
     );
 };
