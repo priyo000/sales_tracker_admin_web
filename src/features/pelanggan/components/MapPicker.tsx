@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { MapContainer, TileLayer, Marker, useMap, useMapEvents } from 'react-leaflet';
 import L from 'leaflet';
 import 'leaflet/dist/leaflet.css';
-import { Search, Loader2 } from 'lucide-react';
+import { Search, Loader2, AlertCircle } from 'lucide-react';
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 
@@ -63,13 +63,15 @@ const LocationMarker = ({ lat, lng, onChange }: {
 const MapPicker: React.FC<MapPickerProps> = ({ lat, lng, onChange, hideSearch = false, height = "h-full" }) => {
     const [searchQuery, setSearchQuery] = useState('');
     const [isSearching, setIsSearching] = useState(false);
+    const [noResults, setNoResults] = useState(false);
 
     const handleSearch = async () => {
         if (!searchQuery) return;
         setIsSearching(true);
+        setNoResults(false);
         try {
             const response = await fetch(
-                `https://nominatim.openstreetmap.org/search?format=json&q=${encodeURIComponent(searchQuery)}&addressdetails=1`
+                `https://nominatim.openstreetmap.org/search?format=json&q=${encodeURIComponent(searchQuery)}&addressdetails=1&countrycodes=id`
             );
             const data = await response.json();
             if (data && data.length > 0) {
@@ -83,6 +85,9 @@ const MapPicker: React.FC<MapPickerProps> = ({ lat, lng, onChange, hideSearch = 
                 const state = address.state || "";
                 
                 onChange(newLat, newLon, result.display_name, city, district, state);
+            } else {
+                setNoResults(true);
+                setTimeout(() => setNoResults(false), 3000);
             }
         } catch (error) {
             console.error('Search error:', error);
@@ -119,32 +124,39 @@ const MapPicker: React.FC<MapPickerProps> = ({ lat, lng, onChange, hideSearch = 
             {!hideSearch && (
                 <>
                     {/* Floating Search Bar - Now Moved to Bottom */}
-                    <div className="absolute bottom-4 left-4 right-4 z-1000 flex gap-2">
-                        <div className="relative flex-1 group shadow-2xl">
-                            <div className="absolute inset-y-0 left-0 flex items-center pl-3 pointer-events-none z-10">
-                                {isSearching ? (
-                                    <Loader2 className="h-4 w-4 animate-spin text-primary" />
-                                ) : (
-                                    <Search className="h-4 w-4 text-muted-foreground group-focus-within:text-primary transition-colors" />
-                                )}
+                    <div className="absolute bottom-4 left-4 right-4 z-1000 space-y-2">
+                        {noResults && (
+                            <div className="flex items-center gap-2 bg-amber-50 text-amber-700 px-3 py-1.5 rounded-lg border border-amber-200 shadow-xl animate-in fade-in slide-in-from-bottom-2 duration-300 text-[10px] font-bold uppercase tracking-wider mx-auto w-fit">
+                                <AlertCircle className="h-3.5 w-3.5" /> Lokasi Tidak Ditemukan di Indonesia
                             </div>
-                            <Input
-                                type="text"
-                                className="pl-10 h-11 bg-white/95 backdrop-blur-sm border-none text-sm font-semibold focus-visible:ring-2 focus-visible:ring-primary shadow-xl rounded-xl"
-                                placeholder="Cari nama lokasi atau alamat toko..."
-                                value={searchQuery}
-                                onChange={(e) => setSearchQuery(e.target.value)}
-                                onKeyDown={(e) => e.key === 'Enter' && (e.preventDefault(), handleSearch())}
-                            />
+                        )}
+                        <div className="flex gap-2">
+                            <div className="relative flex-1 group shadow-2xl">
+                                <div className="absolute inset-y-0 left-0 flex items-center pl-3 pointer-events-none z-10">
+                                    {isSearching ? (
+                                        <Loader2 className="h-4 w-4 animate-spin text-primary" />
+                                    ) : (
+                                        <Search className="h-4 w-4 text-muted-foreground group-focus-within:text-primary transition-colors" />
+                                    )}
+                                </div>
+                                <Input
+                                    type="text"
+                                    className="pl-10 h-9 bg-card/95 backdrop-blur-md border-none text-sm font-semibold focus-visible:ring-2 focus-visible:ring-primary shadow-xl rounded-lg dark:bg-slate-900/95 dark:text-slate-100"
+                                    placeholder="Cari nama lokasi atau alamat toko..."
+                                    value={searchQuery}
+                                    onChange={(e) => setSearchQuery(e.target.value)}
+                                    onKeyDown={(e) => e.key === 'Enter' && (e.preventDefault(), handleSearch())}
+                                />
+                            </div>
+                            <Button
+                                type="button"
+                                onClick={handleSearch}
+                                disabled={isSearching}
+                                className="h-9 px-4 bg-primary hover:bg-primary/90 text-white font-black text-[9px] uppercase tracking-widest rounded-lg shadow-xl transition-all hover:scale-[1.02] active:scale-[0.98]"
+                            >
+                                Cari
+                            </Button>
                         </div>
-                        <Button
-                            type="button"
-                            onClick={handleSearch}
-                            disabled={isSearching}
-                            className="h-11 px-5 bg-primary hover:bg-primary/90 text-white font-black text-[10px] uppercase tracking-widest rounded-xl shadow-xl transition-all hover:scale-[1.02] active:scale-[0.98]"
-                        >
-                             Cari
-                        </Button>
                     </div>
                 </>
             )}
