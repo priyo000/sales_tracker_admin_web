@@ -12,7 +12,6 @@ interface ExportCustomerModalProps {
 }
 
 const STATUS_OPTIONS = [
-  { id: "prospect", label: "Prospect" },
   { id: "pending", label: "Pending" },
   { id: "active", label: "Active" },
   { id: "rejected", label: "Rejected" },

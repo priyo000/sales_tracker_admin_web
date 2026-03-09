@@ -198,7 +198,6 @@ const PelangganPage: React.FC = () => {
                   <SelectItem value="active">Active</SelectItem>
                   <SelectItem value="nonactive">Non-Active</SelectItem>
                   <SelectItem value="rejected">Rejected</SelectItem>
-                  <SelectItem value="prospect">Prospect</SelectItem>
                 </SelectContent>
               </Select>
             </div>
