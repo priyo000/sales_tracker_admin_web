@@ -381,7 +381,7 @@ const Dashboard: React.FC = () => {
                                         <Users className="w-6 h-6 text-pink-600" />
                                     </div>
                                     <span className="text-2xl font-bold">{stats.total_pelanggan}</span>
-                                    <span className="text-[10px] sm:text-xs text-muted-foreground uppercase tracking-widest mt-1 font-semibold text-center truncate w-full px-1">Pelanggan Aktif</span>
+                                    <span className="text-[10px] sm:text-xs text-muted-foreground uppercase tracking-widest mt-1 font-semibold text-center truncate w-full px-1">Pelanggan</span>
                                 </div>
                                 <div className="flex flex-col items-center justify-center p-6 bg-muted/10 hover:bg-muted/30 transition-colors">
                                     <div className="p-3 bg-indigo-100/50 rounded-full mb-3">
