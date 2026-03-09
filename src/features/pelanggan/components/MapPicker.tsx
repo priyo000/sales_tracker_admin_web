@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { MapContainer, TileLayer, Marker, useMap, useMapEvents } from 'react-leaflet';
 import L from 'leaflet';
 import 'leaflet/dist/leaflet.css';
-import { Search, MapPin, Loader2 } from 'lucide-react';
+import { Search, Loader2 } from 'lucide-react';
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 
@@ -26,18 +26,19 @@ interface MapPickerProps {
     height?: string;
 }
 
-const LocationMarker = ({ lat, lng, onChange }: { lat: number, lng: number, onChange: any }) => {
+const LocationMarker = ({ lat, lng, onChange }: { 
+    lat: number, 
+    lng: number, 
+    onChange: (lat: number, lng: number, address?: string, city?: string, district?: string, state?: string) => void 
+}) => {
     const map = useMap();
     
     useMapEvents({
         async click(e) {
             const newLat = e.latlng.lat;
             const newLng = e.latlng.lng;
-            
-            // Set coordinate immediately
             onChange(newLat, newLng);
             
-            // Try to get address detail (Reverse Geocoding)
             try {
                 const response = await fetch(
                     `https://nominatim.openstreetmap.org/reverse?format=json&lat=${newLat}&lon=${newLng}&addressdetails=1`
@@ -52,17 +53,14 @@ const LocationMarker = ({ lat, lng, onChange }: { lat: number, lng: number, onCh
             } catch (err) {
                 console.error("Reverse Geocoding failed:", err);
             }
-            
             map.flyTo(e.latlng, map.getZoom());
         },
     });
 
-    return (
-        <Marker position={[lat, lng]} />
-    );
+    return <Marker position={[lat, lng]} />;
 };
 
-const MapPicker: React.FC<MapPickerProps> = ({ lat, lng, onChange, hideSearch = false, height = "h-64" }) => {
+const MapPicker: React.FC<MapPickerProps> = ({ lat, lng, onChange, hideSearch = false, height = "h-full" }) => {
     const [searchQuery, setSearchQuery] = useState('');
     const [isSearching, setIsSearching] = useState(false);
 
@@ -94,39 +92,9 @@ const MapPicker: React.FC<MapPickerProps> = ({ lat, lng, onChange, hideSearch = 
     };
 
     return (
-        <div className={hideSearch ? "h-full w-full" : "space-y-3"}>
-            {!hideSearch && (
-                <div className="flex space-x-2">
-                    <div className="relative flex-1 group">
-                        <div className="absolute inset-y-0 left-0 flex items-center pl-3 pointer-events-none z-10">
-                            <Search className="h-4 w-4 text-muted-foreground group-focus-within:text-primary transition-colors" />
-                        </div>
-                        <Input
-                            type="text"
-                            className="pl-10 h-10 bg-white border-border/50 text-sm font-semibold focus-visible:ring-primary shadow-sm"
-                            placeholder="Cari lokasi (contoh: Purwokerto)..."
-                            value={searchQuery}
-                            onChange={(e) => setSearchQuery(e.target.value)}
-                            onKeyDown={(e) => e.key === 'Enter' && (e.preventDefault(), handleSearch())}
-                        />
-                        {isSearching && (
-                            <div className="absolute inset-y-0 right-3 flex items-center">
-                                <Loader2 className="h-3.5 w-3.5 animate-spin text-primary" />
-                            </div>
-                        )}
-                    </div>
-                    <Button
-                        type="button"
-                        onClick={handleSearch}
-                        disabled={isSearching}
-                        className="h-10 px-6 bg-primary hover:bg-primary/90 text-white font-bold text-[10px] uppercase tracking-wider rounded-lg shadow-md shadow-primary/20"
-                    >
-                        {isSearching ? '...' : 'Cari Lokasi'}
-                    </Button>
-                </div>
-            )}
-
-            <div className={`${height} w-full rounded-xl overflow-hidden border-2 border-border/50 z-0 relative shadow-inner`}>
+        <div className={`relative w-full overflow-hidden ${height} min-h-[300px] rounded-xl border-2 border-border/50 shadow-inner group font-sans`}>
+            {/* Map Container */}
+            <div className="absolute inset-0 z-0">
                 <MapContainer
                     center={[lat, lng]}
                     zoom={13}
@@ -145,21 +113,40 @@ const MapPicker: React.FC<MapPickerProps> = ({ lat, lng, onChange, hideSearch = 
                     <LocationMarker lat={lat} lng={lng} onChange={onChange} />
                     <Updater lat={lat} lng={lng} />
                 </MapContainer>
-                {!hideSearch && (
-                    <div className="absolute bottom-3 left-3 z-[1000] bg-white/95 backdrop-blur-sm px-3 py-1.5 rounded-lg text-[9px] font-black uppercase tracking-widest shadow-xl border border-border/50 flex items-center gap-2">
-                        <div className="h-2 w-2 rounded-full bg-red-500 animate-pulse" />
-                        <span className="text-muted-foreground">Koordinat:</span>
-                        <span className="text-primary font-mono">{lat.toFixed(6)}, {lng.toFixed(6)}</span>
-                    </div>
-                )}
             </div>
+
+            {/* Overlays */}
             {!hideSearch && (
-                <div className="flex items-center gap-2 px-1">
-                    <MapPin className="h-3 w-3 text-primary/60" />
-                    <p className="text-[9px] text-muted-foreground font-semibold uppercase tracking-tight italic">
-                        *Klik di peta untuk memindah pin secara presisi
-                    </p>
-                </div>
+                <>
+                    {/* Floating Search Bar - Now Moved to Bottom */}
+                    <div className="absolute bottom-4 left-4 right-4 z-1000 flex gap-2">
+                        <div className="relative flex-1 group shadow-2xl">
+                            <div className="absolute inset-y-0 left-0 flex items-center pl-3 pointer-events-none z-10">
+                                {isSearching ? (
+                                    <Loader2 className="h-4 w-4 animate-spin text-primary" />
+                                ) : (
+                                    <Search className="h-4 w-4 text-muted-foreground group-focus-within:text-primary transition-colors" />
+                                )}
+                            </div>
+                            <Input
+                                type="text"
+                                className="pl-10 h-11 bg-white/95 backdrop-blur-sm border-none text-sm font-semibold focus-visible:ring-2 focus-visible:ring-primary shadow-xl rounded-xl"
+                                placeholder="Cari nama lokasi atau alamat toko..."
+                                value={searchQuery}
+                                onChange={(e) => setSearchQuery(e.target.value)}
+                                onKeyDown={(e) => e.key === 'Enter' && (e.preventDefault(), handleSearch())}
+                            />
+                        </div>
+                        <Button
+                            type="button"
+                            onClick={handleSearch}
+                            disabled={isSearching}
+                            className="h-11 px-5 bg-primary hover:bg-primary/90 text-white font-black text-[10px] uppercase tracking-widest rounded-xl shadow-xl transition-all hover:scale-[1.02] active:scale-[0.98]"
+                        >
+                             Cari
+                        </Button>
+                    </div>
+                </>
             )}
         </div>
     );

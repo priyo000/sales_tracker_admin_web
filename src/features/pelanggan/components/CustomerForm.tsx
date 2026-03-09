@@ -430,11 +430,11 @@ const CustomerForm: React.FC<CustomerFormProps> = ({
                         </FormField>
 
                         <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
-                          <FormField label="Provinsi">
+                          <FormField label="Kecamatan">
                             <Input
-                              value={formData.provinsi_usaha || ""}
-                              onChange={(e) => handleChange("provinsi_usaha", e.target.value)}
-                              placeholder="Provinsi"
+                              value={formData.kecamatan_usaha || ""}
+                              onChange={(e) => handleChange("kecamatan_usaha", e.target.value)}
+                              placeholder="Kecamatan"
                               className="h-9 bg-muted/30 border-border/50 text-xs font-semibold"
                             />
                           </FormField>
@@ -446,11 +446,11 @@ const CustomerForm: React.FC<CustomerFormProps> = ({
                               className="h-9 bg-muted/30 border-border/50 text-xs font-semibold"
                             />
                           </FormField>
-                          <FormField label="Kecamatan">
+                          <FormField label="Provinsi">
                             <Input
-                              value={formData.kecamatan_usaha || ""}
-                              onChange={(e) => handleChange("kecamatan_usaha", e.target.value)}
-                              placeholder="Kecamatan"
+                              value={formData.provinsi_usaha || ""}
+                              onChange={(e) => handleChange("provinsi_usaha", e.target.value)}
+                              placeholder="Provinsi"
                               className="h-9 bg-muted/30 border-border/50 text-xs font-semibold"
                             />
                           </FormField>
@@ -482,7 +482,7 @@ const CustomerForm: React.FC<CustomerFormProps> = ({
                         </div>
                       </div>
 
-                      <div className="relative h-[300px] rounded-xl overflow-hidden border-2 border-border/50 shadow-inner group">
+                      <div className="h-[350px] rounded-xl overflow-hidden border-2 border-border/50 shadow-inner group transition-all hover:border-primary/30">
                         <MapPicker
                           lat={formData.latitude}
                           lng={formData.longitude}
@@ -490,11 +490,6 @@ const CustomerForm: React.FC<CustomerFormProps> = ({
                           hideSearch={false}
                           height="h-full"
                         />
-                        <div className="absolute top-3 left-3 right-3 z-50 pointer-events-none">
-                          <div className="bg-white/90 backdrop-blur shadow-md border border-border/50 px-3 py-1.5 rounded-lg text-[9px] font-bold uppercase tracking-widest text-primary text-center">
-                            Geser Pin Untuk Menentukan Lokasi
-                          </div>
-                        </div>
                       </div>
                     </div>
                   </CardContent>
