@@ -9,6 +9,11 @@ export interface User {
     id: number;
     nama_perusahaan: string;
   };
+  karyawan?: {
+    id: number;
+    id_divisi: number;
+    nama_lengkap: string;
+  };
 }
 
 export interface AuthContextType {

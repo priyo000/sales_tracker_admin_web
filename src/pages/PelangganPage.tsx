@@ -1,10 +1,12 @@
 import React, { useEffect, useState } from "react";
-import { Plus, Upload, Store, SlidersHorizontal } from "lucide-react";
+import { Plus, Upload, Store, SlidersHorizontal, Download } from "lucide-react";
 import toast from "react-hot-toast";
 import { usePelanggan } from "../features/pelanggan/hooks/usePelanggan";
 import CustomerTable from "../features/pelanggan/components/CustomerTable";
 import CustomerForm from "../features/pelanggan/components/CustomerForm";
+import CustomerDetail from "../features/pelanggan/components/CustomerDetail";
 import ImportCustomerModal from "../features/pelanggan/components/ImportCustomerModal";
+import { ExportCustomerModal } from "../features/pelanggan/components/ExportCustomerModal";
 import { ConfirmModal, Modal } from "../components/ui/Modal";
 import {
   PelangganStatus,
@@ -30,6 +32,7 @@ const PelangganPage: React.FC = () => {
     createPelanggan,
     updatePelanggan,
     importPelanggan,
+    exportPelanggan,
     pagination,
   } = usePelanggan();
 
@@ -41,8 +44,12 @@ const PelangganPage: React.FC = () => {
   const [editingPelanggan, setEditingPelanggan] = useState<Pelanggan | null>(
     null,
   );
+  const [viewingPelanggan, setViewingPelanggan] = useState<Pelanggan | null>(
+    null,
+  );
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [isImportModalOpen, setIsImportModalOpen] = useState(false);
+  const [isExportModalOpen, setIsExportModalOpen] = useState(false);
   const [perPage, setPerPage] = useState(20);
   const [page, setPage] = useState(1);
 
@@ -114,6 +121,21 @@ const PelangganPage: React.FC = () => {
     }
   };
 
+  const handleExportData = async (statuses: string[]) => {
+    setIsSubmitting(true);
+    const result = await exportPelanggan({
+      status: statuses.length > 0 ? statuses.join(",") : undefined,
+      search: search || undefined,
+    });
+    setIsSubmitting(false);
+    if (result.success) {
+      toast.success("Data pelanggan berhasil diexport");
+      setIsExportModalOpen(false);
+    } else {
+      toast.error("Gagal mengexport data pelanggan");
+    }
+  };
+
   return (
     <div className="space-y-6">
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
@@ -144,6 +166,7 @@ const PelangganPage: React.FC = () => {
         onApprove={(id) => setConfirmAction({ id, type: "approve" })}
         onReject={(id) => setConfirmAction({ id, type: "reject" })}
         onEdit={(p) => setEditingPelanggan(p)}
+        onView={(p) => setViewingPelanggan(p)}
         pagination={pagination}
         onPageChange={handlePageChange}
         onPerPageChange={handlePerPageChange}
@@ -191,6 +214,15 @@ const PelangganPage: React.FC = () => {
               </Button>
 
               <Button
+                variant="outline"
+                size="sm"
+                onClick={() => setIsExportModalOpen(true)}
+                className="gap-2 border-green-600/20 text-green-600 hover:bg-green-50 shadow-sm h-9"
+              >
+                <Download className="h-4 w-4" /> Export Excel
+              </Button>
+
+              <Button
                 onClick={() => setIsAddModalOpen(true)}
                 size="sm"
                 className="gap-2 shadow-md h-9"
@@ -207,7 +239,7 @@ const PelangganPage: React.FC = () => {
         isOpen={isAddModalOpen}
         onClose={() => setIsAddModalOpen(false)}
         title="Tambah Pelanggan Baru"
-        size="3xl"
+        size="5xl"
       >
         <CustomerForm
           onSubmit={handleCreatePelanggan}
@@ -221,7 +253,7 @@ const PelangganPage: React.FC = () => {
         isOpen={!!editingPelanggan}
         onClose={() => setEditingPelanggan(null)}
         title={`Edit Pelanggan: ${editingPelanggan?.nama_toko}`}
-        size="3xl"
+        size="5xl"
       >
         <CustomerForm
           initialData={editingPelanggan}
@@ -229,6 +261,16 @@ const PelangganPage: React.FC = () => {
           onCancel={() => setEditingPelanggan(null)}
           loading={isSubmitting}
         />
+      </Modal>
+
+      {/* View Pelanggan Modal */}
+      <Modal
+        isOpen={!!viewingPelanggan}
+        onClose={() => setViewingPelanggan(null)}
+        title={`Detail Pelanggan: ${viewingPelanggan?.nama_toko}`}
+        size="6xl"
+      >
+        {viewingPelanggan && <CustomerDetail data={viewingPelanggan} />}
       </Modal>
 
       {/* Confirmation Modal */}
@@ -251,6 +293,14 @@ const PelangganPage: React.FC = () => {
         isOpen={isImportModalOpen}
         onClose={() => setIsImportModalOpen(false)}
         onImport={importPelanggan}
+      />
+
+      {/* Export Modal */}
+      <ExportCustomerModal
+        isOpen={isExportModalOpen}
+        onClose={() => setIsExportModalOpen(false)}
+        onExport={handleExportData}
+        isLoading={isSubmitting}
       />
     </div>
   );

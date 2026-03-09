@@ -148,6 +148,32 @@ export const usePelanggan = () => {
     [],
   );
 
+  const exportPelanggan = async (params: { status?: string; search?: string; id_divisi?: number; sales_id?: number }) => {
+    setLoading(true);
+    setError(null);
+    try {
+      const response = await api.get("/pelanggan/export", {
+        params,
+        responseType: "blob",
+      });
+
+      const url = window.URL.createObjectURL(new Blob([response.data]));
+      const link = document.createElement("a");
+      link.href = url;
+      link.setAttribute("download", `Laporan_Pelanggan_${new Date().toISOString().slice(0, 10)}.xlsx`);
+      document.body.appendChild(link);
+      link.click();
+      link.remove();
+      return { success: true };
+    } catch (err) {
+      console.error("Export failed", err);
+      setError("Gagal mengeksport data pelanggan.");
+      return { success: false };
+    } finally {
+      setLoading(false);
+    }
+  };
+
   return {
     pelanggans,
     loading,
@@ -158,6 +184,7 @@ export const usePelanggan = () => {
     updatePelanggan,
     importPelanggan,
     fetchFilterOptions,
+    exportPelanggan,
     pagination,
   };
 };

@@ -19,6 +19,8 @@ import {
   CheckCircle2,
   Save,
 } from "lucide-react";
+import { getImageUrl } from "@/lib/utils";
+import { useAuth } from "@/hooks/useAuth";
 import { useDivisi } from "../../divisi/hooks/useDivisi";
 import { usePelanggan } from "../hooks/usePelanggan";
 import { Pelanggan, PelangganFormData } from "../types";
@@ -49,6 +51,7 @@ interface FilterOption {
   id: number;
   nama_lengkap: string;
   jabatan: string;
+  id_divisi?: number;
 }
 
 const CustomerForm: React.FC<CustomerFormProps> = ({
@@ -58,6 +61,7 @@ const CustomerForm: React.FC<CustomerFormProps> = ({
   loading,
 }) => {
   const isEdit = !!initialData;
+  const { user } = useAuth();
   const { divisis, fetchDivisis } = useDivisi();
   const { fetchFilterOptions } = usePelanggan();
   const [filterOptions, setFilterOptions] = useState<FilterOption[]>([]);
@@ -70,7 +74,7 @@ const CustomerForm: React.FC<CustomerFormProps> = ({
       setFilterOptions(options as FilterOption[]);
     };
     loadSales();
-  }, [fetchDivisis, fetchFilterOptions]);
+  }, [fetchFilterOptions, fetchDivisis]);
 
   const [formData, setFormData] = useState<PelangganFormData>({
     nama_toko: initialData?.nama_toko || "",
@@ -78,8 +82,8 @@ const CustomerForm: React.FC<CustomerFormProps> = ({
     id_divisi: initialData?.id_divisi || 0,
     no_hp_pribadi: initialData?.no_hp_pribadi || "",
     alamat_usaha: initialData?.alamat_usaha || "",
-    latitude: initialData?.latitude || 0,
-    longitude: initialData?.longitude || 0,
+    latitude: initialData?.latitude || -7.4244,
+    longitude: initialData?.longitude || 109.2302,
     cara_pembayaran: initialData?.cara_pembayaran || "Cash",
     sistem_pembayaran: initialData?.sistem_pembayaran || "Cash",
     limit_kredit_awal: initialData?.limit_kredit_awal || 0,
@@ -109,12 +113,32 @@ const CustomerForm: React.FC<CustomerFormProps> = ({
     foto_toko: string | null;
     foto_ktp: string | null;
   }>({
-    foto_toko: initialData?.foto_toko_url || null,
-    foto_ktp: initialData?.foto_ktp_url || null,
+    foto_toko: getImageUrl(initialData?.foto_toko_url) || null,
+    foto_ktp: getImageUrl(initialData?.foto_ktp_url) || null,
   });
 
   const handleChange = (name: string, value: string | number) => {
     setFormData((prev) => ({ ...prev, [name]: value }));
+  };
+
+  const handleSalesChange = (val: string) => {
+    if (val === "none") {
+      setFormData((prev) => ({
+        ...prev,
+        id_sales_pembuat: null,
+        // If user has division, use it, otherwise keep previous or set to 0 to trigger selection
+        id_divisi: user?.karyawan?.id_divisi || prev.id_divisi,
+      }));
+      return;
+    }
+
+    const salesId = parseInt(val);
+    const selectedSales = filterOptions.find((opt) => opt.id === salesId);
+    setFormData((prev) => ({
+      ...prev,
+      id_sales_pembuat: salesId,
+      id_divisi: selectedSales?.id_divisi || prev.id_divisi,
+    }));
   };
 
   const handleFileChange = (
@@ -134,8 +158,8 @@ const CustomerForm: React.FC<CustomerFormProps> = ({
       ...prev,
       [type]:
         type === "foto_toko"
-          ? initialData?.foto_toko_url || null
-          : initialData?.foto_ktp_url || null,
+          ? getImageUrl(initialData?.foto_toko_url) || null
+          : getImageUrl(initialData?.foto_ktp_url) || null,
     }));
   };
 
@@ -227,24 +251,6 @@ const CustomerForm: React.FC<CustomerFormProps> = ({
                           />
                         </FormField>
 
-                        <FormField label="Divisi Bisnis" icon={Layers} required>
-                          <Select
-                            value={formData.id_divisi.toString()}
-                            onValueChange={(val) => handleChange("id_divisi", parseInt(val))}
-                            required
-                          >
-                            <SelectTrigger className="h-9 bg-muted/30 border-border/50 shadow-sm font-semibold">
-                              <SelectValue placeholder="Pilih Divisi" />
-                            </SelectTrigger>
-                            <SelectContent>
-                              {divisis.map((div) => (
-                                <SelectItem key={div.id} value={div.id.toString()}>
-                                  {div.nama_divisi}
-                                </SelectItem>
-                              ))}
-                            </SelectContent>
-                          </Select>
-                        </FormField>
                         <FormField label="Kategori / Klasifikasi" icon={Layers}>
                           <Select
                             value={formData.klasifikasi_outlet}
@@ -262,54 +268,88 @@ const CustomerForm: React.FC<CustomerFormProps> = ({
                             </SelectContent>
                           </Select>
                         </FormField>
+
+                        {/* Special Case: If "MILIK PERUSAHAAN" is selected AND current user doesn't have a fixed division (Admin/SuperAdmin) */}
+                        {formData.id_sales_pembuat === null && !user?.karyawan?.id_divisi && (
+                           <FormField label="Tentukan Divisi Pelanggan" icon={Layers} required>
+                           <Select
+                             value={formData.id_divisi.toString()}
+                             onValueChange={(val) => handleChange("id_divisi", parseInt(val))}
+                             required
+                           >
+                             <SelectTrigger className="h-9 bg-amber-50 border-amber-200 shadow-sm font-semibold text-amber-700 animate-pulse-subtle">
+                               <SelectValue placeholder="Pilih Divisi" />
+                             </SelectTrigger>
+                             <SelectContent>
+                               {divisis.map((div) => (
+                                 <SelectItem key={div.id} value={div.id.toString()}>
+                                   {div.nama_divisi}
+                                 </SelectItem>
+                               ))}
+                             </SelectContent>
+                           </Select>
+                         </FormField>
+                        )}
+
+                        <FormField label="Status Outlet" icon={CheckCircle2}>
+                          <Select
+                            value={formData.status}
+                            onValueChange={(val) => handleChange("status", val)}
+                          >
+                            <SelectTrigger className="h-9 bg-muted/30 border-border/50 shadow-sm font-semibold">
+                              <SelectValue />
+                            </SelectTrigger>
+                            <SelectContent>
+                              <SelectItem value="active">🟢 Active</SelectItem>
+                              <SelectItem value="pending">🟡 Pending</SelectItem>
+                              <SelectItem value="nonactive">🔴 Inactive</SelectItem>
+                              <SelectItem value="rejected">⚫ Rejected</SelectItem>
+                              <SelectItem value="prospect">🔵 Prospect</SelectItem>
+                            </SelectContent>
+                          </Select>
+                        </FormField>
                       </div>
 
                       <div className="space-y-4">
-                        <div className="grid grid-cols-1 gap-4">
-                          <FormField label="Status Outlet" icon={CheckCircle2}>
-                            <Select
-                              value={formData.status}
-                              onValueChange={(val) => handleChange("status", val)}
-                            >
-                              <SelectTrigger className="h-9 bg-muted/30 border-border/50 shadow-sm font-semibold">
-                                <SelectValue />
-                              </SelectTrigger>
-                              <SelectContent>
-                                <SelectItem value="active">🟢 Active</SelectItem>
-                                <SelectItem value="pending">🟡 Pending</SelectItem>
-                                <SelectItem value="nonactive">🔴 Inactive</SelectItem>
-                                <SelectItem value="rejected">⚫ Rejected</SelectItem>
-                                <SelectItem value="prospect">🔵 Prospect</SelectItem>
-                              </SelectContent>
-                            </Select>
-                          </FormField>
-                        </div>
-
-                        <div className="flex flex-col items-center gap-3 p-4 bg-muted/20 rounded-xl border-2 border-dashed border-border/50 group transition-all hover:bg-muted/30">
-                          <div className="relative h-28 w-full rounded-lg overflow-hidden shadow-sm">
+                        <div className="pt-2">
+                          <label className="block text-xs font-bold text-muted-foreground uppercase tracking-widest mb-3"> Foto Toko / Lokasi </label>
+                          <div className="relative group w-full aspect-video rounded-2xl overflow-hidden border-2 border-dashed border-primary/30 bg-muted/10 shadow-lg transition-all hover:bg-muted/20 hover:border-primary/50">
                             {previews.foto_toko ? (
                               <>
                                 <img
                                   src={previews.foto_toko}
                                   alt="Preview Toko"
-                                  className="h-full w-full object-cover transition-transform group-hover:scale-105"
+                                  className="h-full w-full object-cover transition-transform duration-500 group-hover:scale-110"
                                 />
-                                <div className="absolute inset-0 bg-black/40 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity">
-                                  <Button
-                                    type="button"
-                                    variant="destructive"
-                                    size="icon"
-                                    onClick={() => clearFile("foto_toko")}
-                                    className="h-8 w-8 rounded-full"
-                                  >
-                                    <X className="h-3.5 w-3.5" />
-                                  </Button>
+                                <div className="absolute inset-0 bg-black/40 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity backdrop-blur-[2px]">
+                                  <div className="flex gap-2">
+                                    <label className="h-9 w-9 bg-white text-primary hover:bg-white/90 rounded-full flex items-center justify-center cursor-pointer shadow-xl transition-transform hover:scale-110 active:scale-95">
+                                      <Camera className="h-4 w-4" />
+                                      <input
+                                        type="file"
+                                        className="hidden"
+                                        accept="image/*"
+                                        onChange={(e) => handleFileChange(e, "foto_toko")}
+                                      />
+                                    </label>
+                                    <Button
+                                      type="button"
+                                      variant="destructive"
+                                      size="icon"
+                                      onClick={() => clearFile("foto_toko")}
+                                      className="h-9 w-9 rounded-full shadow-xl hover:scale-110 active:scale-95 transition-transform"
+                                    >
+                                      <X className="h-4 w-4" />
+                                    </Button>
+                                  </div>
                                 </div>
                               </>
                             ) : (
-                              <label className="flex flex-col items-center justify-center w-full h-full cursor-pointer bg-muted/10">
-                                <Camera className="h-8 w-8 text-muted-foreground group-hover:text-primary transition-colors" />
-                                <span className="mt-1 text-[9px] font-bold uppercase tracking-wider text-muted-foreground">
+                              <label className="flex flex-col items-center justify-center w-full h-full cursor-pointer transition-colors">
+                                <div className="p-4 bg-primary/10 rounded-full mb-2 group-hover:bg-primary/20 transition-colors">
+                                  <Camera className="h-8 w-8 text-primary opacity-70" />
+                                </div>
+                                <span className="text-[10px] font-black uppercase tracking-widest text-primary/60">
                                   Upload Foto Toko
                                 </span>
                                 <input
@@ -596,16 +636,19 @@ const CustomerForm: React.FC<CustomerFormProps> = ({
                         />
 
                         <div className="pt-1">
-                           <FormField label="Sales Representative" icon={User} required>
-                            <Select
-                              value={formData.id_sales_pembuat?.toString()}
-                              onValueChange={(val) => handleChange("id_sales_pembuat", parseInt(val))}
-                              required
-                            >
-                              <SelectTrigger className="h-9 bg-muted/30 border-border/50 shadow-sm font-semibold">
+                           <FormField label="Penanggung Jawab (Sales)" icon={User} required>
+                             <Select
+                               value={formData.id_sales_pembuat?.toString() || "none"}
+                               onValueChange={handleSalesChange}
+                               required
+                             >
+                              <SelectTrigger className="h-9 bg-muted/30 border-border/50 shadow-sm font-semibold text-primary">
                                 <SelectValue placeholder="Pilih Sales Person" />
                               </SelectTrigger>
                               <SelectContent>
+                                <SelectItem value="none" className="font-bold text-amber-600">
+                                  🏢 MILIK PERUSAHAAN (NON-TO)
+                                </SelectItem>
                                 {filterOptions.map((opt) => (
                                   <SelectItem key={opt.id} value={opt.id.toString()}>
                                     {opt.nama_lengkap} ({opt.jabatan || "Sales"})
@@ -628,32 +671,45 @@ const CustomerForm: React.FC<CustomerFormProps> = ({
                         />
 
                         <div className="pt-1">
-                           <div className="flex flex-col items-center gap-3 p-6 bg-muted/20 rounded-xl border-2 border-dashed border-border/50 group transition-all hover:bg-muted/30">
-                            <div className="relative h-32 w-full max-w-sm rounded-lg overflow-hidden shadow-lg bg-black/5">
+                           <div className="flex flex-col items-center gap-4">
+                            <div className="relative group w-full max-w-sm aspect-[1.6/1] rounded-2xl overflow-hidden border-2 border-dashed border-primary/30 bg-muted/10 shadow-lg transition-all hover:bg-muted/20 hover:border-primary/50">
                               {previews.foto_ktp ? (
                                 <>
                                   <img
                                     src={previews.foto_ktp}
                                     alt="Preview KTP"
-                                    className="h-full w-full object-contain transition-transform group-hover:scale-105"
+                                    className="h-full w-full object-contain p-2 transition-transform duration-500 group-hover:scale-105"
                                   />
-                                  <div className="absolute inset-0 bg-black/40 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity">
-                                    <Button
-                                      type="button"
-                                      variant="destructive"
-                                      size="icon"
-                                      onClick={() => clearFile("foto_ktp")}
-                                      className="h-8 w-8 rounded-full"
-                                    >
-                                      <X className="h-3.5 w-3.5" />
-                                    </Button>
+                                  <div className="absolute inset-0 bg-black/40 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity backdrop-blur-[2px]">
+                                    <div className="flex gap-2">
+                                       <label className="h-9 w-9 bg-white text-primary hover:bg-white/90 rounded-full flex items-center justify-center cursor-pointer shadow-xl transition-transform hover:scale-110 active:scale-95">
+                                          <LucideImage className="h-4 w-4" />
+                                          <input
+                                            type="file"
+                                            className="hidden"
+                                            accept="image/*"
+                                            onChange={(e) => handleFileChange(e, "foto_ktp")}
+                                          />
+                                       </label>
+                                       <Button
+                                        type="button"
+                                        variant="destructive"
+                                        size="icon"
+                                        onClick={() => clearFile("foto_ktp")}
+                                        className="h-9 w-9 rounded-full shadow-xl hover:scale-110 active:scale-95 transition-transform"
+                                      >
+                                        <X className="h-4 w-4" />
+                                      </Button>
+                                    </div>
                                   </div>
                                 </>
                               ) : (
-                                <label className="flex flex-col items-center justify-center w-full h-full cursor-pointer">
-                                  <LucideImage className="h-8 w-8 text-muted-foreground group-hover:text-primary transition-colors mb-2 opacity-50" />
-                                  <span className="text-[9px] font-bold uppercase tracking-wider text-muted-foreground text-center px-4">
-                                    Ambil Foto KTP (Landscape)
+                                <label className="flex flex-col items-center justify-center w-full h-full cursor-pointer group">
+                                  <div className="p-4 bg-primary/10 rounded-full mb-2 group-hover:bg-primary/20 transition-colors">
+                                    <LucideImage className="h-8 w-8 text-primary opacity-60" />
+                                  </div>
+                                  <span className="text-[10px] font-black uppercase tracking-widest text-primary/60 text-center px-4">
+                                    Unggah Foto KTP (Landscape)
                                   </span>
                                   <input
                                     type="file"
@@ -664,9 +720,9 @@ const CustomerForm: React.FC<CustomerFormProps> = ({
                                 </label>
                               )}
                             </div>
-                            <p className="text-[9px] font-black text-muted-foreground uppercase tracking-tighter opacity-70 italic">
-                              Format: JPG, PNG (Maks 2MB). Pastikan Teks Terbaca Jelas.
-                            </p>
+                            <div className="flex items-center gap-2 text-[10px] font-black text-muted-foreground uppercase tracking-tighter opacity-60 italic bg-muted/50 px-3 py-1.5 rounded-full border border-border/50">
+                              <Info className="h-3 w-3" /> JPG, PNG (Maks 2MB). Pastikan Teks Terbaca Jelas.
+                            </div>
                           </div>
                         </div>
                       </CardContent>

@@ -123,6 +123,11 @@ const MapPicker: React.FC<MapPickerProps> = ({ lat, lng, onChange, hideSearch = 
                 <MapContainer
                     center={[lat, lng]}
                     zoom={13}
+                    minZoom={5}
+                    maxBounds={[
+                        [-11, 94],
+                        [6, 141]
+                    ]}
                     scrollWheelZoom={true}
                     className="h-full w-full"
                 >

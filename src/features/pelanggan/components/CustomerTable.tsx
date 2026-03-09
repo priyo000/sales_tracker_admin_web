@@ -1,5 +1,5 @@
 import React from "react";
-import { Store, User, Phone, MapPin, Check, X, Edit } from "lucide-react";
+import { Store, User, Phone, MapPin, Check, X, Edit, Eye } from "lucide-react";
 import { Pelanggan } from "../types";
 import { getImageUrl } from "@/lib/utils";
 import { DataTable, type ColumnDef } from "@/components/ui/data-table";
@@ -12,6 +12,7 @@ interface CustomerTableProps {
   onApprove: (id: number) => void;
   onReject: (id: number) => void;
   onEdit: (pelanggan: Pelanggan) => void;
+  onView: (pelanggan: Pelanggan) => void;
   pagination?: {
     currentPage: number;
     lastPage: number;
@@ -41,6 +42,7 @@ const CustomerTable: React.FC<CustomerTableProps> = ({
   onApprove,
   onReject,
   onEdit,
+  onView,
   pagination,
   onPageChange,
   onPerPageChange,
@@ -147,10 +149,20 @@ const CustomerTable: React.FC<CustomerTableProps> = ({
           <Button
             variant="outline"
             size="sm"
-            className="h-7 text-xs"
-            onClick={() => onEdit(row)}
+            className="h-7 w-7 p-0"
+            onClick={() => onView(row)}
+            title="Lihat Detail"
           >
-            <Edit className="h-3 w-3 mr-1" /> Edit
+            <Eye className="h-3.5 w-3.5" />
+          </Button>
+          <Button
+            variant="outline"
+            size="sm"
+            className="h-7 w-7 p-0"
+            onClick={() => onEdit(row)}
+            title="Edit Data"
+          >
+            <Edit className="h-3.5 w-3.5" />
           </Button>
           {row.status === "pending" && (
             <>
