@@ -24,6 +24,7 @@ import PerusahaanPage from "./pages/PerusahaanPage";
 import UserPage from "./pages/UserPage";
 import NotifikasiPage from "./pages/NotifikasiPage";
 import InformasiKunjunganPage from "./pages/InformasiKunjunganPage";
+import AppUpdatePage from "./pages/AppUpdatePage";
 
 /** Guard: harus login */
 const ProtectedRoute = ({ children }: { children: React.ReactNode }) => {
@@ -108,6 +109,14 @@ function App() {
                         element={
                           <SuperAdminRoute>
                             <PerusahaanPage />
+                          </SuperAdminRoute>
+                        }
+                      />
+                      <Route
+                        path="/app-update"
+                        element={
+                          <SuperAdminRoute>
+                            <AppUpdatePage />
                           </SuperAdminRoute>
                         }
                       />

@@ -14,6 +14,7 @@ import {
   ChevronRight,
   ChevronLeft,
   TrendingUp,
+  Smartphone,
 } from "lucide-react";
 import { useState, useEffect } from "react";
 import { NavLink } from "react-router-dom";
@@ -77,7 +78,10 @@ const Sidebar = () => {
         { icon: LayoutGrid, label: "Divisi", to: "/divisi" },
         { icon: UserCog, label: "Pengguna", to: "/users" },
         ...(user?.peran === "super_admin"
-          ? [{ icon: Building2, label: "Perusahaan", to: "/perusahaan" }]
+          ? [
+              { icon: Building2, label: "Perusahaan", to: "/perusahaan" },
+              { icon: Smartphone, label: "Update App", to: "/app-update" },
+            ]
           : []),
       ],
     },
