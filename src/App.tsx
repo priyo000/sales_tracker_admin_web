@@ -25,6 +25,7 @@ import UserPage from "./pages/UserPage";
 import NotifikasiPage from "./pages/NotifikasiPage";
 import InformasiKunjunganPage from "./pages/InformasiKunjunganPage";
 import AppUpdatePage from "./pages/AppUpdatePage";
+import PromoPage from "./pages/PromoPage";
 
 /** Guard: harus login */
 const ProtectedRoute = ({ children }: { children: React.ReactNode }) => {
@@ -95,6 +96,7 @@ function App() {
                       <Route path="/jadwal" element={<JadwalPage />} />
                       <Route path="/kunjungan" element={<KunjunganPage />} />
                       <Route path="/rute" element={<RutePage />} />
+                      <Route path="/promo" element={<PromoPage />} />
                       <Route path="/pelanggan" element={<PelangganPage />} />
                       <Route path="/produk" element={<ProdukPage />} />
                       <Route path="/pesanan" element={<PesananPage />} />
