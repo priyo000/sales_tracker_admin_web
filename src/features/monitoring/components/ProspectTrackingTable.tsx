@@ -27,6 +27,20 @@ interface ProspectTrackingTableProps {
   onViewDetails: (id_karyawan: number, date: string) => void;
 }
 
+const formatTime = (dateString: string) => {
+  if (!dateString) return "-";
+  try {
+    const date = new Date(dateString);
+    return new Intl.DateTimeFormat("id-ID", {
+      hour: "2-digit",
+      minute: "2-digit",
+      hour12: false,
+    }).format(date) + " WIB";
+  } catch {
+    return dateString;
+  }
+};
+
 const ProspectTrackingTable: React.FC<ProspectTrackingTableProps> = ({
   data,
   loading,
@@ -162,8 +176,8 @@ const ProspectTrackingTable: React.FC<ProspectTrackingTableProps> = ({
                           </span>
                         </div>
                       </td>
-                      <td className="px-4 py-3 text-slate-600 dark:text-slate-400 font-medium">
-                        {prospect.created_at}
+                      <td className="px-4 py-3 text-slate-600 dark:text-slate-400 font-medium whitespace-nowrap">
+                        {formatTime(prospect.created_at)}
                       </td>
                       <td className="px-4 py-3 max-w-[200px]">
                         <p className="text-xs italic text-slate-500 line-clamp-2" title={prospect.catatan_lain}>
