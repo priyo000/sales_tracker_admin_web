@@ -11,19 +11,22 @@ import {
 import { Switch } from "@/components/ui/switch";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
-import { Info, Type, FileText, CheckCircle2, LayoutGrid, X, Save } from "lucide-react";
+import { Type, FileText, CheckCircle2, LayoutGrid, X, Save } from "lucide-react";
 import { useDivisi } from "@/features/divisi/hooks/useDivisi";
 import { FormField } from "@/components/ui/FormField";
+import { Divisi } from "@/features/divisi/types";
+
+import { PromoCluster } from "../types";
 
 interface ClusterFormProps {
-  initialData?: any;
-  onSubmit: (data: any) => void;
+  initialData?: PromoCluster;
+  onSubmit: (data: Record<string, unknown>) => void;
   onCancel: () => void;
   loading?: boolean;
 }
 
 export const ClusterForm = ({ initialData, onSubmit, onCancel, loading }: ClusterFormProps) => {
-  const { divisions, fetchDivisions } = useDivisi();
+  const { divisis, fetchDivisis } = useDivisi();
   const [formData, setFormData] = useState({
     nama_cluster: initialData?.nama_cluster || "",
     deskripsi: initialData?.deskripsi || "",
@@ -32,8 +35,8 @@ export const ClusterForm = ({ initialData, onSubmit, onCancel, loading }: Cluste
   });
 
   useEffect(() => {
-    fetchDivisions();
-  }, [fetchDivisions]);
+    fetchDivisis();
+  }, [fetchDivisis]);
 
   const userRole = localStorage.getItem("user_role");
   const isSuperOrCompanyAdmin = userRole === "superadmin" || userRole === "admin_perusahaan";
@@ -61,7 +64,7 @@ export const ClusterForm = ({ initialData, onSubmit, onCancel, loading }: Cluste
               </SelectTrigger>
               <SelectContent>
                 <SelectItem value="null">Global (Semua Divisi)</SelectItem>
-                {divisions.map((d: any) => (
+                {divisis.map((d: Divisi) => (
                   <SelectItem key={d.id} value={d.id.toString()}>
                     {d.nama_divisi}
                   </SelectItem>

@@ -69,7 +69,7 @@ export const usePromo = () => {
   }, []);
 
   // --- Cluster Operations ---
-  const createCluster = async (data: any) => {
+  const createCluster = async (data: Record<string, unknown>) => {
     setLoading(true);
     try {
       const response = await api.post("/promo-cluster", data);
@@ -83,7 +83,7 @@ export const usePromo = () => {
     }
   };
 
-  const updateCluster = async (id: number, data: any) => {
+  const updateCluster = async (id: number, data: Record<string, unknown>) => {
     setLoading(true);
     try {
       const response = await api.put(`/promo-cluster/${id}`, data);
@@ -112,7 +112,7 @@ export const usePromo = () => {
   };
 
   // --- Price Rule Operations ---
-  const createPriceRule = async (data: any) => {
+  const createPriceRule = async (data: Record<string, unknown>) => {
     setLoading(true);
     try {
       const response = await api.post("/promo/aturan-harga", data);
@@ -126,7 +126,7 @@ export const usePromo = () => {
     }
   };
 
-  const updatePriceRule = async (id: number, data: any) => {
+  const updatePriceRule = async (id: number, data: Record<string, unknown>) => {
     setLoading(true);
     try {
       const response = await api.put(`/promo/aturan-harga/${id}`, data);
@@ -155,7 +155,7 @@ export const usePromo = () => {
   };
 
   // --- Grosir Operations ---
-  const createGrosirRule = async (data: any) => {
+  const createGrosirRule = async (data: Record<string, unknown>) => {
     setLoading(true);
     try {
       const response = await api.post("/promo/grosir", data);
@@ -184,7 +184,7 @@ export const usePromo = () => {
   };
 
   // --- Hadiah Operations ---
-  const createRewardRule = async (data: any) => {
+  const createRewardRule = async (data: Record<string, unknown>) => {
     setLoading(true);
     try {
       const response = await api.post("/promo/hadiah", data);

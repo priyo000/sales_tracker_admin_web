@@ -21,18 +21,21 @@ import { useProduk } from "@/features/produk/hooks/useProduk";
 import { FormField } from "@/components/ui/FormField";
 import { useDivisi } from "@/features/divisi/hooks/useDivisi";
 import { cn } from "@/lib/utils";
+import { PromoCluster, PromoAturanHarga } from "../types";
+import { Divisi } from "@/features/divisi/types";
+import { Produk } from "@/features/produk/types";
 
 interface PriceRuleFormProps {
-  clusters: any[];
-  initialData?: any;
-  onSubmit: (data: any) => void;
+  clusters: PromoCluster[];
+  initialData?: PromoAturanHarga;
+  onSubmit: (data: Record<string, unknown>) => void;
   onCancel: () => void;
   loading?: boolean;
 }
 
 export const PriceRuleForm = ({ clusters, initialData, onSubmit, onCancel, loading }: PriceRuleFormProps) => {
   const { produks, fetchProduks } = useProduk();
-  const { divisions, fetchDivisions } = useDivisi();
+  const { divisis, fetchDivisis } = useDivisi();
   
   const [formData, setFormData] = useState({
     id_produk: initialData?.id_produk?.toString() || "",
@@ -48,8 +51,8 @@ export const PriceRuleForm = ({ clusters, initialData, onSubmit, onCancel, loadi
 
   useEffect(() => {
     fetchProduks({ search: searchProduk, per_page: 10 });
-    fetchDivisions();
-  }, [fetchProduks, fetchDivisions, searchProduk]);
+    fetchDivisis();
+  }, [fetchProduks, fetchDivisis, searchProduk]);
 
   const userRole = localStorage.getItem("user_role");
   const isSuperOrCompanyAdmin = userRole === "superadmin" || userRole === "admin_perusahaan";
@@ -86,7 +89,7 @@ export const PriceRuleForm = ({ clusters, initialData, onSubmit, onCancel, loadi
                   onChange={(e) => setSearchProduk(e.target.value)}
                 />
               </div>
-              {produks.map((p: any) => (
+              {produks.map((p: Produk) => (
                 <SelectItem key={p.id} value={p.id.toString()}>
                   <div className="flex flex-col">
                     <span className="font-semibold">{p.nama_produk}</span>
@@ -109,7 +112,7 @@ export const PriceRuleForm = ({ clusters, initialData, onSubmit, onCancel, loadi
               </SelectTrigger>
               <SelectContent>
                 <SelectItem value="null">Global (Semua Divisi)</SelectItem>
-                {divisions.map((d: any) => (
+                {divisis.map((d: Divisi) => (
                   <SelectItem key={d.id} value={d.id.toString()}>
                     {d.nama_divisi}
                   </SelectItem>
@@ -129,7 +132,7 @@ export const PriceRuleForm = ({ clusters, initialData, onSubmit, onCancel, loadi
             </SelectTrigger>
             <SelectContent>
               <SelectItem value="null">Semua Pelanggan</SelectItem>
-              {clusters.map((c: any) => (
+              {clusters.map((c: PromoCluster) => (
                 <SelectItem key={c.id} value={c.id.toString()}>
                   {c.nama_cluster}
                 </SelectItem>

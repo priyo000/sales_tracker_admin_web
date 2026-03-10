@@ -1,4 +1,4 @@
-import React, { useEffect, useState, useCallback } from "react";
+import React, { useEffect, useState } from "react";
 import { Tag, Plus, Users, Package, Gift, BarChart3 } from "lucide-react";
 import toast from "react-hot-toast";
 import { cn } from "@/lib/utils";
@@ -61,7 +61,7 @@ const PromoPage: React.FC = () => {
     setIsClusterModalOpen(true);
   };
 
-  const handleClusterSubmit = async (data: any) => {
+  const handleClusterSubmit = async (data: Record<string, unknown>) => {
     const res = selectedCluster 
       ? await updateCluster(selectedCluster.id, data)
       : await createCluster(data);
@@ -92,7 +92,7 @@ const PromoPage: React.FC = () => {
     setIsPriceModalOpen(true);
   };
 
-  const handlePriceSubmit = async (data: any) => {
+  const handlePriceSubmit = async (data: Record<string, unknown>) => {
     const res = selectedPriceRule
       ? await updatePriceRule(selectedPriceRule.id, data)
       : await createPriceRule(data);
@@ -158,7 +158,7 @@ const PromoPage: React.FC = () => {
         ].map((tab) => (
           <button
             key={tab.id}
-            onClick={() => handleTabChange(tab.id as any)}
+            onClick={() => handleTabChange(tab.id as "dashboard" | "clusters" | "prices" | "rewards")}
             className={cn(
               "flex items-center gap-2 px-6 py-2 text-xs font-black uppercase tracking-widest transition-all rounded-lg",
               activeTab === tab.id
