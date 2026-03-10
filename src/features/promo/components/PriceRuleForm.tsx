@@ -1,68 +1,67 @@
 import React, { useState, useEffect } from "react";
-import { PromoAturanHarga, PromoCluster } from "../types";
-import { 
-  Package, 
-  Users, 
-  Calendar, 
-  Percent, 
-  Banknote, 
-  Save, 
-  X,
-  LayoutGrid
-} from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { FormField } from "@/components/ui/FormField";
+import { 
+  Select, 
+  SelectContent, 
+  SelectItem, 
+  SelectTrigger, 
+  SelectValue 
+} from "@/components/ui/select";
+import { 
+  Popover,
+  PopoverContent,
+  PopoverTrigger,
+} from "@/components/ui/popover";
+import { Calendar } from "@/components/ui/calendar";
+import { CalendarIcon, Tag, Package, Percent, Save, X, LayoutGrid, Search } from "lucide-react";
+import { format } from "date-fns";
+import { id } from "date-fns/locale";
 import { useProduk } from "@/features/produk/hooks/useProduk";
-import { useAuth } from "@/hooks/useAuth";
+import { FormField } from "@/components/ui/FormField";
 import { useDivisi } from "@/features/divisi/hooks/useDivisi";
+import { cn } from "@/lib/utils";
 
 interface PriceRuleFormProps {
-  clusters: PromoCluster[];
-  initialData?: PromoAturanHarga;
+  clusters: any[];
+  initialData?: any;
   onSubmit: (data: any) => void;
   onCancel: () => void;
   loading?: boolean;
 }
 
-export const PriceRuleForm: React.FC<PriceRuleFormProps> = ({
-  clusters,
-  initialData,
-  onSubmit,
-  onCancel,
-  loading,
-}) => {
-  const { user } = useAuth();
+export const PriceRuleForm = ({ clusters, initialData, onSubmit, onCancel, loading }: PriceRuleFormProps) => {
   const { produks, fetchProduks } = useProduk();
-  const { divisis, fetchDivisis } = useDivisi();
+  const { divisions, fetchDivisions } = useDivisi();
+  
+  const [formData, setFormData] = useState({
+    id_produk: initialData?.id_produk?.toString() || "",
+    id_promo_cluster: initialData?.id_promo_cluster?.toString() || "null",
+    id_divisi: initialData?.id_divisi?.toString() || "null",
+    harga_manual: initialData?.harga_manual || "",
+    diskon_persen: initialData?.diskon_persen || "",
+    tanggal_mulai: initialData?.tanggal_mulai ? new Date(initialData.tanggal_mulai) : new Date(),
+    tanggal_akhir: initialData?.tanggal_akhir ? new Date(initialData.tanggal_akhir) : new Date(new Date().setMonth(new Date().getMonth() + 1)),
+  });
 
-  const [idProduk, setIdProduk] = useState<string>(initialData?.id_produk?.toString() || "");
-  const [idCluster, setIdCluster] = useState<string>(initialData?.id_promo_cluster?.toString() || "");
-  const [idDivisi, setIdDivisi] = useState<string>(initialData?.id_divisi?.toString() || "");
-  const [hargaManual, setHargaManual] = useState<string>(initialData?.harga_manual?.toString() || "");
-  const [diskonPersen, setDiskonPersen] = useState<string>(initialData?.diskon_persen?.toString() || "");
-  const [tanggalMulai, setTanggalMulai] = useState(initialData?.tanggal_mulai || "");
-  const [tanggalAkhir, setTanggalAkhir] = useState(initialData?.tanggal_akhir || "");
-
-  const isSuperOrCompanyAdmin = user?.peran === "super_admin" || user?.peran === "admin_perusahaan";
+  const [searchProduk, setSearchProduk] = useState("");
 
   useEffect(() => {
-    fetchProduks({ per_page: 100 });
-    if (isSuperOrCompanyAdmin) {
-      fetchDivisis();
-    }
-  }, [fetchProduks, fetchDivisis, isSuperOrCompanyAdmin]);
+    fetchProduks({ search: searchProduk, per_page: 10 });
+    fetchDivisions();
+  }, [fetchProduks, fetchDivisions, searchProduk]);
+
+  const userRole = localStorage.getItem("user_role");
+  const isSuperOrCompanyAdmin = userRole === "superadmin" || userRole === "admin_perusahaan";
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     onSubmit({
-      id_produk: idProduk,
-      id_promo_cluster: idCluster || null,
-      id_divisi: isSuperOrCompanyAdmin ? (idDivisi || null) : undefined,
-      harga_manual: hargaManual || null,
-      diskon_persen: diskonPersen || null,
-      tanggal_mulai: tanggalMulai,
-      tanggal_akhir: tanggalAkhir,
+      ...formData,
+      id_promo_cluster: formData.id_promo_cluster === "null" ? null : parseInt(formData.id_promo_cluster),
+      id_divisi: formData.id_divisi === "null" ? null : parseInt(formData.id_divisi),
+      tanggal_mulai: format(formData.tanggal_mulai, "yyyy-MM-dd"),
+      tanggal_akhir: format(formData.tanggal_akhir, "yyyy-MM-dd"),
     });
   };
 
@@ -70,122 +69,170 @@ export const PriceRuleForm: React.FC<PriceRuleFormProps> = ({
     <form onSubmit={handleSubmit} className="space-y-6 py-2">
       <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
         <FormField label="Pilih Produk" icon={Package} required className="md:col-span-2">
-          <select
-            required
-            className="flex h-10 w-full rounded-xl border border-border/50 bg-card px-3 py-2 text-sm font-bold italic shadow-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/20"
-            value={idProduk}
-            onChange={(e) => setIdProduk(e.target.value)}
+          <Select 
+            value={formData.id_produk} 
+            onValueChange={(val) => setFormData({ ...formData, id_produk: val })}
           >
-            <option value="">-- PILIH PRODUK --</option>
-            {produks.map((p) => (
-              <option key={p.id} value={p.id}>
-                [{p.sku}] {p.nama_produk.toUpperCase()}
-              </option>
-            ))}
-          </select>
+            <SelectTrigger className="h-9 bg-card border-border/50 shadow-sm text-[13px] font-semibold">
+              <SelectValue placeholder="Pilih Produk Target..." />
+            </SelectTrigger>
+            <SelectContent>
+              <div className="flex items-center gap-2 p-2 border-b bg-muted/20">
+                <Search className="h-3.5 w-3.5 text-muted-foreground" />
+                <input 
+                  className="bg-transparent text-xs outline-none w-full" 
+                  placeholder="Cari SKU atau Nama..." 
+                  value={searchProduk}
+                  onChange={(e) => setSearchProduk(e.target.value)}
+                />
+              </div>
+              {produks.map((p: any) => (
+                <SelectItem key={p.id} value={p.id.toString()}>
+                  <div className="flex flex-col">
+                    <span className="font-semibold">{p.nama_produk}</span>
+                    <span className="text-[9px] text-muted-foreground uppercase">{p.sku} | Rp {p.harga_jual.toLocaleString()}</span>
+                  </div>
+                </SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
         </FormField>
 
         {isSuperOrCompanyAdmin && (
-          <FormField label="Target Divisi" icon={LayoutGrid} className="md:col-span-2">
-            <select
-              className="flex h-10 w-full rounded-xl border border-border/50 bg-card px-3 py-2 text-sm font-bold italic shadow-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/20"
-              value={idDivisi}
-              onChange={(e) => setIdDivisi(e.target.value)}
+          <FormField label="Target Divisi" icon={LayoutGrid}>
+            <Select 
+              value={formData.id_divisi} 
+              onValueChange={(val) => setFormData({ ...formData, id_divisi: val })}
             >
-              <option value="">SEMUA DIVISI (GLOBAL)</option>
-              {divisis.map((div) => (
-                <option key={div.id} value={div.id}>
-                  {div.nama_divisi.toUpperCase()}
-                </option>
-              ))}
-            </select>
+              <SelectTrigger className="h-9 bg-card border-border/50 shadow-sm text-[13px] font-semibold">
+                <SelectValue placeholder="Global (Semua Divisi)" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="null">Global (Semua Divisi)</SelectItem>
+                {divisions.map((d: any) => (
+                  <SelectItem key={d.id} value={d.id.toString()}>
+                    {d.nama_divisi}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
           </FormField>
         )}
 
-        <FormField label="Target Cluster Toko" icon={Users}>
-          <select
-            className="flex h-10 w-full rounded-xl border border-border/50 bg-card px-3 py-2 text-sm font-bold italic shadow-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/20"
-            value={idCluster}
-            onChange={(e) => setIdCluster(e.target.value)}
+        <FormField label="Target Cluster" icon={Tag}>
+          <Select 
+            value={formData.id_promo_cluster} 
+            onValueChange={(val) => setFormData({ ...formData, id_promo_cluster: val })}
           >
-            <option value="">SEMUA TOKO (GLOBAL)</option>
-            {clusters.map((c) => (
-              <option key={c.id} value={c.id}>
-                {c.nama_cluster.toUpperCase()}
-              </option>
-            ))}
-          </select>
+            <SelectTrigger className="h-9 bg-card border-border/50 shadow-sm text-[13px] font-semibold">
+              <SelectValue placeholder="Semua Pelanggan" />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="null">Semua Pelanggan</SelectItem>
+              {clusters.map((c: any) => (
+                <SelectItem key={c.id} value={c.id.toString()}>
+                  {c.nama_cluster}
+                </SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
         </FormField>
 
-        <div className="grid grid-cols-2 gap-4 md:col-span-1">
-          <FormField label="Diskon (%)" icon={Percent}>
-            <Input
-              type="number"
-              step="0.01"
-              min="0"
-              max="100"
-              className="h-10 bg-card border-border/50 font-bold italic"
-              placeholder="0"
-              value={diskonPersen}
-              onChange={(e) => setDiskonPersen(e.target.value)}
-            />
-          </FormField>
-          <FormField label="Harga Lock (Rp)" icon={Banknote}>
-            <Input
-              type="number"
-              className="h-10 bg-card border-border/50 font-bold italic"
-              placeholder="0"
-              value={hargaManual}
-              onChange={(e) => setHargaManual(e.target.value)}
-            />
-          </FormField>
-        </div>
-
-        <FormField label="Tanggal Mulai" icon={Calendar} required>
-          <Input
-            type="date"
-            required
-            className="h-10 bg-card border-border/50 font-bold italic"
-            value={tanggalMulai}
-            onChange={(e) => setTanggalMulai(e.target.value)}
+        <FormField label="Potongan Persen (%)" icon={Percent}>
+          <Input 
+            type="number"
+            placeholder="Contoh: 10" 
+            value={formData.diskon_persen}
+            onChange={(e) => setFormData({ ...formData, diskon_persen: e.target.value, harga_manual: "" })}
+            className="h-9 bg-card border-border/50 shadow-sm text-[13px] font-semibold"
           />
         </FormField>
 
-        <FormField label="Tanggal Berakhir" icon={Calendar} required>
-          <Input
-            type="date"
-            required
-            className="h-10 bg-card border-border/50 font-bold italic"
-            value={tanggalAkhir}
-            onChange={(e) => setTanggalAkhir(e.target.value)}
+        <FormField label="Atau Harga Lock (Rp)" icon={Save}>
+          <Input 
+            type="number"
+            placeholder="Contoh: 15000" 
+            value={formData.harga_manual}
+            onChange={(e) => setFormData({ ...formData, harga_manual: e.target.value, diskon_persen: "" })}
+            className="h-9 bg-card border-border/50 shadow-sm text-[13px] font-semibold"
           />
+        </FormField>
+
+        <FormField label="Tanggal Mulai" icon={CalendarIcon} required>
+          <Popover>
+            <PopoverTrigger asChild>
+              <Button
+                variant={"outline"}
+                className={cn(
+                  "w-full justify-start text-left font-semibold h-9 text-[13px] border-border/50",
+                  !formData.tanggal_mulai && "text-muted-foreground"
+                )}
+              >
+                <CalendarIcon className="mr-2 h-4 w-4 opacity-50" />
+                {formData.tanggal_mulai ? format(formData.tanggal_mulai, "dd MMMM yyyy", { locale: id }) : <span>Pilih Tanggal</span>}
+              </Button>
+            </PopoverTrigger>
+            <PopoverContent className="w-auto p-0" align="start">
+              <Calendar
+                mode="single"
+                selected={formData.tanggal_mulai}
+                onSelect={(date) => date && setFormData({ ...formData, tanggal_mulai: date })}
+                initialFocus
+              />
+            </PopoverContent>
+          </Popover>
+        </FormField>
+
+        <FormField label="Tanggal Berakhir" icon={CalendarIcon} required>
+          <Popover>
+            <PopoverTrigger asChild>
+              <Button
+                variant={"outline"}
+                className={cn(
+                  "w-full justify-start text-left font-semibold h-9 text-[13px] border-border/50",
+                  !formData.tanggal_akhir && "text-muted-foreground"
+                )}
+              >
+                <CalendarIcon className="mr-2 h-4 w-4 opacity-50" />
+                {formData.tanggal_akhir ? format(formData.tanggal_akhir, "dd MMMM yyyy", { locale: id }) : <span>Pilih Tanggal</span>}
+              </Button>
+            </PopoverTrigger>
+            <PopoverContent className="w-auto p-0" align="start">
+              <Calendar
+                mode="single"
+                selected={formData.tanggal_akhir}
+                onSelect={(date) => date && setFormData({ ...formData, tanggal_akhir: date })}
+                initialFocus
+              />
+            </PopoverContent>
+          </Popover>
         </FormField>
       </div>
 
-      <div className="flex items-center justify-end gap-3 pt-6 border-t font-semibold">
+      <div className="flex items-center justify-end gap-3 pt-4 border-t font-semibold">
         <Button
           type="button"
           variant="ghost"
           onClick={onCancel}
-          className="h-10 px-8 text-[11px] font-black uppercase tracking-wider text-muted-foreground hover:text-foreground rounded-xl italic"
+          className="h-9 px-8 text-[10px] font-bold uppercase tracking-wider text-muted-foreground hover:text-foreground rounded-lg"
           disabled={loading}
         >
-          <X className="mr-2 h-4 w-4" /> Batal
+          <X className="mr-2 h-3.5 w-3.5" /> Batal
         </Button>
         <Button
           type="submit"
+          className="h-9 px-10 text-[10px] font-bold uppercase tracking-wider shadow-md shadow-primary/20 bg-primary hover:bg-primary/90 text-white rounded-lg"
           disabled={loading}
-          className="h-10 px-10 text-[11px] font-black uppercase tracking-widest shadow-lg shadow-primary/20 bg-primary hover:bg-primary/90 text-white rounded-xl italic"
         >
           {loading ? (
-            <span className="flex items-center gap-2">
-              <div className="h-4 w-4 animate-spin rounded-full border-2 border-white border-t-transparent" />
-              Menyimpan...
-            </span>
+             <span className="flex items-center gap-2">
+                <div className="h-3 w-3 animate-spin rounded-full border-2 border-white border-t-transparent" />
+                Menyimpan...
+             </span>
           ) : (
             <span className="flex items-center gap-2">
               <Save className="h-4 w-4" />
-              {initialData ? "Simpan Perubahan" : "Aktifkan Promo"}
+              {initialData ? "Update Promo" : "Aktifkan Promo"}
             </span>
           )}
         </Button>
