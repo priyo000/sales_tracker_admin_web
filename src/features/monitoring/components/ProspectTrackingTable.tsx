@@ -140,8 +140,8 @@ const ProspectTrackingTable: React.FC<ProspectTrackingTableProps> = ({
                   <tr>
                     <th className="px-4 py-3 text-[10px] font-black uppercase tracking-widest text-muted-foreground w-12 text-center">No</th>
                     <th className="px-4 py-3 text-[10px] font-black uppercase tracking-widest text-muted-foreground">Toko</th>
-                    <th className="px-4 py-3 text-[10px] font-black uppercase tracking-widest text-muted-foreground">Pemilik</th>
                     <th className="px-4 py-3 text-[10px] font-black uppercase tracking-widest text-muted-foreground">Lokasi</th>
+                    <th className="px-4 py-3 text-[10px] font-black uppercase tracking-widest text-muted-foreground">Dikunjungi</th>
                     <th className="px-4 py-3 text-[10px] font-black uppercase tracking-widest text-muted-foreground">Alasan/Keterangan</th>
                   </tr>
                 </thead>
@@ -152,9 +152,6 @@ const ProspectTrackingTable: React.FC<ProspectTrackingTableProps> = ({
                       <td className="px-4 py-3 font-bold text-primary group-hover:text-primary transition-colors">
                         {prospect.nama_toko.toUpperCase()}
                       </td>
-                      <td className="px-4 py-3 text-slate-600 dark:text-slate-400 font-medium">
-                        {prospect.nama_pemilik}
-                      </td>
                       <td className="px-4 py-3">
                         <div className="flex flex-col">
                           <span className="text-xs font-semibold text-slate-700 dark:text-slate-300">
@@ -164,6 +161,9 @@ const ProspectTrackingTable: React.FC<ProspectTrackingTableProps> = ({
                             {prospect.kota_usaha || "-"}
                           </span>
                         </div>
+                      </td>
+                      <td className="px-4 py-3 text-slate-600 dark:text-slate-400 font-medium">
+                        {prospect.created_at}
                       </td>
                       <td className="px-4 py-3 max-w-[200px]">
                         <p className="text-xs italic text-slate-500 line-clamp-2" title={prospect.catatan_lain}>
