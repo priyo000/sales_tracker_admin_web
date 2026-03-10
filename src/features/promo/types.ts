@@ -4,6 +4,7 @@ import { Produk } from "../produk/types";
 export interface PromoCluster {
   id: number;
   id_perusahaan: number;
+  id_divisi: number | null;
   nama_cluster: string;
   deskripsi: string | null;
   is_aktif: boolean;
@@ -25,6 +26,7 @@ export interface PromoClusterPelanggan {
 export interface PromoAturanHarga {
   id: number;
   id_produk: number;
+  id_divisi: number | null;
   id_promo_cluster: number | null;
   harga_manual: string | null;
   diskon_persen: string | null;
@@ -37,6 +39,7 @@ export interface PromoAturanHarga {
 export interface PromoGrosir {
   id: number;
   id_produk: number;
+  id_divisi: number | null;
   id_promo_cluster: number | null;
   min_qty: number;
   harga_spesial: string | null;
@@ -49,6 +52,7 @@ export interface PromoGrosir {
 
 export interface PromoHadiah {
   id: number;
+  id_divisi: number | null;
   nama_promo: string;
   jenis_pemicu: 'produk' | 'total_nota';
   id_produk_pemicu: number | null;
