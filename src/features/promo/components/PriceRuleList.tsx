@@ -1,5 +1,5 @@
 import React from "react";
-import { Edit, Trash, Calendar, Target, Package } from "lucide-react";
+import { Edit, Trash, Calendar, Target } from "lucide-react";
 import { PromoAturanHarga } from "../types";
 import { DataTable, type ColumnDef } from "@/components/ui/data-table";
 import { Badge } from "@/components/ui/badge";
