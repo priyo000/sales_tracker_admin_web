@@ -57,7 +57,9 @@ export const PriceRuleList: React.FC<PriceRuleListProps> = ({
             </Badge>
           )}
           {row.id_divisi && (
-            <span className="text-[9px] font-bold text-muted-foreground opacity-60 ml-1 uppercase">Divisi #{row.id_divisi}</span>
+            <span className="text-[9px] font-bold text-muted-foreground opacity-60 ml-1 uppercase">
+              {row.divisi?.nama_divisi || `Divisi #${row.id_divisi}`}
+            </span>
           )}
         </div>
       ),

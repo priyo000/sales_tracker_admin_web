@@ -24,6 +24,7 @@ import { cn } from "@/lib/utils";
 import { PromoCluster, PromoAturanHarga } from "../types";
 import { Divisi } from "@/features/divisi/types";
 import { Produk } from "@/features/produk/types";
+import { useAuth } from "@/hooks/useAuth";
 
 interface PriceRuleFormProps {
   clusters: PromoCluster[];
@@ -54,8 +55,8 @@ export const PriceRuleForm = ({ clusters, initialData, onSubmit, onCancel, loadi
     fetchDivisis();
   }, [fetchProduks, fetchDivisis, searchProduk]);
 
-  const userRole = localStorage.getItem("user_role");
-  const isSuperOrCompanyAdmin = userRole === "superadmin" || userRole === "admin_perusahaan";
+  const { user } = useAuth();
+  const isSuperOrCompanyAdmin = user?.peran === "super_admin" || user?.peran === "admin_perusahaan";
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();

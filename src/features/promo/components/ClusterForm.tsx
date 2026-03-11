@@ -15,6 +15,7 @@ import { Type, FileText, CheckCircle2, LayoutGrid, X, Save } from "lucide-react"
 import { useDivisi } from "@/features/divisi/hooks/useDivisi";
 import { FormField } from "@/components/ui/FormField";
 import { Divisi } from "@/features/divisi/types";
+import { useAuth } from "@/hooks/useAuth";
 
 import { PromoCluster } from "../types";
 
@@ -38,8 +39,8 @@ export const ClusterForm = ({ initialData, onSubmit, onCancel, loading }: Cluste
     fetchDivisis();
   }, [fetchDivisis]);
 
-  const userRole = localStorage.getItem("user_role");
-  const isSuperOrCompanyAdmin = userRole === "superadmin" || userRole === "admin_perusahaan";
+  const { user } = useAuth();
+  const isSuperOrCompanyAdmin = user?.peran === "super_admin" || user?.peran === "admin_perusahaan";
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();

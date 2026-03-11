@@ -9,6 +9,10 @@ export interface PromoCluster {
   deskripsi: string | null;
   is_aktif: boolean;
   pelanggan_assignments_count?: number;
+  divisi?: {
+    id: number;
+    nama_divisi: string;
+  };
   created_at: string;
   updated_at: string;
 }
@@ -34,6 +38,10 @@ export interface PromoAturanHarga {
   tanggal_akhir: string;
   produk?: Produk;
   cluster?: PromoCluster;
+  divisi?: {
+    id: number;
+    nama_divisi: string;
+  };
 }
 
 export interface PromoGrosir {
@@ -48,6 +56,10 @@ export interface PromoGrosir {
   tanggal_akhir: string;
   produk?: Produk;
   cluster?: PromoCluster;
+  divisi?: {
+    id: number;
+    nama_divisi: string;
+  };
 }
 
 export interface PromoHadiah {
@@ -65,4 +77,8 @@ export interface PromoHadiah {
   tanggal_akhir: string;
   pemicu?: Produk;
   hadiah?: Produk;
+  divisi?: {
+    id: number;
+    nama_divisi: string;
+  };
 }

@@ -43,7 +43,7 @@ export const ClusterList: React.FC<ClusterListProps> = ({
         <div className="flex items-center gap-2">
           {row.id_divisi ? (
             <Badge variant="outline" className="bg-primary/5 text-primary border-primary/10 font-bold text-[10px] uppercase">
-              <LayoutGrid className="h-3 w-3 mr-1" /> Divisi #{row.id_divisi}
+              <LayoutGrid className="h-3 w-3 mr-1" /> {row.divisi?.nama_divisi || `Divisi #${row.id_divisi}`}
             </Badge>
           ) : (
             <Badge variant="secondary" className="font-bold text-[10px] uppercase">
