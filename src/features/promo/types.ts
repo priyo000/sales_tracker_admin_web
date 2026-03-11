@@ -21,14 +21,34 @@ export interface PromoClusterPelanggan {
   id: number;
   id_pelanggan: number;
   id_promo_cluster: number;
-  tanggal_mulai: string;
-  tanggal_akhir: string;
   pelanggan?: Pelanggan;
   cluster?: PromoCluster;
 }
 
+export interface PromoCampaign {
+  id: number;
+  nama_promo: string;
+  tipe_promo: 'aturan_harga' | 'grosir' | 'hadiah';
+  tanggal_mulai: string;
+  tanggal_akhir: string;
+  id_promo_cluster: number | null;
+  items_count?: number;
+  products_summary?: string;
+  pemicu_summary?: string;
+  cluster?: PromoCluster;
+  hadiah?: Produk;
+  qty_hadiah?: number;
+  min_qty?: number;
+  diskon_persen?: string | null;
+  harga_spesial?: string | null;
+  harga_tebus?: string;
+  min_amount_pemicu?: string | null;
+}
+
 export interface PromoAturanHarga {
   id: number;
+  nama_promo?: string;
+  id_promo_campaign: number | null;
   id_produk: number;
   id_divisi: number | null;
   id_promo_cluster: number | null;
@@ -46,6 +66,8 @@ export interface PromoAturanHarga {
 
 export interface PromoGrosir {
   id: number;
+  nama_promo?: string;
+  id_promo_campaign: number | null;
   id_produk: number;
   id_divisi: number | null;
   id_promo_cluster: number | null;
@@ -64,7 +86,9 @@ export interface PromoGrosir {
 
 export interface PromoHadiah {
   id: number;
+  id_promo_campaign: number | null;
   id_divisi: number | null;
+  id_promo_cluster: number | null;
   nama_promo: string;
   jenis_pemicu: 'produk' | 'total_nota';
   id_produk_pemicu: number | null;
@@ -77,6 +101,7 @@ export interface PromoHadiah {
   tanggal_akhir: string;
   pemicu?: Produk;
   hadiah?: Produk;
+  cluster?: PromoCluster;
   divisi?: {
     id: number;
     nama_divisi: string;

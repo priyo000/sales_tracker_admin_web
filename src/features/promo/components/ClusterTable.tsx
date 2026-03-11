@@ -1,11 +1,11 @@
 import React from "react";
-import { Edit, Trash, Users, LayoutGrid } from "lucide-react";
+import { Edit, Trash, Users, LayoutGrid, UserPlus } from "lucide-react";
 import { PromoCluster } from "../types";
 import { DataTable, type ColumnDef } from "@/components/ui/data-table";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 
-interface ClusterListProps {
+interface ClusterTableProps {
   clusters: PromoCluster[];
   loading: boolean;
   onEdit: (cluster: PromoCluster) => void;
@@ -13,7 +13,7 @@ interface ClusterListProps {
   onViewCustomers: (cluster: PromoCluster) => void;
 }
 
-export const ClusterList: React.FC<ClusterListProps> = ({ 
+export const ClusterTable: React.FC<ClusterTableProps> = ({ 
   clusters, 
   loading, 
   onEdit, 
@@ -26,11 +26,11 @@ export const ClusterList: React.FC<ClusterListProps> = ({
       header: "Nama Cluster",
       sortable: true,
       cell: (row) => (
-        <div>
-          <div className="font-semibold text-foreground uppercase tracking-tight">
+        <div className="py-1">
+          <div className="font-semibold text-foreground">
             {row.nama_cluster}
           </div>
-          <div className="text-[10px] text-muted-foreground font-medium uppercase tracking-widest">
+          <div className="text-xs text-muted-foreground">
             ID: CID-{row.id.toString().padStart(4, '0')}
           </div>
         </div>
@@ -42,11 +42,11 @@ export const ClusterList: React.FC<ClusterListProps> = ({
       cell: (row) => (
         <div className="flex items-center gap-2">
           {row.id_divisi ? (
-            <Badge variant="outline" className="bg-primary/5 text-primary border-primary/10 font-bold text-[10px] uppercase">
+            <Badge variant="outline" className="bg-primary/5 text-primary border-primary/10 font-medium text-xs">
               <LayoutGrid className="h-3 w-3 mr-1" /> {row.divisi?.nama_divisi || `Divisi #${row.id_divisi}`}
             </Badge>
           ) : (
-            <Badge variant="secondary" className="font-bold text-[10px] uppercase">
+            <Badge variant="secondary" className="font-medium text-xs">
               Global Perusahaan
             </Badge>
           )}
@@ -70,7 +70,7 @@ export const ClusterList: React.FC<ClusterListProps> = ({
         <Button 
           variant="ghost" 
           size="sm" 
-          className="h-8 gap-2 text-primary font-bold text-xs"
+          className="h-8 gap-2 text-primary font-semibold text-xs"
           onClick={() => onViewCustomers(row)}
         >
           <Users className="h-3.5 w-3.5" />
@@ -85,7 +85,7 @@ export const ClusterList: React.FC<ClusterListProps> = ({
       cell: (row) => (
         <Badge 
           variant={row.is_aktif ? "default" : "secondary"}
-          className={row.is_aktif ? "bg-emerald-500/10 text-emerald-600 border-emerald-200" : "opacity-50"}
+          className={row.is_aktif ? "bg-emerald-500/10 text-emerald-600 border-emerald-200" : "opacity-70"}
         >
           {row.is_aktif ? "Aktif" : "Non-Aktif"}
         </Badge>
@@ -97,6 +97,15 @@ export const ClusterList: React.FC<ClusterListProps> = ({
       className: "text-right",
       cell: (row) => (
         <div className="flex justify-end gap-1">
+          <Button
+            variant="ghost"
+            size="icon"
+            className="h-8 w-8 text-primary hover:bg-primary/10"
+            title="Kelola Pelanggan"
+            onClick={() => onViewCustomers(row)}
+          >
+            <UserPlus className="h-4 w-4" />
+          </Button>
           <Button
             variant="ghost"
             size="icon"

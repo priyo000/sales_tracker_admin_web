@@ -1,13 +1,13 @@
 import { useState, useCallback } from "react";
 import api from "../../../services/api";
-import { PromoCluster, PromoAturanHarga, PromoGrosir, PromoHadiah } from "../types";
 import { AxiosError } from "axios";
+import { PromoCluster, PromoCampaign } from "../types";
 
 export const usePromo = () => {
   const [clusters, setClusters] = useState<PromoCluster[]>([]);
-  const [priceRules, setPriceRules] = useState<PromoAturanHarga[]>([]);
-  const [grosirRules, setGrosirRules] = useState<PromoGrosir[]>([]);
-  const [rewardRules, setRewardRules] = useState<PromoHadiah[]>([]);
+  const [priceRules, setPriceRules] = useState<PromoCampaign[]>([]);
+  const [grosirRules, setGrosirRules] = useState<PromoCampaign[]>([]);
+  const [rewardRules, setRewardRules] = useState<PromoCampaign[]>([]);
   
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -26,11 +26,11 @@ export const usePromo = () => {
     }
   }, []);
 
-  const fetchPriceRules = useCallback(async () => {
+  const fetchPriceRules = useCallback(async (grouped = false) => {
     setLoading(true);
     setError(null);
     try {
-      const response = await api.get("/promo/aturan-harga");
+      const response = await api.get(`/promo/aturan-harga?group=${grouped}`);
       setPriceRules(response.data.data);
     } catch (err) {
       const error = err as AxiosError<{ message: string }>;
@@ -40,11 +40,11 @@ export const usePromo = () => {
     }
   }, []);
 
-  const fetchGrosirRules = useCallback(async () => {
+  const fetchGrosirRules = useCallback(async (grouped = false) => {
     setLoading(true);
     setError(null);
     try {
-      const response = await api.get("/promo/grosir");
+      const response = await api.get(`/promo/grosir?group=${grouped}`);
       setGrosirRules(response.data.data);
     } catch (err) {
       const error = err as AxiosError<{ message: string }>;
@@ -54,11 +54,11 @@ export const usePromo = () => {
     }
   }, []);
 
-  const fetchRewardRules = useCallback(async () => {
+  const fetchRewardRules = useCallback(async (grouped = false) => {
     setLoading(true);
     setError(null);
     try {
-      const response = await api.get("/promo/hadiah");
+      const response = await api.get(`/promo/hadiah?group=${grouped}`);
       setRewardRules(response.data.data);
     } catch (err) {
       const error = err as AxiosError<{ message: string }>;
@@ -111,7 +111,7 @@ export const usePromo = () => {
     }
   };
 
-  const fetchAssignedPelanggan = async (clusterId: number) => {
+  const fetchAssignedPelanggan = useCallback(async (clusterId: number) => {
     try {
       const response = await api.get(`/promo-cluster/${clusterId}/pelanggan`);
       return { success: true, data: response.data.data };
@@ -119,9 +119,9 @@ export const usePromo = () => {
       const error = err as AxiosError<{ message: string }>;
       return { success: false, message: error.response?.data?.message || "Gagal memuat pelanggan di cluster" };
     }
-  };
+  }, []);
 
-  const assignPelanggan = async (clusterId: number, data: Record<string, unknown>) => {
+  const assignPelanggan = useCallback(async (clusterId: number, data: Record<string, unknown>) => {
     try {
       const response = await api.post(`/promo-cluster/${clusterId}/assign`, data);
       await fetchClusters();
@@ -130,9 +130,9 @@ export const usePromo = () => {
       const error = err as AxiosError<{ message: string }>;
       return { success: false, message: error.response?.data?.message || "Gagal memasukkan pelanggan ke cluster" };
     }
-  };
+  }, [fetchClusters]);
 
-  const removePelangganAssignment = async (clusterId: number, assignmentId: number) => {
+  const removePelangganAssignment = useCallback(async (clusterId: number, assignmentId: number) => {
     try {
       await api.delete(`/promo-cluster/${clusterId}/pelanggan/${assignmentId}`);
       await fetchClusters();
@@ -141,7 +141,7 @@ export const usePromo = () => {
       const error = err as AxiosError<{ message: string }>;
       return { success: false, message: error.response?.data?.message || "Gagal mengeluarkan pelanggan dari cluster" };
     }
-  };
+  }, [fetchClusters]);
 
   // --- Price Rule Operations ---
   const createPriceRule = async (data: Record<string, unknown>) => {
@@ -234,11 +234,23 @@ export const usePromo = () => {
     setLoading(true);
     try {
       await api.delete(`/promo/hadiah/${id}`);
-      await fetchRewardRules();
       return { success: true };
     } catch (err) {
       const error = err as AxiosError<{ message: string }>;
       return { success: false, message: error.response?.data?.message || "Gagal menghapus promo hadiah" };
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const deleteCampaign = async (id: number) => {
+    setLoading(true);
+    try {
+      await api.delete(`/promo/campaign/${id}`);
+      return { success: true };
+    } catch (err) {
+      const error = err as AxiosError<{ message: string }>;
+      return { success: false, message: error.response?.data?.message || "Gagal menghapus campaign" };
     } finally {
       setLoading(false);
     }
@@ -268,5 +280,6 @@ export const usePromo = () => {
     deleteGrosirRule,
     createRewardRule,
     deleteRewardRule,
+    deleteCampaign,
   };
 };
