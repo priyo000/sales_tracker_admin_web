@@ -13,6 +13,7 @@ export interface Pelanggan {
     status: PelangganStatus;
     latitude: number | null;
     longitude: number | null;
+    id_rute?: number; // Added to fix TypeScript error in ClusterAssignmentModal
     foto_toko_url?: string;
     foto_ktp_url?: string;
     
