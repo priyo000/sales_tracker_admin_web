@@ -37,8 +37,11 @@ const PromoPage: React.FC = () => {
     deleteCluster,
     createPriceRule,
     updatePriceRule,
+    deletePriceRule,
     createGrosirRule,
+    deleteGrosirRule,
     createRewardRule,
+    deleteRewardRule,
     deleteCampaign
   } = usePromo();
 
@@ -62,9 +65,9 @@ const PromoPage: React.FC = () => {
   const [selectedCampaignView, setSelectedCampaignView] = useState<PromoCampaign | undefined>(undefined);
   
   const [deletingClusterId, setDeletingClusterId] = useState<number | null>(null);
-  const [deletingPriceRuleId, setDeletingPriceRuleId] = useState<number | null>(null);
-  const [deletingGrosirId, setDeletingGrosirId] = useState<number | null>(null);
-  const [deletingHadiahId, setDeletingHadiahId] = useState<number | null>(null);
+  const [targetDeletePriceRule, setTargetDeletePriceRule] = useState<PromoCampaign | null>(null);
+  const [targetDeleteGrosir, setTargetDeleteGrosir] = useState<PromoCampaign | null>(null);
+  const [targetDeleteHadiah, setTargetDeleteHadiah] = useState<PromoCampaign | null>(null);
 
   useEffect(() => {
     fetchClusters();
@@ -197,12 +200,12 @@ const PromoPage: React.FC = () => {
             {activeTab === "clusters" && <ClusterTable clusters={clusters} loading={loading} onEdit={handleOpenClusterModal} onDelete={setDeletingClusterId} onViewCustomers={setAssignmentCluster} />}
             {activeTab === "prices" && (
                 priceSubTab === "standard" ? (
-                    <PriceRuleTable rules={priceRules} loading={loading} onDelete={setDeletingPriceRuleId} onGrosirToggle={() => { setPriceSubTab("grosir"); fetchGrosirRules(true); }} onView={setSelectedCampaignView} />
+                    <PriceRuleTable rules={priceRules} loading={loading} onDelete={setTargetDeletePriceRule} onGrosirToggle={() => { setPriceSubTab("grosir"); fetchGrosirRules(true); }} onView={setSelectedCampaignView} />
                 ) : (
-                    <GrosirTable rules={grosirRules} loading={loading} onDelete={setDeletingGrosirId} onPriceToggle={() => { setPriceSubTab("standard"); fetchPriceRules(true); }} onView={setSelectedCampaignView} />
+                    <GrosirTable rules={grosirRules} loading={loading} onDelete={setTargetDeleteGrosir} onPriceToggle={() => { setPriceSubTab("standard"); fetchPriceRules(true); }} onView={setSelectedCampaignView} />
                 )
             )}
-            {activeTab === "rewards" && <HadiahTable rules={rewardRules} loading={loading} onDelete={setDeletingHadiahId} onView={setSelectedCampaignView} />}
+            {activeTab === "rewards" && <HadiahTable rules={rewardRules} loading={loading} onDelete={setTargetDeleteHadiah} onView={setSelectedCampaignView} />}
         </div>
       )}
 
@@ -264,50 +267,62 @@ const PromoPage: React.FC = () => {
 
       <ConfirmModal isOpen={!!deletingClusterId} onClose={() => setDeletingClusterId(null)} onConfirm={() => deleteCluster(deletingClusterId!).then(() => setDeletingClusterId(null))} title="Hapus Cluster" message="Apakah Anda yakin ingin menghapus cluster ini?" type="danger" />
       <ConfirmModal 
-        isOpen={!!deletingPriceRuleId} 
-        onClose={() => setDeletingPriceRuleId(null)} 
+        isOpen={!!targetDeletePriceRule} 
+        onClose={() => setTargetDeletePriceRule(null)} 
         onConfirm={async () => {
-          const res = await deleteCampaign(deletingPriceRuleId!);
+          if (!targetDeletePriceRule) return;
+          const res = targetDeletePriceRule.is_campaign 
+             ? await deleteCampaign(targetDeletePriceRule.id!)
+             : await deletePriceRule(targetDeletePriceRule.id);
+
           if (res.success) {
-            toast.success("Campaign berhasil dihapus");
+            toast.success("Aturan harga berhasil dihapus");
             fetchPriceRules(true);
           }
-          setDeletingPriceRuleId(null);
+          setTargetDeletePriceRule(null);
         }} 
-        title="Hapus Campaign" 
-        message="Menghapus campaign akan menghapus SEMUA aturan harga di dalamnya. Lanjutkan?" 
+        title="Hapus Aturan Harga" 
+        message={targetDeletePriceRule?.is_campaign ? "Menghapus campaign ini akan menghapus SEMUA aturan harga di dalamnya. Lanjutkan?" : "Menghapus aturan harga ini. Lanjutkan?"} 
         type="danger" 
       />
 
       <ConfirmModal 
-        isOpen={!!deletingGrosirId} 
-        onClose={() => setDeletingGrosirId(null)} 
+        isOpen={!!targetDeleteGrosir} 
+        onClose={() => setTargetDeleteGrosir(null)} 
         onConfirm={async () => {
-          const res = await deleteCampaign(deletingGrosirId!);
+          if (!targetDeleteGrosir) return;
+          const res = targetDeleteGrosir.is_campaign 
+             ? await deleteCampaign(targetDeleteGrosir.id!)
+             : await deleteGrosirRule(targetDeleteGrosir.id);
+
           if (res.success) {
-            toast.success("Campaign grosir berhasil dihapus");
+            toast.success("Kampanye grosir berhasil dihapus");
             fetchGrosirRules(true);
           }
-          setDeletingGrosirId(null);
+          setTargetDeleteGrosir(null);
         }} 
-        title="Hapus Campaign Grosir" 
-        message="Menghapus campaign akan menghapus SEMUA aturan grosir di dalamnya. Lanjutkan?" 
+        title="Hapus Grosir" 
+        message={targetDeleteGrosir?.is_campaign ? "Menghapus campaign ini akan menghapus SEMUA aturan grosir di dalamnya. Lanjutkan?" : "Menghapus aturan grosir ini. Lanjutkan?"} 
         type="danger" 
       />
 
       <ConfirmModal 
-        isOpen={!!deletingHadiahId} 
-        onClose={() => setDeletingHadiahId(null)} 
+        isOpen={!!targetDeleteHadiah} 
+        onClose={() => setTargetDeleteHadiah(null)} 
         onConfirm={async () => {
-          const res = await deleteCampaign(deletingHadiahId!);
+          if (!targetDeleteHadiah) return;
+          const res = targetDeleteHadiah.is_campaign 
+             ? await deleteCampaign(targetDeleteHadiah.id!)
+             : await deleteRewardRule(targetDeleteHadiah.id);
+
           if (res.success) {
-            toast.success("Campaign promo hadiah berhasil dihapus");
+            toast.success("Promo hadiah berhasil dihapus");
             fetchRewardRules(true);
           }
-          setDeletingHadiahId(null);
+          setTargetDeleteHadiah(null);
         }} 
-        title="Hapus Campaign Hadiah" 
-        message="Menghapus campaign akan menghapus SEMUA promo hadiah di dalamnya. Lanjutkan?" 
+        title="Hapus Promo Hadiah" 
+        message={targetDeleteHadiah?.is_campaign ? "Menghapus campaign ini akan menghapus SEMUA promo hadiah di dalamnya. Lanjutkan?" : "Menghapus hadiah ini. Lanjutkan?"} 
         type="danger" 
       />
 

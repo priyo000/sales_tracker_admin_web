@@ -43,8 +43,9 @@ export interface PromoCampaign {
   harga_spesial?: string | null;
   harga_tebus?: string;
   min_amount_pemicu?: string | null;
-  items?: any[];
+  items?: (PromoAturanHarga | PromoGrosir | PromoHadiah)[];
   jenis_promo?: string;
+  is_campaign?: boolean;
 }
 
 export interface PromoAturanHarga {

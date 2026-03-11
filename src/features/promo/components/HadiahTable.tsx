@@ -7,7 +7,7 @@ import { Button } from "@/components/ui/button";
 interface HadiahTableProps {
   rules: PromoCampaign[];
   loading: boolean;
-  onDelete: (id: number) => void;
+  onDelete: (row: PromoCampaign) => void;
   onView?: (campaign: PromoCampaign) => void;
 }
 
@@ -98,7 +98,7 @@ export const HadiahTable: React.FC<HadiahTableProps> = ({
                   <Eye className="h-4 w-4" />
               </Button>
             )}
-            <Button variant="ghost" size="icon" className="h-8 w-8 text-destructive hover:bg-destructive/10" onClick={() => onDelete(row.id)}>
+            <Button variant="ghost" size="icon" className="h-8 w-8 text-destructive hover:bg-destructive/10" onClick={() => onDelete(row)}>
               <Trash className="h-4 w-4" />
             </Button>
           </div>

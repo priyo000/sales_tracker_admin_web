@@ -7,7 +7,7 @@ import { Button } from "@/components/ui/button";
 interface PriceRuleTableProps {
   rules: PromoCampaign[];
   loading: boolean;
-  onDelete: (id: number) => void;
+  onDelete: (row: PromoCampaign) => void;
   onGrosirToggle?: () => void;
   onView?: (campaign: PromoCampaign) => void;
 }
@@ -108,7 +108,7 @@ export const PriceRuleTable: React.FC<PriceRuleTableProps> = ({
             variant="ghost"
             size="icon"
             className="h-8 w-8 text-destructive hover:text-destructive hover:bg-destructive/10"
-            onClick={() => onDelete(row.id)}
+            onClick={() => onDelete(row)}
           >
             <Trash className="h-4 w-4" />
           </Button>
