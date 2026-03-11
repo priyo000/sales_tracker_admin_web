@@ -10,6 +10,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Modal, ConfirmModal } from "@/components/ui/Modal";
 import { ClusterForm } from "@/features/promo/components/ClusterForm";
 import { PriceRuleForm } from "@/features/promo/components/PriceRuleForm";
+import { ClusterAssignmentModal } from "@/features/promo/components/ClusterAssignmentModal";
 import { PromoCluster, PromoAturanHarga } from "@/features/promo/types";
 
 const PromoPage: React.FC = () => {
@@ -36,6 +37,7 @@ const PromoPage: React.FC = () => {
   // Modal States
   const [isClusterModalOpen, setIsClusterModalOpen] = useState(false);
   const [selectedCluster, setSelectedCluster] = useState<PromoCluster | undefined>(undefined);
+  const [assignmentCluster, setAssignmentCluster] = useState<PromoCluster | null>(null);
   
   const [isPriceModalOpen, setIsPriceModalOpen] = useState(false);
   const [selectedPriceRule, setSelectedPriceRule] = useState<PromoAturanHarga | undefined>(undefined);
@@ -215,7 +217,7 @@ const PromoPage: React.FC = () => {
             loading={loading}
             onEdit={handleOpenClusterModal}
             onDelete={setDeletingClusterId}
-            onViewCustomers={() => toast.success("Fitur Assignment segera hadir")}
+            onViewCustomers={(cluster) => setAssignmentCluster(cluster)}
           />
         </div>
       )}
@@ -269,6 +271,13 @@ const PromoPage: React.FC = () => {
           loading={loading}
         />
       </Modal>
+
+      {/* Assignment Modal */}
+      <ClusterAssignmentModal
+        cluster={assignmentCluster}
+        isOpen={!!assignmentCluster}
+        onClose={() => setAssignmentCluster(null)}
+      />
 
       {/* Delete Confirmation modals */}
       <ConfirmModal

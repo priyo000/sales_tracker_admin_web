@@ -1,6 +1,7 @@
 import React, { useEffect, useState } from "react";
 import { Smartphone, Plus, Trash2, Download, AlertCircle, History, ExternalLink } from "lucide-react";
 import api from "../services/api";
+import { isAxiosError } from "axios";
 import { Button } from "../components/ui/button";
 import { Modal, ConfirmModal } from "../components/ui/Modal";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "../components/ui/card";
@@ -70,8 +71,11 @@ const AppUpdatePage: React.FC = () => {
         fetchUpdates();
       }
     } catch (error: unknown) {
-      const axiosError = error as any;
-      toast.error(axiosError.response?.data?.message || "Gagal memproses data");
+      if (isAxiosError(error) && error.response?.data?.message) {
+        toast.error(error.response.data.message);
+      } else {
+        toast.error("Gagal memproses data");
+      }
     }
   };
 

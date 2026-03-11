@@ -111,6 +111,38 @@ export const usePromo = () => {
     }
   };
 
+  const fetchAssignedPelanggan = async (clusterId: number) => {
+    try {
+      const response = await api.get(`/promo-cluster/${clusterId}/pelanggan`);
+      return { success: true, data: response.data.data };
+    } catch (err) {
+      const error = err as AxiosError<{ message: string }>;
+      return { success: false, message: error.response?.data?.message || "Gagal memuat pelanggan di cluster" };
+    }
+  };
+
+  const assignPelanggan = async (clusterId: number, data: Record<string, unknown>) => {
+    try {
+      const response = await api.post(`/promo-cluster/${clusterId}/assign`, data);
+      await fetchClusters();
+      return { success: true, data: response.data.data };
+    } catch (err) {
+      const error = err as AxiosError<{ message: string }>;
+      return { success: false, message: error.response?.data?.message || "Gagal memasukkan pelanggan ke cluster" };
+    }
+  };
+
+  const removePelangganAssignment = async (clusterId: number, assignmentId: number) => {
+    try {
+      await api.delete(`/promo-cluster/${clusterId}/pelanggan/${assignmentId}`);
+      await fetchClusters();
+      return { success: true };
+    } catch (err) {
+      const error = err as AxiosError<{ message: string }>;
+      return { success: false, message: error.response?.data?.message || "Gagal mengeluarkan pelanggan dari cluster" };
+    }
+  };
+
   // --- Price Rule Operations ---
   const createPriceRule = async (data: Record<string, unknown>) => {
     setLoading(true);
@@ -226,6 +258,9 @@ export const usePromo = () => {
     createCluster,
     updateCluster,
     deleteCluster,
+    fetchAssignedPelanggan,
+    assignPelanggan,
+    removePelangganAssignment,
     createPriceRule,
     updatePriceRule,
     deletePriceRule,
