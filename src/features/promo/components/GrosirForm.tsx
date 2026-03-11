@@ -2,21 +2,14 @@ import React, { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue
+  Select, SelectContent, SelectItem, SelectTrigger, SelectValue
 } from "@/components/ui/select";
-import {
-  Popover,
-  PopoverContent,
-  PopoverTrigger,
-} from "@/components/ui/popover";
+import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { Calendar } from "@/components/ui/calendar";
 import {
   CalendarIcon, Tag, Package, Percent, Save, LayoutGrid, Search,
-  Check, ChevronDown, Trash2, Info, Layers, Boxes, Plus, AlertCircle, ArrowRight
+  Check, ChevronDown, Trash2, Info, Layers, Boxes, Plus, AlertCircle,
+  ArrowRight, ChevronUp
 } from "lucide-react";
 import { format } from "date-fns";
 import { useProduk } from "@/features/produk/hooks/useProduk";
@@ -29,11 +22,20 @@ import { Produk } from "@/features/produk/types";
 import { useAuth } from "@/hooks/useAuth";
 import { Badge } from "@/components/ui/badge";
 
+// ─── Types ───────────────────────────────────────────────────────────────────
+
 interface PriceTier {
   id: string;
   min_qty: string;
-  harga_spesial: string;
   diskon_persen: string;
+  harga_spesial: string;   // calculated or manual
+  mode: "diskon" | "harga"; // which field is primary
+}
+
+interface ProductEntry {
+  produk: Produk;
+  tiers: PriceTier[];
+  collapsed: boolean;
 }
 
 interface GrosirFormProps {
@@ -44,27 +46,37 @@ interface GrosirFormProps {
   loading?: boolean;
 }
 
-const newTier = (): PriceTier => ({
-  id: Math.random().toString(36).slice(2),
+// ─── Helpers ─────────────────────────────────────────────────────────────────
+
+const makeTierId = () => Math.random().toString(36).slice(2);
+
+const emptyTier = (): PriceTier => ({
+  id: makeTierId(),
   min_qty: "",
-  harga_spesial: "",
   diskon_persen: "",
+  harga_spesial: "",
+  mode: "diskon",
 });
+
+const calcHarga = (hargaAsli: number, diskon: string): string => {
+  const d = parseFloat(diskon);
+  if (!d || d <= 0 || d >= 100) return "";
+  return Math.round(hargaAsli * (1 - d / 100)).toString();
+};
+
+const calcDiskon = (hargaAsli: number, harga: string): string => {
+  const h = parseFloat(harga);
+  if (!h || h <= 0 || h >= hargaAsli) return "";
+  return ((1 - h / hargaAsli) * 100).toFixed(2);
+};
+
+// ─── Component ───────────────────────────────────────────────────────────────
 
 export const GrosirForm = ({ clusters, initialData, onSubmit, onCancel, loading }: GrosirFormProps) => {
   const { produks, fetchProduks, loading: searchLoading } = useProduk();
   const { divisis, fetchDivisis } = useDivisi();
   const { user } = useAuth();
   const isSuperOrCompanyAdmin = user?.peran === "super_admin" || user?.peran === "admin_perusahaan";
-
-  const [selectedProductIds, setSelectedProductIds] = useState<number[]>(
-    initialData?.id_produk ? [initialData.id_produk] : []
-  );
-
-  const [persistedProdukMap, setPersistedProdukMap] = useState<Record<number, Produk>>(() => {
-    if (initialData?.produk) return { [initialData.id_produk]: initialData.produk };
-    return {};
-  });
 
   const [formData, setFormData] = useState({
     nama_promo: initialData?.nama_promo || "",
@@ -76,22 +88,26 @@ export const GrosirForm = ({ clusters, initialData, onSubmit, onCancel, loading 
       : new Date(new Date().setMonth(new Date().getMonth() + 1)),
   });
 
-  // Tiers — for edit mode seed from initial data
-  const [tiers, setTiers] = useState<PriceTier[]>(() => {
-    if (initialData) {
+  // Product entries — each product has its own tier list
+  const [productEntries, setProductEntries] = useState<ProductEntry[]>(() => {
+    if (initialData?.produk) {
       return [{
-        id: "init",
-        min_qty: initialData.min_qty?.toString() || "1",
-        harga_spesial: initialData.harga_spesial || "",
-        diskon_persen: initialData.diskon_persen || "",
+        produk: initialData.produk as Produk,
+        tiers: [{
+          id: "init",
+          min_qty: initialData.min_qty?.toString() || "1",
+          diskon_persen: initialData.diskon_persen || "",
+          harga_spesial: initialData.harga_spesial || "",
+          mode: initialData.diskon_persen ? "diskon" : "harga",
+        }],
+        collapsed: false,
       }];
     }
-    return [newTier()];
+    return [];
   });
 
   const [searchProduk, setSearchProduk] = useState("");
   const [isProdukPopoverOpen, setIsProdukPopoverOpen] = useState(false);
-
   const [errors, setErrors] = useState<string[]>([]);
 
   useEffect(() => { fetchDivisis(); }, [fetchDivisis]);
@@ -105,71 +121,112 @@ export const GrosirForm = ({ clusters, initialData, onSubmit, onCancel, loading 
     }
   }, [fetchProduks, searchProduk, isProdukPopoverOpen]);
 
-  useEffect(() => {
-    if (produks.length > 0) {
-      const hasNew = produks.some(p => !persistedProdukMap[p.id]);
-      if (hasNew) {
-        setPersistedProdukMap(prev => {
-          const next = { ...prev };
-          produks.forEach(p => { if (!next[p.id]) next[p.id] = p; });
-          return next;
-        });
-      }
-    }
-  }, [produks, persistedProdukMap]);
+  // ─── Product management ─────────────────────────────────────────────────
 
-  const handleToggleProduct = (product: Produk) => {
-    if (initialData) {
-      setSelectedProductIds([product.id]);
-      setIsProdukPopoverOpen(false);
+  const addProduct = (p: Produk) => {
+    if (initialData) return; // edit mode: single product
+    const alreadyIn = productEntries.some(e => e.produk.id === p.id);
+    if (alreadyIn) {
+      setProductEntries(prev => prev.filter(e => e.produk.id !== p.id));
       return;
     }
-    setSelectedProductIds(prev =>
-      prev.includes(product.id) ? prev.filter(id => id !== product.id) : [...prev, product.id]
-    );
+    setProductEntries(prev => [...prev, { produk: p, tiers: [emptyTier()], collapsed: false }]);
   };
 
-  const handleSelectAllFiltered = () => {
-    const ids = produks.map(p => p.id);
-    setSelectedProductIds(prev => {
-      const merged = [...new Set([...prev, ...ids])];
-      ids.forEach(id => {
-        const p = produks.find(x => x.id === id);
-        if (p) setPersistedProdukMap(m => ({ ...m, [id]: p }));
-      });
-      return merged;
-    });
-  };
+  const removeProduct = (produkId: number) =>
+    setProductEntries(prev => prev.filter(e => e.produk.id !== produkId));
 
-  // --- Tier management ---
-  const addTier = () => setTiers(prev => [...prev, newTier()]);
+  const toggleCollapse = (produkId: number) =>
+    setProductEntries(prev => prev.map(e =>
+      e.produk.id === produkId ? { ...e, collapsed: !e.collapsed } : e
+    ));
 
-  const removeTier = (id: string) =>
-    setTiers(prev => prev.length > 1 ? prev.filter(t => t.id !== id) : prev);
+  // ─── Tier management ────────────────────────────────────────────────────
 
-  const updateTier = (id: string, field: keyof Omit<PriceTier, "id">, value: string) => {
-    setTiers(prev => prev.map(t => {
-      if (t.id !== id) return t;
-      // Mutually exclusive: if filling one, clear the other
-      if (field === "diskon_persen" && value) return { ...t, diskon_persen: value, harga_spesial: "" };
-      if (field === "harga_spesial" && value) return { ...t, harga_spesial: value, diskon_persen: "" };
-      return { ...t, [field]: value };
+  const addTier = (produkId: number) =>
+    setProductEntries(prev => prev.map(e =>
+      e.produk.id === produkId ? { ...e, tiers: [...e.tiers, emptyTier()] } : e
+    ));
+
+  const removeTier = (produkId: number, tierId: string) =>
+    setProductEntries(prev => prev.map(e => {
+      if (e.produk.id !== produkId || e.tiers.length <= 1) return e;
+      return { ...e, tiers: e.tiers.filter(t => t.id !== tierId) };
+    }));
+
+  const updateTierDiskon = (produkId: number, tierId: string, diskon: string) => {
+    setProductEntries(prev => prev.map(e => {
+      if (e.produk.id !== produkId) return e;
+      const hargaAsli = parseFloat(e.produk.harga_jual);
+      return {
+        ...e, tiers: e.tiers.map(t => t.id !== tierId ? t : {
+          ...t,
+          mode: "diskon",
+          diskon_persen: diskon,
+          harga_spesial: calcHarga(hargaAsli, diskon),
+        })
+      };
     }));
   };
 
+  const updateTierHarga = (produkId: number, tierId: string, harga: string) => {
+    setProductEntries(prev => prev.map(e => {
+      if (e.produk.id !== produkId) return e;
+      const hargaAsli = parseFloat(e.produk.harga_jual);
+      return {
+        ...e, tiers: e.tiers.map(t => t.id !== tierId ? t : {
+          ...t,
+          mode: "harga",
+          harga_spesial: harga,
+          diskon_persen: calcDiskon(hargaAsli, harga),
+        })
+      };
+    }));
+  };
+
+  const updateTierMinQty = (produkId: number, tierId: string, qty: string) =>
+    setProductEntries(prev => prev.map(e =>
+      e.produk.id !== produkId ? e : {
+        ...e, tiers: e.tiers.map(t => t.id !== tierId ? t : { ...t, min_qty: qty })
+      }
+    ));
+
+  // ─── Copy tiers from first product to all ──────────────────────────────
+  const copyTiersToAll = (sourceProdukId: number) => {
+    const source = productEntries.find(e => e.produk.id === sourceProdukId);
+    if (!source) return;
+    setProductEntries(prev => prev.map(e => {
+      if (e.produk.id === sourceProdukId) return e;
+      // Re-calculate harga for each tier based on target product's harga_jual
+      const hargaAsli = parseFloat(e.produk.harga_jual);
+      const newTiers = source.tiers.map(t => ({
+        ...t,
+        id: makeTierId(),
+        harga_spesial: t.diskon_persen ? calcHarga(hargaAsli, t.diskon_persen) : t.harga_spesial,
+      }));
+      return { ...e, tiers: newTiers };
+    }));
+  };
+
+  // ─── Validation & Submit ────────────────────────────────────────────────
+
   const validate = (): boolean => {
     const errs: string[] = [];
-    if (selectedProductIds.length === 0) errs.push("Pilih minimal 1 produk.");
-    if (!formData.nama_promo.trim()) errs.push("Nama promo wajib diisi.");
+    if (productEntries.length === 0) errs.push("Tambahkan minimal 1 produk.");
+    if (!formData.nama_promo.trim()) errs.push("Nama kampanye wajib diisi.");
 
-    const sortedTiers = [...tiers].sort((a, b) => parseInt(a.min_qty) - parseInt(b.min_qty));
-    const tierQtys = new Set<string>();
-
-    sortedTiers.forEach((t, i) => {
-      if (!t.min_qty || parseInt(t.min_qty) < 1) errs.push(`Tier ${i + 1}: Minimal qty harus diisi dan > 0.`);
-      if (!t.harga_spesial && !t.diskon_persen) errs.push(`Tier ${i + 1}: Isi Harga NET atau Diskon %.`);
-      if (tierQtys.has(t.min_qty)) errs.push(`Tier ${i + 1}: Min qty duplikat (${t.min_qty}).`);
-      tierQtys.add(t.min_qty);
+    productEntries.forEach((entry, pi) => {
+      const qtys = new Set<string>();
+      entry.tiers.forEach((t, ti) => {
+        if (!t.min_qty || parseInt(t.min_qty) < 1)
+          errs.push(`${entry.produk.nama_produk} — Tier ${ti + 1}: Min qty wajib diisi (> 0).`);
+        if (!t.harga_spesial && !t.diskon_persen)
+          errs.push(`${entry.produk.nama_produk} — Tier ${ti + 1}: Isi Diskon % atau Harga NET.`);
+        if (qtys.has(t.min_qty))
+          errs.push(`${entry.produk.nama_produk} — Tier ${ti + 1}: Min qty ${t.min_qty} duplikat.`);
+        qtys.add(t.min_qty);
+      });
+      if (pi > 50) errs.push("Maksimal 50 produk per kampanye."); // guard
     });
 
     setErrors(errs);
@@ -180,85 +237,99 @@ export const GrosirForm = ({ clusters, initialData, onSubmit, onCancel, loading 
     e.preventDefault();
     if (!validate()) return;
 
-    const sortedTiers = [...tiers]
-      .sort((a, b) => parseInt(a.min_qty) - parseInt(b.min_qty))
-      .map(t => ({
-        min_qty: parseInt(t.min_qty),
-        harga_spesial: t.harga_spesial ? parseFloat(t.harga_spesial) : null,
-        diskon_persen: t.diskon_persen ? parseFloat(t.diskon_persen) : null,
-      }));
+    if (initialData) {
+      // Edit mode: single product single-tier (legacy)
+      const entry = productEntries[0];
+      const tier = entry.tiers[0];
+      onSubmit({
+        nama_promo: formData.nama_promo,
+        id_produk: entry.produk.id,
+        id_promo_cluster: formData.id_promo_cluster === "null" ? null : parseInt(formData.id_promo_cluster),
+        id_divisi: formData.id_divisi === "null" ? null : parseInt(formData.id_divisi),
+        tanggal_mulai: format(formData.tanggal_mulai, "yyyy-MM-dd"),
+        tanggal_akhir: format(formData.tanggal_akhir, "yyyy-MM-dd"),
+        min_qty: parseInt(tier.min_qty),
+        harga_spesial: tier.harga_spesial ? parseFloat(tier.harga_spesial) : null,
+        diskon_persen: tier.diskon_persen ? parseFloat(tier.diskon_persen) : null,
+      });
+      return;
+    }
+
+    // Create mode: per-product tiers
+    const products = productEntries.map(entry => ({
+      id_produk: entry.produk.id,
+      tiers: [...entry.tiers]
+        .sort((a, b) => parseInt(a.min_qty) - parseInt(b.min_qty))
+        .map(t => ({
+          min_qty: parseInt(t.min_qty),
+          diskon_persen: t.diskon_persen ? parseFloat(t.diskon_persen) : null,
+          harga_spesial: t.harga_spesial ? parseFloat(t.harga_spesial) : null,
+        })),
+    }));
 
     onSubmit({
       nama_promo: formData.nama_promo,
-      id_produk: initialData ? selectedProductIds[0] : selectedProductIds,
       id_promo_cluster: formData.id_promo_cluster === "null" ? null : parseInt(formData.id_promo_cluster),
       id_divisi: formData.id_divisi === "null" ? null : parseInt(formData.id_divisi),
       tanggal_mulai: format(formData.tanggal_mulai, "yyyy-MM-dd"),
       tanggal_akhir: format(formData.tanggal_akhir, "yyyy-MM-dd"),
-      tiers: sortedTiers,
+      products, // new per-product format
     });
   };
 
-  const sortedTiersPreview = [...tiers].sort((a, b) => parseInt(a.min_qty || "0") - parseInt(b.min_qty || "0"));
-  const totalRows = selectedProductIds.length * tiers.length;
+  const totalRules = productEntries.reduce((sum, e) => sum + e.tiers.length, 0);
+  const selectedIds = productEntries.map(e => e.produk.id);
+
+  // ─── Render ─────────────────────────────────────────────────────────────
 
   return (
-    <form onSubmit={handleSubmit} className="flex flex-col h-[790px] -m-2">
+    <form onSubmit={handleSubmit} className="flex flex-col h-[800px] -m-2">
       <div className="flex-1 overflow-y-auto p-5 space-y-5">
 
-        {/* === Section 1: Campaign Info === */}
+        {/* ── Section 1: Campaign Info ── */}
         <div className="bg-muted/30 p-5 rounded-2xl border border-border/50 space-y-4">
-          <div className="flex items-center gap-2 mb-1">
+          <div className="flex items-center gap-2">
             <div className="p-1.5 bg-primary/10 rounded-lg"><Tag className="h-4 w-4 text-primary" /></div>
-            <span className="text-xs font-bold uppercase tracking-widest text-muted-foreground">Info Campaign</span>
+            <span className="text-xs font-bold uppercase tracking-widest text-muted-foreground">Info Kampanye</span>
           </div>
-
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             <div className="md:col-span-2">
               <FormField label="Nama Kampanye Grosir" icon={Tag} required>
                 <Input
                   placeholder="Contoh: Grosir Lebaran 2026"
                   value={formData.nama_promo}
-                  onChange={(e) => setFormData({ ...formData, nama_promo: e.target.value })}
+                  onChange={e => setFormData({ ...formData, nama_promo: e.target.value })}
                   className="h-10 bg-card border-border/50 text-sm font-semibold"
                   required
-                  onKeyDown={(e) => { if (e.key === 'Enter') e.preventDefault(); }}
+                  onKeyDown={e => { if (e.key === 'Enter') e.preventDefault(); }}
                 />
               </FormField>
             </div>
 
             <FormField label="Target Cluster" icon={Tag}>
-              <Select
-                value={formData.id_promo_cluster}
-                onValueChange={(val) => setFormData({ ...formData, id_promo_cluster: val, id_divisi: val !== "null" ? "null" : formData.id_divisi })}
-              >
+              <Select value={formData.id_promo_cluster}
+                onValueChange={val => setFormData({ ...formData, id_promo_cluster: val, id_divisi: val !== "null" ? "null" : formData.id_divisi })}>
                 <SelectTrigger className="h-10 bg-card border-border/50 text-sm font-semibold">
                   <SelectValue placeholder="Seluruh Pelanggan" />
                 </SelectTrigger>
                 <SelectContent>
                   <SelectItem value="null">Seluruh Pelanggan</SelectItem>
-                  {clusters.map((c: PromoCluster) => (
-                    <SelectItem key={c.id} value={c.id.toString()}>{c.nama_cluster}</SelectItem>
-                  ))}
+                  {clusters.map(c => <SelectItem key={c.id} value={c.id.toString()}>{c.nama_cluster}</SelectItem>)}
                 </SelectContent>
               </Select>
             </FormField>
 
             {isSuperOrCompanyAdmin && (
               <FormField label="Batasi ke Divisi" icon={LayoutGrid}>
-                <Select
-                  value={formData.id_divisi}
-                  onValueChange={(val) => setFormData({ ...formData, id_divisi: val })}
-                  disabled={formData.id_promo_cluster !== "null"}
-                >
+                <Select value={formData.id_divisi}
+                  onValueChange={val => setFormData({ ...formData, id_divisi: val })}
+                  disabled={formData.id_promo_cluster !== "null"}>
                   <SelectTrigger className="h-10 bg-card border-border/50 text-sm font-semibold disabled:opacity-50">
                     <SelectValue placeholder="Global" />
                   </SelectTrigger>
                   <SelectContent>
                     <SelectItem value="null">Global (Seluruh Divisi)</SelectItem>
-                    {divisis.map((d: Divisi) => (
-                      <SelectItem key={d.id} value={d.id.toString()}>{d.nama_divisi}</SelectItem>
-                    ))}
+                    {divisis.map((d: Divisi) => <SelectItem key={d.id} value={d.id.toString()}>{d.nama_divisi}</SelectItem>)}
                   </SelectContent>
                 </Select>
               </FormField>
@@ -273,7 +344,7 @@ export const GrosirForm = ({ clusters, initialData, onSubmit, onCancel, loading 
                   </Button>
                 </PopoverTrigger>
                 <PopoverContent className="w-auto p-0" align="start">
-                  <Calendar mode="single" selected={formData.tanggal_mulai} onSelect={(d) => d && setFormData({ ...formData, tanggal_mulai: d })} />
+                  <Calendar mode="single" selected={formData.tanggal_mulai} onSelect={d => d && setFormData({ ...formData, tanggal_mulai: d })} />
                 </PopoverContent>
               </Popover>
             </FormField>
@@ -287,72 +358,60 @@ export const GrosirForm = ({ clusters, initialData, onSubmit, onCancel, loading 
                   </Button>
                 </PopoverTrigger>
                 <PopoverContent className="w-auto p-0" align="start">
-                  <Calendar mode="single" selected={formData.tanggal_akhir} onSelect={(d) => d && setFormData({ ...formData, tanggal_akhir: d })} />
+                  <Calendar mode="single" selected={formData.tanggal_akhir} onSelect={d => d && setFormData({ ...formData, tanggal_akhir: d })} />
                 </PopoverContent>
               </Popover>
             </FormField>
           </div>
         </div>
 
-        {/* === Section 2: Product Selection === */}
-        <div className="space-y-3">
-          <FormField
-            label={`Produk yang Diikutkan (${selectedProductIds.length} dipilih)`}
-            icon={Package}
-            required
-          >
+        {/* ── Section 2: Add Products ── */}
+        <div className="space-y-2">
+          <div className="flex items-center justify-between">
+            <div className="flex items-center gap-2">
+              <div className="p-1.5 bg-orange-100 rounded-lg"><Package className="h-4 w-4 text-orange-600" /></div>
+              <span className="text-xs font-bold uppercase tracking-widest text-muted-foreground">Produk &amp; Ketentuan Tier</span>
+            </div>
+            {/* Add product trigger */}
             <Popover open={isProdukPopoverOpen} onOpenChange={setIsProdukPopoverOpen}>
               <PopoverTrigger asChild>
-                <Button
-                  type="button"
-                  variant="outline"
-                  className={cn(
-                    "w-full justify-between h-12 px-4 bg-card border-2 border-border/60 hover:border-primary/50 shadow-sm text-left font-bold text-sm rounded-xl transition-all",
-                    selectedProductIds.length === 0 && "text-muted-foreground"
-                  )}
-                >
-                  <div className="flex items-center gap-3">
-                    <Search className="h-4 w-4 text-primary" />
-                    <span>{selectedProductIds.length > 0 ? `${selectedProductIds.length} Produk Dipilih` : "Cari produk..."}</span>
-                  </div>
-                  <ChevronDown className="h-4 w-4 opacity-50" />
+                <Button type="button" size="sm"
+                  className="h-8 px-4 text-[11px] font-black bg-orange-600 hover:bg-orange-700 text-white rounded-xl gap-1.5">
+                  <Plus className="h-3.5 w-3.5" /> Tambah Produk
                 </Button>
               </PopoverTrigger>
-              <PopoverContent className="w-[580px] p-0 shadow-2xl rounded-2xl border-none overflow-hidden" align="start" sideOffset={8}>
+              <PopoverContent className="w-[560px] p-0 shadow-2xl rounded-2xl border-none overflow-hidden" align="end" sideOffset={8}>
                 <div className="flex items-center gap-3 p-4 border-b bg-card">
                   <div className="bg-primary/10 p-2 rounded-lg"><Search className="h-4 w-4 text-primary" /></div>
                   <input
                     className="bg-transparent text-sm outline-none w-full font-bold placeholder:text-muted-foreground/50"
                     placeholder="Cari nama produk atau SKU..."
                     value={searchProduk}
-                    onChange={(e) => setSearchProduk(e.target.value)}
-                    onKeyDown={(e) => { if (e.key === 'Enter') e.preventDefault(); }}
+                    onChange={e => setSearchProduk(e.target.value)}
+                    onKeyDown={e => { if (e.key === 'Enter') e.preventDefault(); }}
                     autoFocus
                   />
                   {searchLoading && <div className="h-4 w-4 border-2 border-primary/20 border-t-primary rounded-full animate-spin" />}
                 </div>
 
-                <div className="max-h-[320px] overflow-y-auto w-full pointer-events-auto" onWheel={(e) => e.stopPropagation()} onTouchMove={(e) => e.stopPropagation()}>
+                <div className="max-h-[320px] overflow-y-auto pointer-events-auto" onWheel={e => e.stopPropagation()}>
                   <div className="p-3 space-y-1">
-                    {produks.map((p: Produk) => {
-                      const isSelected = selectedProductIds.includes(p.id);
+                    {produks.map(p => {
+                      const isSelected = selectedIds.includes(p.id);
                       return (
-                        <div
-                          key={p.id}
-                          className={cn(
-                            "flex items-center gap-4 p-3.5 rounded-xl cursor-pointer transition-all border border-transparent",
-                            isSelected ? "bg-primary/5 border-primary/20" : "hover:bg-muted/50"
-                          )}
-                          onClick={() => handleToggleProduct(p)}
-                        >
-                          <div className={cn("h-5 w-5 rounded-md border-2 flex items-center justify-center transition-all flex-shrink-0", isSelected ? "bg-primary border-primary" : "border-border/60")}>
+                        <div key={p.id}
+                          className={cn("flex items-center gap-4 p-3.5 rounded-xl cursor-pointer transition-all border border-transparent",
+                            isSelected ? "bg-primary/5 border-primary/20" : "hover:bg-muted/50")}
+                          onClick={() => addProduct(p)}>
+                          <div className={cn("h-5 w-5 rounded-md border-2 flex items-center justify-center flex-shrink-0",
+                            isSelected ? "bg-primary border-primary" : "border-border/60")}>
                             {isSelected && <Check className="h-3.5 w-3.5 text-white" />}
                           </div>
                           <div className="flex flex-col flex-1 min-w-0">
-                            <span className="font-bold text-[13px] text-foreground truncate">{p.nama_produk}</span>
+                            <span className="font-bold text-[13px] truncate">{p.nama_produk}</span>
                             <div className="flex items-center gap-3 mt-0.5">
                               <Badge variant="outline" className="h-5 text-[9px] font-black uppercase bg-muted/50">{p.sku}</Badge>
-                              <span className="text-[10px] font-bold text-primary tabular-nums">{formatCurrency(parseFloat(p.harga_jual))}</span>
+                              <span className="text-[10px] font-bold text-primary">{formatCurrency(parseFloat(p.harga_jual))}</span>
                               <span className="text-[10px] text-muted-foreground">Stok: {p.stok_tersedia}</span>
                             </div>
                           </div>
@@ -365,246 +424,207 @@ export const GrosirForm = ({ clusters, initialData, onSubmit, onCancel, loading 
                   </div>
                 </div>
 
-                <div className="p-4 border-t bg-muted/30 flex items-center justify-between">
-                  <div className="flex items-center gap-2">
-                    <span className="text-[11px] font-black uppercase text-primary bg-primary/10 px-3 py-1.5 rounded-full">
-                      {selectedProductIds.length} Dipilih
-                    </span>
-                    {produks.length > 0 && !initialData && (
-                      <Button type="button" variant="outline" size="sm" className="h-8 px-3 text-[11px] font-bold rounded-xl border-primary/30 text-primary hover:bg-primary/10"
-                        onClick={handleSelectAllFiltered}>
-                        + Semua ({produks.length})
-                      </Button>
-                    )}
-                  </div>
-                  {selectedProductIds.length > 0 && !initialData && (
-                    <Button type="button" variant="ghost" size="sm" className="h-8 px-3 text-[11px] font-black text-destructive hover:bg-destructive/10 rounded-xl"
-                      onClick={() => setSelectedProductIds([])}>
-                      <Trash2 className="h-3.5 w-3.5 mr-1.5" /> Reset
-                    </Button>
-                  )}
+                <div className="p-3 border-t bg-muted/30 text-[11px] font-semibold text-muted-foreground text-center">
+                  {selectedIds.length} produk dipilih — klik produk untuk tambah/hapus
                 </div>
               </PopoverContent>
             </Popover>
-          </FormField>
+          </div>
 
-          {/* Selected products pills */}
-          {selectedProductIds.length > 0 && (
-            <div className="flex flex-wrap gap-1.5 max-h-20 overflow-y-auto pr-1">
-              {selectedProductIds.map(id => {
-                const p = persistedProdukMap[id];
-                return p ? (
-                  <div key={id} className="flex items-center gap-1.5 bg-primary/5 border border-primary/20 rounded-full px-2.5 py-1 text-[11px] font-semibold text-foreground">
-                    <span className="max-w-[120px] truncate">{p.nama_produk}</span>
-                    {!initialData && (
-                      <button type="button" className="text-muted-foreground hover:text-destructive transition-colors" onClick={() => setSelectedProductIds(prev => prev.filter(i => i !== id))}>×</button>
-                    )}
-                  </div>
-                ) : null;
-              })}
+          {/* ── Product Cards ── */}
+          {productEntries.length === 0 && (
+            <div className="border-2 border-dashed border-border/40 rounded-2xl p-8 text-center text-muted-foreground text-xs font-semibold flex flex-col items-center gap-2">
+              <Package className="h-8 w-8 opacity-20" />
+              <span>Klik &ldquo;Tambah Produk&rdquo; untuk mulai konfigurasi</span>
             </div>
           )}
-        </div>
 
-        {/* === Section 3: Harga Bertingkat === */}
-        <div className="bg-orange-50/60 p-5 rounded-2xl border border-orange-200 space-y-4">
-          <div className="flex items-center justify-between">
-            <div className="flex items-center gap-3">
-              <div className="p-2 bg-orange-500 rounded-xl shadow-lg shadow-orange-500/20">
-                <Layers className="h-4 w-4 text-white" />
-              </div>
-              <div>
-                <h3 className="text-sm font-bold text-orange-900">Harga Bertingkat (Tiers)</h3>
-                <p className="text-[10px] text-orange-700/70 font-semibold uppercase tracking-wider mt-0.5">Semakin banyak beli, semakin murah</p>
-              </div>
-            </div>
-            <Button
-              type="button"
-              onClick={addTier}
-              size="sm"
-              className="h-8 px-3 text-[11px] font-black bg-orange-600 hover:bg-orange-700 text-white rounded-xl gap-1.5"
-            >
-              <Plus className="h-3.5 w-3.5" /> Tambah Tier
-            </Button>
-          </div>
-
-          {/* Tier list */}
           <div className="space-y-3">
-            {tiers.map((tier, idx) => (
-              <div key={tier.id} className="bg-white rounded-xl border border-orange-200 p-4 shadow-sm">
-                <div className="flex items-center gap-2 mb-3">
-                  <div className="bg-orange-500 text-white text-[10px] font-black w-6 h-6 rounded-full flex items-center justify-center flex-shrink-0">
-                    {idx + 1}
+            {productEntries.map((entry, entryIdx) => {
+              const hargaAsli = parseFloat(entry.produk.harga_jual);
+              return (
+                <div key={entry.produk.id} className="border border-orange-200 rounded-2xl overflow-hidden shadow-sm">
+                  {/* Product Header */}
+                  <div className="flex items-center gap-3 px-4 py-3 bg-orange-50/60 cursor-pointer"
+                    onClick={() => !initialData && toggleCollapse(entry.produk.id)}>
+                    <div className="flex-1 min-w-0">
+                      <div className="flex items-center gap-2 flex-wrap">
+                        <span className="font-bold text-sm text-foreground truncate">{entry.produk.nama_produk}</span>
+                        <Badge variant="outline" className="h-5 text-[9px] font-black uppercase bg-white border-orange-200">{entry.produk.sku}</Badge>
+                        <span className="text-[11px] font-black text-orange-600">{formatCurrency(hargaAsli)}</span>
+                      </div>
+                      <div className="text-[10px] text-muted-foreground mt-0.5">
+                        {entry.tiers.length} tier dikonfigurasi
+                        {entry.tiers.every(t => t.min_qty && (t.diskon_persen || t.harga_spesial)) && (
+                          <span className="ml-2 text-emerald-600 font-bold">✓ Lengkap</span>
+                        )}
+                      </div>
+                    </div>
+                    <div className="flex items-center gap-2 flex-shrink-0">
+                      {entryIdx === 0 && productEntries.length > 1 && (
+                        <Button type="button" variant="outline" size="sm"
+                          className="h-7 px-2.5 text-[10px] font-black border-orange-200 text-orange-700 hover:bg-orange-100 rounded-xl"
+                          onClick={e => { e.stopPropagation(); copyTiersToAll(entry.produk.id); }}>
+                          Salin ke Semua
+                        </Button>
+                      )}
+                      {!initialData && (
+                        <button type="button" className="text-muted-foreground hover:text-destructive transition-colors p-1"
+                          onClick={e => { e.stopPropagation(); removeProduct(entry.produk.id); }}>
+                          <Trash2 className="h-4 w-4" />
+                        </button>
+                      )}
+                      {!initialData && (entry.collapsed
+                        ? <ChevronDown className="h-4 w-4 text-muted-foreground" />
+                        : <ChevronUp className="h-4 w-4 text-muted-foreground" />)}
+                    </div>
                   </div>
-                  <span className="text-xs font-bold text-orange-800 uppercase tracking-wide">
-                    Tier {idx + 1} {idx === 0 ? "— Minimum Pembelian Terendah" : idx === tiers.length - 1 ? "— Tier Tertinggi" : ""}
-                  </span>
-                  {tiers.length > 1 && (
-                    <button
-                      type="button"
-                      onClick={() => removeTier(tier.id)}
-                      className="ml-auto text-muted-foreground hover:text-destructive transition-colors"
-                    >
-                      <Trash2 className="h-4 w-4" />
-                    </button>
+
+                  {/* Tier Builder */}
+                  {!entry.collapsed && (
+                    <div className="p-4 bg-white space-y-3">
+                      {/* Column headers */}
+                      <div className="grid grid-cols-[2rem_1fr_1.2fr_1.2fr_1.8fr_1.5rem] gap-2 px-1">
+                        <div />
+                        <div className="text-[9px] font-black uppercase text-muted-foreground tracking-widest">Min. Qty</div>
+                        <div className="text-[9px] font-black uppercase text-muted-foreground tracking-widest">Diskon %</div>
+                        <div className="text-[9px] font-black uppercase text-muted-foreground tracking-widest">Harga NET (Rp)</div>
+                        <div className="text-[9px] font-black uppercase text-emerald-700 tracking-widest">Harga Setelah Diskon</div>
+                        <div />
+                      </div>
+
+                      {entry.tiers.map((tier, ti) => {
+                        const hargaResult = tier.harga_spesial ? parseFloat(tier.harga_spesial) : null;
+                        const diskonResult = tier.diskon_persen ? parseFloat(tier.diskon_persen) : null;
+                        return (
+                          <div key={tier.id} className="grid grid-cols-[2rem_1fr_1.2fr_1.2fr_1.8fr_1.5rem] gap-2 items-center">
+                            {/* Tier badge */}
+                            <div className="bg-orange-100 text-orange-700 text-[10px] font-black w-7 h-7 rounded-full flex items-center justify-center flex-shrink-0">
+                              {ti + 1}
+                            </div>
+
+                            {/* Min qty */}
+                            <div className="relative">
+                              <Input type="number" min="1" placeholder="cth. 10"
+                                value={tier.min_qty}
+                                onChange={e => updateTierMinQty(entry.produk.id, tier.id, e.target.value)}
+                                className="h-9 text-sm font-bold pl-8 border-orange-200 rounded-xl bg-orange-50/50"
+                              />
+                              <Boxes className="absolute left-2.5 top-1/2 -translate-y-1/2 h-3.5 w-3.5 text-orange-400" />
+                            </div>
+
+                            {/* Diskon % — primary input */}
+                            <div className="relative">
+                              <Input type="number" min="0" max="99.99" step="0.01" placeholder="cth. 10"
+                                value={tier.diskon_persen}
+                                onChange={e => updateTierDiskon(entry.produk.id, tier.id, e.target.value)}
+                                className={cn("h-9 text-sm font-bold pl-8 rounded-xl",
+                                  tier.mode === "diskon" && tier.diskon_persen
+                                    ? "border-emerald-300 bg-emerald-50"
+                                    : "border-orange-200 bg-orange-50/50")}
+                              />
+                              <Percent className="absolute left-2.5 top-1/2 -translate-y-1/2 h-3.5 w-3.5 text-orange-400" />
+                            </div>
+
+                            {/* Harga NET — alternative input */}
+                            <div className="relative">
+                              <Input type="number" min="0" placeholder="cth. 45000"
+                                value={tier.harga_spesial}
+                                onChange={e => updateTierHarga(entry.produk.id, tier.id, e.target.value)}
+                                className={cn("h-9 text-sm font-bold pl-7 rounded-xl",
+                                  tier.mode === "harga" && tier.harga_spesial
+                                    ? "border-orange-400 bg-orange-50"
+                                    : "border-orange-200 bg-orange-50/50")}
+                              />
+                              <span className="absolute left-2.5 top-1/2 -translate-y-1/2 text-[9px] font-black text-orange-400">Rp</span>
+                            </div>
+
+                            {/* Result preview */}
+                            <div className="bg-gradient-to-r from-emerald-50 to-teal-50 border border-emerald-200 rounded-xl px-3 h-9 flex items-center gap-2">
+                              {hargaResult && hargaResult > 0 ? (
+                                <>
+                                  <ArrowRight className="h-3 w-3 text-emerald-500 flex-shrink-0" />
+                                  <div className="flex flex-col min-w-0">
+                                    <span className="font-black text-emerald-700 text-xs tabular-nums truncate">
+                                      {formatCurrency(hargaResult)}
+                                    </span>
+                                    {diskonResult && diskonResult > 0 && (
+                                      <span className="text-[9px] text-muted-foreground line-through tabular-nums truncate">
+                                        {formatCurrency(hargaAsli)}
+                                      </span>
+                                    )}
+                                  </div>
+                                </>
+                              ) : (
+                                <span className="text-[10px] text-muted-foreground italic">Isi diskon atau harga</span>
+                              )}
+                            </div>
+
+                            {/* Remove tier */}
+                            {entry.tiers.length > 1 ? (
+                              <button type="button" className="text-muted-foreground hover:text-destructive transition-colors flex-shrink-0"
+                                onClick={() => removeTier(entry.produk.id, tier.id)}>
+                                <Trash2 className="h-3.5 w-3.5" />
+                              </button>
+                            ) : <div />}
+                          </div>
+                        );
+                      })}
+
+                      {/* Add tier button */}
+                      <Button type="button" variant="ghost" size="sm"
+                        className="h-7 px-3 text-[11px] font-black text-orange-600 hover:bg-orange-50 border border-dashed border-orange-200 rounded-xl w-full gap-1"
+                        onClick={() => addTier(entry.produk.id)}>
+                        <Plus className="h-3.5 w-3.5" /> Tambah Tier
+                      </Button>
+                    </div>
                   )}
                 </div>
-
-                <div className="grid grid-cols-3 gap-3 items-end">
-                  {/* Min Qty */}
-                  <div className="space-y-1">
-                    <label className="text-[10px] font-black text-orange-800 uppercase tracking-widest px-0.5">Min. Beli (Pcs)</label>
-                    <div className="relative">
-                      <Input
-                        type="number"
-                        min="1"
-                        placeholder="cth. 10"
-                        value={tier.min_qty}
-                        onChange={(e) => updateTier(tier.id, "min_qty", e.target.value)}
-                        className="h-10 bg-orange-50 font-bold text-sm pl-9 border-orange-200 rounded-xl"
-                      />
-                      <Boxes className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-orange-400" />
-                    </div>
-                  </div>
-
-                  {/* Diskon % */}
-                  <div className="space-y-1">
-                    <label className="text-[10px] font-black text-orange-800 uppercase tracking-widest px-0.5">Diskon %</label>
-                    <div className="relative">
-                      <Input
-                        type="number"
-                        min="0"
-                        max="100"
-                        step="0.01"
-                        placeholder="cth. 10"
-                        value={tier.diskon_persen}
-                        onChange={(e) => updateTier(tier.id, "diskon_persen", e.target.value)}
-                        className={cn(
-                          "h-10 font-bold text-sm pl-9 border-orange-200 rounded-xl",
-                          tier.diskon_persen ? "bg-emerald-50 border-emerald-300" : "bg-orange-50"
-                        )}
-                      />
-                      <Percent className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-orange-400" />
-                    </div>
-                  </div>
-
-                  {/* Harga NET */}
-                  <div className="space-y-1">
-                    <label className="text-[10px] font-black text-orange-800 uppercase tracking-widest px-0.5">Atau Harga NET (Rp)</label>
-                    <div className="relative">
-                      <Input
-                        type="number"
-                        min="0"
-                        placeholder="cth. 45000"
-                        value={tier.harga_spesial}
-                        onChange={(e) => updateTier(tier.id, "harga_spesial", e.target.value)}
-                        className={cn(
-                          "h-10 font-bold text-sm pl-8 border-orange-200 rounded-xl",
-                          tier.harga_spesial ? "bg-orange-50 border-orange-400" : "bg-orange-50"
-                        )}
-                      />
-                      <span className="absolute left-3 top-1/2 -translate-y-1/2 text-[10px] font-black text-orange-400">Rp</span>
-                    </div>
-                  </div>
-                </div>
-
-                {/* Tier preview row */}
-                {tier.min_qty && (tier.diskon_persen || tier.harga_spesial) && (
-                  <div className="mt-3 flex items-center gap-2 bg-orange-50 rounded-lg px-3 py-2 border border-orange-100">
-                    <Boxes className="h-3.5 w-3.5 text-orange-500 flex-shrink-0" />
-                    <span className="text-[11px] font-bold text-orange-800">
-                      Beli ≥ <strong>{tier.min_qty} pcs</strong>
-                    </span>
-                    <ArrowRight className="h-3 w-3 text-orange-400" />
-                    {tier.diskon_persen ? (
-                      <span className="text-[11px] font-black text-emerald-700 bg-emerald-100 px-2 py-0.5 rounded-md">Diskon {tier.diskon_persen}%</span>
-                    ) : (
-                      <span className="text-[11px] font-black text-orange-700 bg-orange-100 px-2 py-0.5 rounded-md">Harga Rp{parseFloat(tier.harga_spesial).toLocaleString('id-ID')}</span>
-                    )}
-                  </div>
-                )}
-              </div>
-            ))}
-          </div>
-
-          <div className="p-3 bg-white/60 border border-orange-100 rounded-xl flex items-start gap-2.5">
-            <Info className="h-4 w-4 text-orange-500 flex-shrink-0 mt-0.5" />
-            <p className="text-[10px] font-semibold text-orange-800/80 leading-relaxed">
-              Setiap tier akan diterapkan ke <strong>semua produk</strong> yang dipilih di atas. Pilih salah satu: <strong>Diskon %</strong> atau <strong>Harga NET</strong> per tier.
-            </p>
+              );
+            })}
           </div>
         </div>
 
-        {/* === Summary Preview === */}
-        {selectedProductIds.length > 0 && tiers.some(t => t.min_qty) && (
-          <div className="bg-card border border-border/50 rounded-2xl p-4 space-y-3">
-            <div className="flex items-center justify-between">
-              <span className="text-xs font-black uppercase tracking-widest text-muted-foreground">Preview Konfigurasi</span>
-              <Badge className="bg-primary/10 text-primary border-primary/20 text-[10px] font-black">
-                {totalRows} Aturan akan dibuat
-              </Badge>
-            </div>
-            <div className="overflow-x-auto rounded-xl border">
-              <table className="w-full text-xs">
-                <thead>
-                  <tr className="bg-muted/50">
-                    <th className="text-left px-3 py-2 font-black text-muted-foreground uppercase text-[10px] tracking-wide">Tier</th>
-                    <th className="text-left px-3 py-2 font-black text-muted-foreground uppercase text-[10px] tracking-wide">Min. Qty</th>
-                    <th className="text-left px-3 py-2 font-black text-muted-foreground uppercase text-[10px] tracking-wide">Benefit</th>
-                    <th className="text-right px-3 py-2 font-black text-muted-foreground uppercase text-[10px] tracking-wide">Produk</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  {sortedTiersPreview.filter(t => t.min_qty).map((t, i) => (
-                    <tr key={t.id} className="border-t">
-                      <td className="px-3 py-2">
-                        <span className="bg-orange-100 text-orange-700 font-black text-[10px] px-2 py-0.5 rounded">Tier {i + 1}</span>
-                      </td>
-                      <td className="px-3 py-2 font-bold">≥ {t.min_qty} pcs</td>
-                      <td className="px-3 py-2">
-                        {t.diskon_persen && <span className="font-black text-emerald-600">Diskon {t.diskon_persen}%</span>}
-                        {t.harga_spesial && <span className="font-black text-orange-600">Rp{parseFloat(t.harga_spesial).toLocaleString('id-ID')}</span>}
-                        {!t.diskon_persen && !t.harga_spesial && <span className="text-muted-foreground italic">—</span>}
-                      </td>
-                      <td className="px-3 py-2 text-right font-bold">{selectedProductIds.length} produk</td>
-                    </tr>
-                  ))}
-                </tbody>
-              </table>
-            </div>
+        {/* ── Info note ── */}
+        {productEntries.length > 0 && (
+          <div className="p-3 bg-orange-50 border border-orange-100 rounded-xl flex items-start gap-2.5">
+            <Info className="h-4 w-4 text-orange-500 flex-shrink-0 mt-0.5" />
+            <p className="text-[10px] font-semibold text-orange-800/80 leading-relaxed">
+              Setiap produk bisa punya ketentuan tier yang berbeda. Gunakan <strong>Salin ke Semua</strong> jika tier produk pertama ingin diterapkan ke semua produk (harga akan dihitung ulang per produk).
+            </p>
           </div>
         )}
 
-        {/* === Validation Errors === */}
+        {/* ── Validation errors ── */}
         {errors.length > 0 && (
           <div className="bg-destructive/10 border border-destructive/20 rounded-xl p-4 space-y-1.5">
             <div className="flex items-center gap-2 text-destructive font-black text-xs uppercase">
               <AlertCircle className="h-4 w-4" /> Perhatian
             </div>
-            {errors.map((err, i) => (
-              <p key={i} className="text-xs text-destructive font-semibold">• {err}</p>
-            ))}
+            {errors.map((err, i) => <p key={i} className="text-xs text-destructive font-semibold">• {err}</p>)}
           </div>
         )}
       </div>
 
-      {/* Footer */}
+      {/* ── Footer ── */}
       <div className="p-5 pt-4 border-t bg-muted/10">
         <div className="flex justify-between items-center">
           <div className="text-[11px] text-muted-foreground font-semibold">
-            {selectedProductIds.length > 0 && tiers.length > 0 ? (
-              <span><strong className="text-foreground">{selectedProductIds.length}</strong> produk × <strong className="text-foreground">{tiers.length}</strong> tier = <strong className="text-orange-600">{totalRows} aturan</strong></span>
-            ) : null}
+            {productEntries.length > 0 && (
+              <span>
+                <strong className="text-foreground">{productEntries.length}</strong> produk ·{" "}
+                <strong className="text-orange-600">{totalRules}</strong> aturan grosir
+              </span>
+            )}
           </div>
           <div className="flex gap-3">
-            <Button type="button" variant="ghost" onClick={onCancel} className="h-11 px-6 text-xs font-black uppercase tracking-widest rounded-xl">
+            <Button type="button" variant="ghost" onClick={onCancel}
+              className="h-11 px-6 text-xs font-black uppercase tracking-widest rounded-xl">
               Batal
             </Button>
-            <Button
-              type="submit"
-              className="h-11 px-10 text-xs font-black uppercase tracking-widest shadow-xl shadow-orange-500/20 bg-orange-600 text-white rounded-xl hover:bg-orange-700 hover:scale-[1.02] active:scale-95 transition-all"
-              disabled={loading || selectedProductIds.length === 0}
-            >
+            <Button type="submit"
+              className="h-11 px-10 text-xs font-black uppercase tracking-widest shadow-xl shadow-orange-500/20 bg-orange-600 text-white rounded-xl hover:bg-orange-700 transition-all"
+              disabled={loading || productEntries.length === 0}>
               {loading ? (
                 <div className="flex items-center gap-2">
                   <div className="h-4 w-4 border-2 border-white/30 border-t-white rounded-full animate-spin" />
@@ -613,7 +633,7 @@ export const GrosirForm = ({ clusters, initialData, onSubmit, onCancel, loading 
               ) : (
                 <div className="flex items-center gap-2">
                   <Save className="h-4 w-4" />
-                  <span>{initialData ? "Simpan" : `Buat ${totalRows > 0 ? totalRows + " Aturan" : "Campaign"}`}</span>
+                  <span>{initialData ? "Simpan" : `Buat ${totalRules} Aturan`}</span>
                 </div>
               )}
             </Button>
