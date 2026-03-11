@@ -367,11 +367,12 @@ const PromoPage: React.FC = () => {
                             </td>
                             <td className="px-4 py-3 border-l text-xs leading-relaxed">
                                {selectedCampaignView?.jenis_promo === 'aturan_harga' && (
-                                   <div className="flex flex-col">
-                                       {parseFloat(item.diskon_persen || "0") > 0 && <span className="font-bold text-emerald-600">Diskon {item.diskon_persen}%</span>}
-                                       {parseFloat(item.harga_spesial || "0") > 0 && <span className="font-bold text-orange-600">Harga Khusus Rp{(parseFloat(item.harga_spesial)).toLocaleString('id-ID')}</span>}
-                                   </div>
-                               )}
+                                    <div className="flex flex-col gap-0.5">
+                                        {parseFloat(item.diskon_persen || "0") > 0 && <span className="font-bold text-emerald-600">Diskon {item.diskon_persen}%</span>}
+                                        {parseFloat(item.harga_manual || "0") > 0 && <span className="font-bold text-orange-600">Harga Khusus Rp{(parseFloat(item.harga_manual)).toLocaleString('id-ID')}</span>}
+                                        {!parseFloat(item.diskon_persen || "0") && !parseFloat(item.harga_manual || "0") && <span className="text-muted-foreground italic text-[11px]">Tidak ada benefit tersimpan</span>}
+                                    </div>
+                                )}
                                {selectedCampaignView?.jenis_promo === 'grosir' && (
                                    <div className="flex flex-col">
                                       <span className="font-medium text-muted-foreground mb-1 border-b pb-1 inline-block w-fit">Min. <strong className="text-foreground">{item.min_qty} Pcs</strong></span>
@@ -385,7 +386,7 @@ const PromoPage: React.FC = () => {
                                       {parseFloat(item.min_qty_pemicu || "0") > 0 && <span className="bg-muted w-fit px-1.5 py-0.5 rounded text-[10px] font-bold">Min. Qty: {item.min_qty_pemicu} Pcs</span>}
                                       <span className="font-bold text-primary mt-1 flex items-center gap-1.5">
                                           <Gift className="h-3.5 w-3.5" />
-                                          {item.hadiah?.nama_produk || 'Item Spesial'} <span className="text-muted-foreground bg-primary/10 px-1.5 rounded-sm">x{item.qty_hadiah}</span>
+                                          {item.id_produk_hadiah_detail?.nama_produk || item.hadiah?.nama_produk || 'Item Spesial'} <span className="text-muted-foreground bg-primary/10 px-1.5 rounded-sm">x{item.qty_hadiah}</span>
                                       </span>
                                       <span className="text-[10px] font-bold mt-1 uppercase text-emerald-600 bg-emerald-50 px-1.5 py-0.5 rounded-sm w-fit">
                                          Tebusan: Rp{(parseFloat(item.harga_tebus || "0")).toLocaleString('id-ID')}
