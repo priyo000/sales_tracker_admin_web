@@ -25,7 +25,7 @@ import { Divisi } from "@/features/divisi/types";
 import { Produk } from "@/features/produk/types";
 import { useAuth } from "@/hooks/useAuth";
 import { Badge } from "@/components/ui/badge";
-import { ScrollArea } from "@/components/ui/scroll-area";
+
 
 interface GrosirFormProps {
   clusters: PromoCluster[];
@@ -220,7 +220,7 @@ export const GrosirForm = ({ clusters, initialData, onSubmit, onCancel, loading 
             <FormField label="Tanggal Mulai" icon={CalendarIcon} required>
                 <Popover>
                 <PopoverTrigger asChild>
-                    <Button variant="outline" className="w-full h-10 justify-start text-sm font-bold border-border/50 bg-card shadow-sm">
+                    <Button type="button" variant="outline" className="w-full h-10 justify-start text-sm font-bold border-border/50 bg-card shadow-sm">
                     <CalendarIcon className="mr-2 h-4 w-4 opacity-50" />
                     {formData.tanggal_mulai ? format(formData.tanggal_mulai, "dd MMM yyyy") : "Pilih Tanggal"}
                     </Button>
@@ -234,7 +234,7 @@ export const GrosirForm = ({ clusters, initialData, onSubmit, onCancel, loading 
             <FormField label="Tanggal Berakhir" icon={CalendarIcon} required>
                 <Popover>
                 <PopoverTrigger asChild>
-                    <Button variant="outline" className="w-full h-10 justify-start text-sm font-bold border-border/50 bg-card shadow-sm">
+                    <Button type="button" variant="outline" className="w-full h-10 justify-start text-sm font-bold border-border/50 bg-card shadow-sm">
                     <CalendarIcon className="mr-2 h-4 w-4 opacity-50" />
                     {formData.tanggal_akhir ? format(formData.tanggal_akhir, "dd MMM yyyy") : "Pilih Tanggal"}
                     </Button>
@@ -258,6 +258,7 @@ export const GrosirForm = ({ clusters, initialData, onSubmit, onCancel, loading 
               <PopoverTrigger asChild>
                 <div className="relative">
                     <Button
+                        type="button"
                         variant="outline"
                         className={cn(
                             "w-full justify-between h-12 px-4 bg-card border-2 border-border/60 hover:border-primary/50 shadow-sm text-left font-bold text-sm rounded-xl transition-all",
@@ -282,12 +283,13 @@ export const GrosirForm = ({ clusters, initialData, onSubmit, onCancel, loading 
                     placeholder="Contoh: Indomie, P-1002, dsb..." 
                     value={searchProduk}
                     onChange={(e) => setSearchProduk(e.target.value)}
+                    onKeyDown={(e) => { if (e.key === 'Enter') e.preventDefault(); }}
                     autoFocus
                   />
                   {searchLoading && <div className="h-4 w-4 border-2 border-primary/20 border-t-primary rounded-full animate-spin" />}
                 </div>
                 
-                <ScrollArea className="h-[350px]">
+                <div className="max-h-[350px] overflow-y-auto w-full pointer-events-auto" onWheel={(e) => e.stopPropagation()} onTouchMove={(e) => e.stopPropagation()}>
                   <div className="p-3 space-y-1.5">
                     {produks.map((p: Produk) => {
                       const isSelected = selectedProductIds.includes(p.id);
@@ -319,7 +321,7 @@ export const GrosirForm = ({ clusters, initialData, onSubmit, onCancel, loading 
                       );
                     })}
                   </div>
-                </ScrollArea>
+                </div>
                 
                 {selectedProductIds.length > 0 && !initialData && (
                   <div className="p-4 border-t bg-muted/30 flex items-center justify-between">

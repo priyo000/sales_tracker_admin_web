@@ -1,4 +1,4 @@
-import { Trash, Calendar, Target, Layers, Package } from "lucide-react";
+import { Trash, Calendar, Target, Layers, Package, Eye } from "lucide-react";
 import { PromoCampaign } from "../types";
 import { DataTable, type ColumnDef } from "@/components/ui/data-table";
 import { Badge } from "@/components/ui/badge";
@@ -9,6 +9,7 @@ interface PriceRuleTableProps {
   loading: boolean;
   onDelete: (id: number) => void;
   onGrosirToggle?: () => void;
+  onView?: (campaign: PromoCampaign) => void;
 }
 
 export const PriceRuleTable: React.FC<PriceRuleTableProps> = ({ 
@@ -16,6 +17,7 @@ export const PriceRuleTable: React.FC<PriceRuleTableProps> = ({
   loading, 
   onDelete,
   onGrosirToggle,
+  onView,
 }) => {
   const batchColumns: ColumnDef<PromoCampaign>[] = [
     {
@@ -97,6 +99,11 @@ export const PriceRuleTable: React.FC<PriceRuleTableProps> = ({
       className: "text-right",
       cell: (row) => (
         <div className="flex justify-end gap-1">
+          {onView && (
+             <Button variant="ghost" size="icon" className="h-8 w-8 text-primary hover:bg-primary/10" onClick={() => onView(row)}>
+                <Eye className="h-4 w-4" />
+             </Button>
+          )}
           <Button
             variant="ghost"
             size="icon"

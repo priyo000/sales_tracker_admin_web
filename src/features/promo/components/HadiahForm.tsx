@@ -23,7 +23,6 @@ import { cn } from "@/lib/utils";
 import { PromoHadiah, PromoCluster } from "../types";
 import { Produk } from "@/features/produk/types";
 import { useAuth } from "@/hooks/useAuth";
-import { ScrollArea } from "@/components/ui/scroll-area";
 
 interface HadiahFormProps {
   clusters: PromoCluster[];
@@ -271,9 +270,9 @@ export const HadiahForm = ({ clusters, initialData, onSubmit, onCancel, loading 
                             <PopoverContent className="w-[450px] p-0 shadow-2xl rounded-2xl border-none">
                                 <div className="p-3 border-b bg-card flex items-center gap-2">
                                     <Search className="h-4 w-4 text-muted-foreground" />
-                                    <input className="bg-transparent text-sm font-bold outline-none w-full" placeholder="Cari..." value={searchProduk} onChange={(e) => setSearchProduk(e.target.value)} />
+                                    <input className="bg-transparent text-sm font-bold outline-none w-full" placeholder="Cari..." value={searchProduk} onChange={(e) => setSearchProduk(e.target.value)} onKeyDown={(e) => { if (e.key === 'Enter') e.preventDefault(); }} />
                                 </div>
-                                <ScrollArea className="h-60">
+                                <div className="max-h-60 overflow-y-auto w-full">
                                     <div className="p-2 space-y-1">
                                         {produks.map(p => {
                                             const isSelected = selectedPemicuIds.includes(p.id);
@@ -290,7 +289,7 @@ export const HadiahForm = ({ clusters, initialData, onSubmit, onCancel, loading 
                                             );
                                         })}
                                     </div>
-                                </ScrollArea>
+                                </div>
                             </PopoverContent>
                         </Popover>
                     </FormField>
@@ -336,9 +335,9 @@ export const HadiahForm = ({ clusters, initialData, onSubmit, onCancel, loading 
                         <PopoverContent className="w-[450px] p-0 shadow-2xl rounded-2xl border-none">
                             <div className="p-3 border-b bg-card flex items-center gap-2">
                                 <Search className="h-4 w-4 text-muted-foreground" />
-                                <input className="bg-transparent text-sm font-bold outline-none w-full" placeholder="Cari..." value={searchProduk} onChange={(e) => setSearchProduk(e.target.value)} />
+                                <input className="bg-transparent text-sm font-bold outline-none w-full" placeholder="Cari..." value={searchProduk} onChange={(e) => setSearchProduk(e.target.value)} onKeyDown={(e) => { if (e.key === 'Enter') e.preventDefault(); }} />
                             </div>
-                            <ScrollArea className="h-60">
+                            <div className="max-h-60 overflow-y-auto w-full">
                                 <div className="p-2 space-y-1">
                                     {produks.map(p => (
                                         <div key={p.id} className="flex items-center gap-4 p-3 rounded-xl hover:bg-emerald-50 cursor-pointer" onClick={() => handleSelectHadiah(p)}>
@@ -352,7 +351,7 @@ export const HadiahForm = ({ clusters, initialData, onSubmit, onCancel, loading 
                                         </div>
                                     ))}
                                 </div>
-                            </ScrollArea>
+                            </div>
                         </PopoverContent>
                     </Popover>
                  </FormField>

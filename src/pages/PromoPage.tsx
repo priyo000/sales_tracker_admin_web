@@ -1,6 +1,7 @@
 import React, { useEffect, useState } from "react";
 import { Tag, Plus, Users, Package, Gift, BarChart3, Layers } from "lucide-react";
 import toast from "react-hot-toast";
+import { Badge } from "@/components/ui/badge";
 import { cn } from "@/lib/utils";
 import { usePromo } from "@/features/promo/hooks/usePromo";
 import { ClusterTable } from "@/features/promo/components/ClusterTable";
@@ -57,6 +58,8 @@ const PromoPage: React.FC = () => {
   
   const [isHadiahModalOpen, setIsHadiahModalOpen] = useState(false);
   const [selectedHadiahRule, setSelectedHadiahRule] = useState<PromoHadiah | PromoCampaign | undefined>(undefined);
+  
+  const [selectedCampaignView, setSelectedCampaignView] = useState<PromoCampaign | undefined>(undefined);
   
   const [deletingClusterId, setDeletingClusterId] = useState<number | null>(null);
   const [deletingPriceRuleId, setDeletingPriceRuleId] = useState<number | null>(null);
@@ -194,12 +197,12 @@ const PromoPage: React.FC = () => {
             {activeTab === "clusters" && <ClusterTable clusters={clusters} loading={loading} onEdit={handleOpenClusterModal} onDelete={setDeletingClusterId} onViewCustomers={setAssignmentCluster} />}
             {activeTab === "prices" && (
                 priceSubTab === "standard" ? (
-                    <PriceRuleTable rules={priceRules} loading={loading} onDelete={setDeletingPriceRuleId} onGrosirToggle={() => { setPriceSubTab("grosir"); fetchGrosirRules(true); }} />
+                    <PriceRuleTable rules={priceRules} loading={loading} onDelete={setDeletingPriceRuleId} onGrosirToggle={() => { setPriceSubTab("grosir"); fetchGrosirRules(true); }} onView={setSelectedCampaignView} />
                 ) : (
-                    <GrosirTable rules={grosirRules} loading={loading} onDelete={setDeletingGrosirId} onPriceToggle={() => { setPriceSubTab("standard"); fetchPriceRules(true); }} />
+                    <GrosirTable rules={grosirRules} loading={loading} onDelete={setDeletingGrosirId} onPriceToggle={() => { setPriceSubTab("standard"); fetchPriceRules(true); }} onView={setSelectedCampaignView} />
                 )
             )}
-            {activeTab === "rewards" && <HadiahTable rules={rewardRules} loading={loading} onDelete={setDeletingHadiahId} />}
+            {activeTab === "rewards" && <HadiahTable rules={rewardRules} loading={loading} onDelete={setDeletingHadiahId} onView={setSelectedCampaignView} />}
         </div>
       )}
 
@@ -307,6 +310,88 @@ const PromoPage: React.FC = () => {
         message="Menghapus campaign akan menghapus SEMUA promo hadiah di dalamnya. Lanjutkan?" 
         type="danger" 
       />
+
+      {/* Campaign Detail View Modal */}
+      <Modal isOpen={!!selectedCampaignView} onClose={() => setSelectedCampaignView(undefined)} title="Detail Program Promo" size="5xl">
+        <div className="p-4 space-y-4">
+            <div className="grid grid-cols-4 gap-4 bg-muted/30 p-4 rounded-xl">
+               <div className="col-span-2">
+                  <div className="text-xs text-muted-foreground uppercase tracking-widest font-black mb-1">Nama Program</div>
+                  <div className="font-bold text-lg">{selectedCampaignView?.nama_promo}</div>
+               </div>
+               <div>
+                  <div className="text-xs text-muted-foreground uppercase tracking-widest font-black mb-1">Masa Berlaku</div>
+                  <div className="font-bold text-sm">
+                    {selectedCampaignView?.tanggal_mulai ? new Date(selectedCampaignView.tanggal_mulai).toLocaleDateString('id-ID') : '-'} s/d {selectedCampaignView?.tanggal_akhir ? new Date(selectedCampaignView.tanggal_akhir).toLocaleDateString('id-ID') : '-'}
+                  </div>
+               </div>
+               <div>
+                  <div className="text-xs text-muted-foreground uppercase tracking-widest font-black mb-1">Jenis Program</div>
+                  <div className="font-bold capitalize text-sm text-primary">{selectedCampaignView?.jenis_promo?.replace('_', ' ')}</div>
+               </div>
+            </div>
+            
+            <div className="font-bold flex items-center justify-between">
+                <span>Daftar Item Produk / Syarat</span>
+                <Badge variant="outline" className="bg-primary/5 text-primary border-primary/20">{selectedCampaignView?.items?.length || 0} Data</Badge>
+            </div>
+            <div className="max-h-[400px] overflow-y-auto border rounded-xl bg-card">
+                <table className="w-full text-sm text-left">
+                   <thead className="bg-muted text-xs uppercase font-black text-muted-foreground sticky top-0 shadow-sm z-10">
+                      <tr>
+                         <th className="px-4 py-3 border-b">Pemicu / Target Produk</th>
+                         <th className="px-4 py-3 border-b border-l bg-primary/5 text-primary w-[40%]">Detail / Benefit Promo</th>
+                      </tr>
+                   </thead>
+                   <tbody>
+                      {/* eslint-disable-next-line @typescript-eslint/no-explicit-any */}
+                      {selectedCampaignView?.items && selectedCampaignView.items.map((item: any) => (
+                         <tr key={item.id} className="border-b last:border-0 hover:bg-muted/30 transition-colors">
+                            <td className="px-4 py-3 font-semibold text-xs leading-relaxed">
+                               {item.produk ? item.produk.nama_produk : (item.pemicu ? item.pemicu.nama_produk : 'Global / Syarat Total Nota Khusus')}
+                            </td>
+                            <td className="px-4 py-3 border-l text-xs leading-relaxed">
+                               {selectedCampaignView?.jenis_promo === 'aturan_harga' && (
+                                   <div className="flex flex-col">
+                                       {parseFloat(item.diskon_persen || "0") > 0 && <span className="font-bold text-emerald-600">Diskon {item.diskon_persen}%</span>}
+                                       {parseFloat(item.harga_spesial || "0") > 0 && <span className="font-bold text-orange-600">Harga Khusus Rp{(parseFloat(item.harga_spesial)).toLocaleString('id-ID')}</span>}
+                                   </div>
+                               )}
+                               {selectedCampaignView?.jenis_promo === 'grosir' && (
+                                   <div className="flex flex-col">
+                                      <span className="font-medium text-muted-foreground mb-1 border-b pb-1 inline-block w-fit">Min. <strong className="text-foreground">{item.min_qty} Pcs</strong></span>
+                                      {parseFloat(item.diskon_persen || "0") > 0 && <span className="font-bold text-emerald-600">Diskon {item.diskon_persen}%</span>}
+                                      {parseFloat(item.harga_spesial || "0") > 0 && <span className="font-bold text-orange-600">Harga Grosir Rp{(parseFloat(item.harga_spesial)).toLocaleString('id-ID')}</span>}
+                                   </div>
+                               )}
+                               {selectedCampaignView?.jenis_promo === 'hadiah' && (
+                                   <div className="flex flex-col gap-1">
+                                      {parseFloat(item.min_amount_pemicu || "0") > 0 && <span className="bg-muted w-fit px-1.5 py-0.5 rounded text-[10px] font-bold">Min. Belanja: Rp{(parseFloat(item.min_amount_pemicu)).toLocaleString('id-ID')}</span>}
+                                      {parseFloat(item.min_qty_pemicu || "0") > 0 && <span className="bg-muted w-fit px-1.5 py-0.5 rounded text-[10px] font-bold">Min. Qty: {item.min_qty_pemicu} Pcs</span>}
+                                      <span className="font-bold text-primary mt-1 flex items-center gap-1.5">
+                                          <Gift className="h-3.5 w-3.5" />
+                                          {item.hadiah?.nama_produk || 'Item Spesial'} <span className="text-muted-foreground bg-primary/10 px-1.5 rounded-sm">x{item.qty_hadiah}</span>
+                                      </span>
+                                      <span className="text-[10px] font-bold mt-1 uppercase text-emerald-600 bg-emerald-50 px-1.5 py-0.5 rounded-sm w-fit">
+                                         Tebusan: Rp{(parseFloat(item.harga_tebus || "0")).toLocaleString('id-ID')}
+                                      </span>
+                                   </div>
+                               )}
+                            </td>
+                         </tr>
+                      ))}
+                   </tbody>
+                </table>
+               {(!selectedCampaignView?.items || selectedCampaignView?.items?.length === 0) && (
+                   <div className="p-10 text-center text-muted-foreground text-xs font-semibold flex flex-col items-center gap-2">
+                       <Package className="h-8 w-8 opacity-20" />
+                       <span>Gagal memuat detail item atau tabel relasi telah berubah.</span>
+                   </div>
+               )}
+            </div>
+        </div>
+      </Modal>
+
     </div>
   );
 };

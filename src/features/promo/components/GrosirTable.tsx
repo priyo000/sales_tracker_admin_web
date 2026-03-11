@@ -1,4 +1,4 @@
-import { Trash, Calendar, Package, Layers } from "lucide-react";
+import { Trash, Calendar, Package, Layers, Eye } from "lucide-react";
 import { PromoCampaign } from "../types";
 import { DataTable, type ColumnDef } from "@/components/ui/data-table";
 import { Button } from "@/components/ui/button";
@@ -9,6 +9,7 @@ interface GrosirTableProps {
   loading: boolean;
   onDelete: (id: number) => void;
   onPriceToggle?: () => void;
+  onView?: (campaign: PromoCampaign) => void;
 }
 
 export const GrosirTable: React.FC<GrosirTableProps> = ({ 
@@ -16,6 +17,7 @@ export const GrosirTable: React.FC<GrosirTableProps> = ({
   loading, 
   onDelete,
   onPriceToggle,
+  onView,
 }) => {
   const batchColumns: ColumnDef<PromoCampaign>[] = [
     {
@@ -82,6 +84,11 @@ export const GrosirTable: React.FC<GrosirTableProps> = ({
       className: "text-right",
       cell: (row) => (
         <div className="flex justify-end gap-1">
+          {onView && (
+             <Button variant="ghost" size="icon" className="h-8 w-8 text-primary hover:bg-primary/10" onClick={() => onView(row)}>
+                <Eye className="h-4 w-4" />
+             </Button>
+          )}
           <Button variant="ghost" size="icon" className="h-8 w-8 text-destructive hover:bg-destructive/10" onClick={() => onDelete(row.id)}>
             <Trash className="h-4 w-4" />
           </Button>

@@ -25,7 +25,7 @@ import { Divisi } from "@/features/divisi/types";
 import { Produk } from "@/features/produk/types";
 import { useAuth } from "@/hooks/useAuth";
 import { Badge } from "@/components/ui/badge";
-import { ScrollArea } from "@/components/ui/scroll-area";
+
 
 interface PriceRuleFormProps {
   clusters: PromoCluster[];
@@ -349,6 +349,7 @@ export const PriceRuleForm = ({ clusters, initialData, onSubmit, onCancel, loadi
               <PopoverTrigger asChild>
                 <div className="relative">
                     <Button
+                        type="button"
                         variant="outline"
                         className={cn(
                             "w-full justify-between h-12 px-4 bg-card border-2 border-border/60 hover:border-primary/50 shadow-sm text-left font-bold text-sm rounded-xl transition-all",
@@ -373,12 +374,13 @@ export const PriceRuleForm = ({ clusters, initialData, onSubmit, onCancel, loadi
                     placeholder="Contoh: Indomie, P-1002, dsb..." 
                     value={searchProduk}
                     onChange={(e) => setSearchProduk(e.target.value)}
+                    onKeyDown={(e) => { if (e.key === 'Enter') e.preventDefault(); }}
                     autoFocus
                   />
                   {searchLoading && <div className="h-4 w-4 border-2 border-primary/20 border-t-primary rounded-full animate-spin" />}
                 </div>
                 
-                <ScrollArea className="h-[400px]">
+                <div className="max-h-[350px] overflow-y-auto w-full pointer-events-auto" onWheel={(e) => e.stopPropagation()} onTouchMove={(e) => e.stopPropagation()}>
                   <div className="p-3 space-y-1.5">
                     {produks.length === 0 && !searchLoading && (
                         <div className="py-20 text-center flex flex-col items-center gap-3">
@@ -418,25 +420,45 @@ export const PriceRuleForm = ({ clusters, initialData, onSubmit, onCancel, loadi
                       );
                     })}
                   </div>
-                </ScrollArea>
+                </div>
                 
-                {selectedProductIds.length > 0 && (
-                  <div className="p-4 border-t bg-muted/30 flex items-center justify-between">
-                    <div className="flex items-center gap-2">
-                         <span className="text-[11px] font-black uppercase text-primary bg-primary/10 px-3 py-1.5 rounded-full">
-                           {selectedProductIds.length} Produk
-                         </span>
-                    </div>
-                    <Button 
-                      variant="ghost" 
-                      size="sm" 
-                      className="h-9 px-4 text-[11px] font-black text-destructive uppercase hover:bg-destructive/10 rounded-xl"
-                      onClick={() => { setSelectedProductIds([]); }}
-                    >
-                      <Trash2 className="h-4 w-4 mr-2" /> Reset Pilihan
-                    </Button>
+                <div className="p-4 border-t bg-muted/30 flex items-center justify-between">
+                  <div className="flex items-center gap-2">
+                    {selectedProductIds.length > 0 && (
+                      <span className="text-[11px] font-black uppercase text-primary bg-primary/10 px-3 py-1.5 rounded-full">
+                        {selectedProductIds.length} Produk Dipilih
+                      </span>
+                    )}
                   </div>
-                )}
+                  <div className="flex gap-2">
+                    {produks.length > 0 && (
+                      <Button
+                        type="button"
+                        variant="ghost"
+                        size="sm"
+                        className="h-9 px-4 text-[11px] font-black text-primary uppercase hover:bg-primary/10 rounded-xl"
+                        onClick={() => {
+                          const newSelections = new Set([...selectedProductIds]);
+                          produks.forEach((p: Produk) => newSelections.add(p.id));
+                          setSelectedProductIds(Array.from(newSelections));
+                        }}
+                      >
+                        Pilih Semua Filter
+                      </Button>
+                    )}
+                    {selectedProductIds.length > 0 && (
+                      <Button 
+                        type="button"
+                        variant="ghost" 
+                        size="sm" 
+                        className="h-9 px-4 text-[11px] font-black text-destructive uppercase hover:bg-destructive/10 rounded-xl"
+                        onClick={() => { setSelectedProductIds([]); }}
+                      >
+                        <Trash2 className="h-4 w-4 md:mr-2" /> <span className="hidden md:inline">Reset</span>
+                      </Button>
+                    )}
+                  </div>
+                </div>
               </PopoverContent>
             </Popover>
           </FormField>
