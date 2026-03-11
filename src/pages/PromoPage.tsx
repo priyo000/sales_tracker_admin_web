@@ -348,7 +348,12 @@ const PromoPage: React.FC = () => {
             
             <div className="font-bold flex items-center justify-between">
                 <span>Daftar Item Produk / Syarat</span>
-                <Badge variant="outline" className="bg-primary/5 text-primary border-primary/20">{selectedCampaignView?.items?.length || 0} Data</Badge>
+                <Badge variant="outline" className="bg-primary/5 text-primary border-primary/20">
+                  {selectedCampaignView?.jenis_promo === 'grosir'
+                    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+                    ? `${[...new Set(((selectedCampaignView?.items ?? []) as any[]).map((i) => i.id_produk))].length} Produk`
+                    : `${selectedCampaignView?.items?.length || 0} Data`}
+                </Badge>
             </div>
             <div className="max-h-[400px] overflow-y-auto border rounded-xl bg-card">
                 <table className="w-full text-sm text-left">
@@ -359,44 +364,82 @@ const PromoPage: React.FC = () => {
                       </tr>
                    </thead>
                    <tbody>
-                      {/* eslint-disable-next-line @typescript-eslint/no-explicit-any */}
-                      {selectedCampaignView?.items && selectedCampaignView.items.map((item: any) => (
-                         <tr key={item.id} className="border-b last:border-0 hover:bg-muted/30 transition-colors">
-                            <td className="px-4 py-3 font-semibold text-xs leading-relaxed">
-                               {item.produk ? item.produk.nama_produk : (item.pemicu ? item.pemicu.nama_produk : 'Global / Syarat Total Nota Khusus')}
-                            </td>
-                            <td className="px-4 py-3 border-l text-xs leading-relaxed">
+                   {/* GROSIR: group by product, show tiers per row */}
+                   {selectedCampaignView?.jenis_promo === 'grosir' && (() => {
+                   // eslint-disable-next-line @typescript-eslint/no-explicit-any
+                   const grouped: Record<number, any[]> = {};
+                   // eslint-disable-next-line @typescript-eslint/no-explicit-any
+                   (selectedCampaignView.items ?? []).forEach((item: any) => {
+                   if (!grouped[item.id_produk]) grouped[item.id_produk] = [];
+                   grouped[item.id_produk].push(item);
+                   });
+                   return Object.entries(grouped).map(([produkId, tierItems]) => {
+                   // eslint-disable-next-line @typescript-eslint/no-explicit-any
+                   const sorted = [...tierItems].sort((a: any, b: any) => a.min_qty - b.min_qty);
+                   const produk = sorted[0]?.produk;
+                   return (
+                   <tr key={produkId} className="border-b last:border-0 hover:bg-muted/30 align-top">
+                   <td className="px-4 py-3 font-semibold text-xs">
+                   {produk?.nama_produk || `Produk #${produkId}`}
+                   {sorted.length > 1 && (
+                   <span className="ml-2 text-[10px] font-black text-orange-600 bg-orange-50 px-1.5 py-0.5 rounded">{sorted.length} tier</span>
+                   )}
+                   </td>
+                   <td className="px-4 py-3 border-l text-xs">
+                   <div className="flex flex-col gap-1.5">
+                   {/* eslint-disable-next-line @typescript-eslint/no-explicit-any */}
+                   {sorted.map((tier: any, ti: number) => (
+                   <div key={tier.id} className="flex items-center gap-2 flex-wrap">
+                   <span className="bg-orange-100 text-orange-700 text-[10px] font-black px-1.5 py-0.5 rounded flex-shrink-0">T{ti+1}</span>
+                   <span className="text-muted-foreground text-[11px]">≥ <strong className="text-foreground">{tier.min_qty} pcs</strong></span>
+                   <span className="text-[10px]">→</span>
+                   {parseFloat(tier.diskon_persen || "0") > 0
+                   ? <span className="font-black text-emerald-600 bg-emerald-50 px-2 py-0.5 rounded text-[11px]">Diskon {tier.diskon_persen}%</span>
+                     : <span className="font-black text-orange-600 bg-orange-50 px-2 py-0.5 rounded text-[11px]">Rp{parseFloat(tier.harga_spesial || "0").toLocaleString('id-ID')}</span>
+                      }
+                        </div>
+                         ))}
+                          </div>
+                           </td>
+                            </tr>
+                           );
+                         });
+                       })()}
+                       {/* ATURAN HARGA & HADIAH: one row per item */}
+                       {selectedCampaignView?.jenis_promo !== 'grosir' && (selectedCampaignView?.items ?? []).map((item) => {
+                         // eslint-disable-next-line @typescript-eslint/no-explicit-any
+                         const i = item as any;
+                         return (
+                           <tr key={i.id} className="border-b last:border-0 hover:bg-muted/30 transition-colors">
+                             <td className="px-4 py-3 font-semibold text-xs leading-relaxed">
+                               {i.produk ? i.produk.nama_produk : (i.pemicu ? i.pemicu.nama_produk : 'Global / Syarat Total Nota Khusus')}
+                             </td>
+                             <td className="px-4 py-3 border-l text-xs leading-relaxed">
                                {selectedCampaignView?.jenis_promo === 'aturan_harga' && (
-                                    <div className="flex flex-col gap-0.5">
-                                        {parseFloat(item.diskon_persen || "0") > 0 && <span className="font-bold text-emerald-600">Diskon {item.diskon_persen}%</span>}
-                                        {parseFloat(item.harga_manual || "0") > 0 && <span className="font-bold text-orange-600">Harga Khusus Rp{(parseFloat(item.harga_manual)).toLocaleString('id-ID')}</span>}
-                                        {!parseFloat(item.diskon_persen || "0") && !parseFloat(item.harga_manual || "0") && <span className="text-muted-foreground italic text-[11px]">Tidak ada benefit tersimpan</span>}
-                                    </div>
-                                )}
-                               {selectedCampaignView?.jenis_promo === 'grosir' && (
-                                   <div className="flex flex-col">
-                                      <span className="font-medium text-muted-foreground mb-1 border-b pb-1 inline-block w-fit">Min. <strong className="text-foreground">{item.min_qty} Pcs</strong></span>
-                                      {parseFloat(item.diskon_persen || "0") > 0 && <span className="font-bold text-emerald-600">Diskon {item.diskon_persen}%</span>}
-                                      {parseFloat(item.harga_spesial || "0") > 0 && <span className="font-bold text-orange-600">Harga Grosir Rp{(parseFloat(item.harga_spesial)).toLocaleString('id-ID')}</span>}
-                                   </div>
+                                 <div className="flex flex-col gap-0.5">
+                                   {parseFloat(i.diskon_persen || "0") > 0 && <span className="font-bold text-emerald-600">Diskon {i.diskon_persen}%</span>}
+                                   {parseFloat(i.harga_manual || "0") > 0 && <span className="font-bold text-orange-600">Harga Khusus Rp{parseFloat(i.harga_manual).toLocaleString('id-ID')}</span>}
+                                   {!parseFloat(i.diskon_persen || "0") && !parseFloat(i.harga_manual || "0") && <span className="text-muted-foreground italic text-[11px]">Tidak ada benefit tersimpan</span>}
+                                 </div>
                                )}
                                {selectedCampaignView?.jenis_promo === 'hadiah' && (
-                                   <div className="flex flex-col gap-1">
-                                      {parseFloat(item.min_amount_pemicu || "0") > 0 && <span className="bg-muted w-fit px-1.5 py-0.5 rounded text-[10px] font-bold">Min. Belanja: Rp{(parseFloat(item.min_amount_pemicu)).toLocaleString('id-ID')}</span>}
-                                      {parseFloat(item.min_qty_pemicu || "0") > 0 && <span className="bg-muted w-fit px-1.5 py-0.5 rounded text-[10px] font-bold">Min. Qty: {item.min_qty_pemicu} Pcs</span>}
-                                      <span className="font-bold text-primary mt-1 flex items-center gap-1.5">
-                                          <Gift className="h-3.5 w-3.5" />
-                                          {item.id_produk_hadiah_detail?.nama_produk || item.hadiah?.nama_produk || 'Item Spesial'} <span className="text-muted-foreground bg-primary/10 px-1.5 rounded-sm">x{item.qty_hadiah}</span>
-                                      </span>
-                                      <span className="text-[10px] font-bold mt-1 uppercase text-emerald-600 bg-emerald-50 px-1.5 py-0.5 rounded-sm w-fit">
-                                         Tebusan: Rp{(parseFloat(item.harga_tebus || "0")).toLocaleString('id-ID')}
-                                      </span>
-                                   </div>
+                                 <div className="flex flex-col gap-1">
+                                   {parseFloat(i.min_amount_pemicu || "0") > 0 && <span className="bg-muted w-fit px-1.5 py-0.5 rounded text-[10px] font-bold">Min. Belanja: Rp{parseFloat(i.min_amount_pemicu).toLocaleString('id-ID')}</span>}
+                                   {parseFloat(i.min_qty_pemicu || "0") > 0 && <span className="bg-muted w-fit px-1.5 py-0.5 rounded text-[10px] font-bold">Min. Qty: {i.min_qty_pemicu} Pcs</span>}
+                                   <span className="font-bold text-primary mt-1 flex items-center gap-1.5">
+                                     <Gift className="h-3.5 w-3.5" />
+                                     {i.hadiah?.nama_produk || 'Item Spesial'} <span className="text-muted-foreground bg-primary/10 px-1.5 rounded-sm">x{i.qty_hadiah}</span>
+                                   </span>
+                                   <span className="text-[10px] font-bold mt-1 uppercase text-emerald-600 bg-emerald-50 px-1.5 py-0.5 rounded-sm w-fit">
+                                     Tebusan: Rp{parseFloat(i.harga_tebus || "0").toLocaleString('id-ID')}
+                                   </span>
+                                 </div>
                                )}
-                            </td>
-                         </tr>
-                      ))}
-                   </tbody>
+                             </td>
+                           </tr>
+                         );
+                       })}
+                    </tbody>
                 </table>
                {(!selectedCampaignView?.items || selectedCampaignView?.items?.length === 0) && (
                    <div className="p-10 text-center text-muted-foreground text-xs font-semibold flex flex-col items-center gap-2">
