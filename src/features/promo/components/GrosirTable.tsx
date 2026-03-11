@@ -32,8 +32,9 @@ export const GrosirTable: React.FC<GrosirTableProps> = ({
             <div className="font-bold text-foreground capitalize">
               {row.nama_promo}
             </div>
-            <div className="text-[10px] text-muted-foreground flex items-center gap-1">
-              <Package className="h-3 w-3" /> {row.items_count} Produk terpilih
+            <div className="text-[10px] text-muted-foreground flex items-center gap-1.5 mt-0.5">
+              <Package className="h-3 w-3 text-orange-400" /> 
+              <span className="font-semibold text-orange-700/80 bg-orange-50 px-1.5 rounded">{row.items_count} Produk terpilih</span>
             </div>
           </div>
         </div>
@@ -43,7 +44,7 @@ export const GrosirTable: React.FC<GrosirTableProps> = ({
       key: "products_summary",
       header: "Daftar Produk",
       cell: (row) => (
-        <div className="max-w-[200px] truncate text-xs text-muted-foreground">
+        <div className="max-w-[250px] truncate text-[11px] font-medium text-muted-foreground leading-relaxed">
           {row.products_summary}
         </div>
       ),
@@ -52,8 +53,10 @@ export const GrosirTable: React.FC<GrosirTableProps> = ({
         key: "min_qty",
         header: "Ketentuan",
         cell: (row) => (
-          <div className="text-xs font-semibold text-foreground">
-            Min. {row.min_qty} PCS
+          <div className="text-xs font-bold text-foreground bg-muted/50 px-2 py-1 rounded w-fit">
+            {row.is_multi_tier 
+              ? "Multi-tier" 
+              : `Min. ${row.min_qty} PCS`}
           </div>
         ),
     },
@@ -61,11 +64,16 @@ export const GrosirTable: React.FC<GrosirTableProps> = ({
         key: "benefit",
         header: "Potongan",
         cell: (row) => (
-            <div className="text-xs font-bold text-orange-600">
-                {row.harga_spesial ? formatCurrency(parseFloat(row.harga_spesial)) : `${row.diskon_persen}%`}
+            <div className="text-xs font-black text-orange-600">
+                {row.is_multi_tier ? (
+                    <span className="bg-orange-50 px-2 py-1 rounded border border-orange-100 italic font-bold">Bervariasi</span>
+                ) : (
+                    row.harga_spesial ? formatCurrency(parseFloat(row.harga_spesial)) : `${row.diskon_persen}%`
+                )}
             </div>
         ),
     },
+
     {
         key: "masa_berlaku",
         header: "Masa Berlaku",

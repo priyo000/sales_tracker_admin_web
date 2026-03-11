@@ -46,6 +46,11 @@ export interface PromoCampaign {
   items?: (PromoAturanHarga | PromoGrosir | PromoHadiah)[];
   jenis_promo?: string;
   is_campaign?: boolean;
+  is_multi_tier?: boolean;
+  divisi?: {
+    id: number;
+    nama_divisi: string;
+  };
 }
 
 export interface PromoAturanHarga {
