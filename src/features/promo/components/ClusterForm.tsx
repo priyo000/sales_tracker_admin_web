@@ -31,7 +31,7 @@ export const ClusterForm = ({ initialData, onSubmit, onCancel, loading }: Cluste
     nama_cluster: initialData?.nama_cluster || "",
     deskripsi: initialData?.deskripsi || "",
     is_aktif: initialData?.is_aktif ?? true,
-    id_divisi: initialData?.id_divisi?.toString() || undefined,
+    id_divisi: initialData?.id_divisi ? initialData.id_divisi.toString() : "null",
   });
 
   useEffect(() => {
@@ -46,7 +46,7 @@ export const ClusterForm = ({ initialData, onSubmit, onCancel, loading }: Cluste
     onSubmit({
       ...formData,
       is_aktif: formData.is_aktif ? 1 : 0,
-      id_divisi: formData.id_divisi ? parseInt(formData.id_divisi) : null
+      id_divisi: formData.id_divisi && formData.id_divisi !== "null" ? parseInt(formData.id_divisi) : null
     });
   };
 
