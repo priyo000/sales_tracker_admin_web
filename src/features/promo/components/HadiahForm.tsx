@@ -278,7 +278,7 @@ export const HadiahForm = ({ clusters, initialData, onSubmit, onCancel, loading 
                                     <ChevronDown className="h-4 w-4 opacity-30" />
                                 </Button>
                             </PopoverTrigger>
-                            <PopoverContent className="w-[450px] p-0 shadow-2xl rounded-lg border-none">
+                            <PopoverContent className="w-[450px] p-0 shadow-2xl rounded-lg border-none overflow-hidden" sideOffset={8}>
                                 <div className="p-3 border-b bg-card flex items-center gap-2">
                                     <Search className="h-4 w-4 text-muted-foreground" />
                                     <input className="bg-transparent text-sm font-bold outline-none w-full" placeholder="Cari..." value={popoverSearch} onChange={(e) => setPopoverSearch(e.target.value)} onKeyDown={(e) => { if (e.key === 'Enter') e.preventDefault(); }} />
@@ -296,7 +296,7 @@ export const HadiahForm = ({ clusters, initialData, onSubmit, onCancel, loading 
                                     ))}
                                   </select>
                                 </div>
-                                <div className="max-h-60 overflow-y-auto w-full">
+                                <div className="max-h-[300px] overflow-y-auto">
                                     <div className="p-2 space-y-1">
                                         {popoverProduks.map(p => {
                                             const isSelected = selectedPemicuIds.includes(p.id);
@@ -368,7 +368,7 @@ export const HadiahForm = ({ clusters, initialData, onSubmit, onCancel, loading 
                                 <ChevronDown className="h-4 w-4 opacity-30" />
                             </Button>
                         </PopoverTrigger>
-                        <PopoverContent className="w-[450px] p-0 shadow-2xl rounded-lg border-none">
+                        <PopoverContent className="w-[450px] p-0 shadow-2xl rounded-lg border-none overflow-hidden" sideOffset={8}>
                             <div className="p-3 border-b bg-card flex items-center gap-2">
                                 <Search className="h-4 w-4 text-muted-foreground" />
                                 <input className="bg-transparent text-sm font-bold outline-none w-full" placeholder="Cari..." value={popoverSearch} onChange={(e) => setPopoverSearch(e.target.value)} onKeyDown={(e) => { if (e.key === 'Enter') e.preventDefault(); }} />
@@ -386,7 +386,7 @@ export const HadiahForm = ({ clusters, initialData, onSubmit, onCancel, loading 
                                 ))}
                               </select>
                             </div>
-                            <div className="max-h-60 overflow-y-auto w-full">
+                            <div className="max-h-[300px] overflow-y-auto">
                                 <div className="p-2 space-y-1">
                                     {popoverProduks.map(p => (
                                         <div key={p.id} className="flex items-center gap-4 p-3 rounded-lg hover:bg-emerald-50 cursor-pointer" onClick={() => handleSelectHadiah(p)}>
