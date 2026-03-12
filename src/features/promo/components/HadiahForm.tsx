@@ -35,7 +35,7 @@ interface HadiahFormProps {
 }
 
 export const HadiahForm = ({ clusters, initialData, onSubmit, onCancel, loading }: HadiahFormProps) => {
-  const { produks: popoverProduks, loading: popoverLoading, loadingMore: popoverLoadingMore, search: popoverSearch, setSearch: setPopoverSearch, idKategori, setIdKategori, hasMore, loadMore, pagination } = useProductSelect();
+  const { produks: popoverProduks, loading: popoverLoading, loadingMore: popoverLoadingMore, search: popoverSearch, setSearch: setPopoverSearch, idKategori, setIdKategori, hasMore, loadMore } = useProductSelect();
   const { kategoris, fetchKategoris } = useKategoriProduk();
   const { divisis, fetchDivisis } = useDivisi();
   const { user } = useAuth();
