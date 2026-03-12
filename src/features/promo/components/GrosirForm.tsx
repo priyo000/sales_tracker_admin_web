@@ -8,7 +8,7 @@ import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover
 import { Calendar } from "@/components/ui/calendar";
 import {
   CalendarIcon, Tag, Package, Percent, Save, LayoutGrid, Search,
-  Check, ChevronDown, Trash2, Info, Layers, Boxes, Plus, AlertCircle,
+  Check, ChevronDown, Trash2, Info, Boxes, Plus, AlertCircle,
   ArrowRight, ChevronUp
 } from "lucide-react";
 import { format } from "date-fns";
@@ -403,7 +403,7 @@ export const GrosirForm = ({ clusters, initialData, onSubmit, onCancel, loading 
                           className={cn("flex items-center gap-4 p-3.5 rounded-xl cursor-pointer transition-all border border-transparent",
                             isSelected ? "bg-primary/5 border-primary/20" : "hover:bg-muted/50")}
                           onClick={() => addProduct(p)}>
-                          <div className={cn("h-5 w-5 rounded-md border-2 flex items-center justify-center flex-shrink-0",
+                          <div className={cn("h-5 w-5 rounded-md border-2 flex items-center justify-center shrink-0",
                             isSelected ? "bg-primary border-primary" : "border-border/60")}>
                             {isSelected && <Check className="h-3.5 w-3.5 text-white" />}
                           </div>
@@ -460,7 +460,7 @@ export const GrosirForm = ({ clusters, initialData, onSubmit, onCancel, loading 
                         )}
                       </div>
                     </div>
-                    <div className="flex items-center gap-2 flex-shrink-0">
+                    <div className="flex items-center gap-2 shrink-0">
                       {entryIdx === 0 && productEntries.length > 1 && (
                         <Button type="button" variant="outline" size="sm"
                           className="h-7 px-2.5 text-[10px] font-black border-orange-200 text-orange-700 hover:bg-orange-100 rounded-xl"
@@ -499,7 +499,7 @@ export const GrosirForm = ({ clusters, initialData, onSubmit, onCancel, loading 
                         return (
                           <div key={tier.id} className="grid grid-cols-[2rem_1fr_1.2fr_1.2fr_1.8fr_1.5rem] gap-2 items-center">
                             {/* Tier badge */}
-                            <div className="bg-orange-100 text-orange-700 text-[10px] font-black w-7 h-7 rounded-full flex items-center justify-center flex-shrink-0">
+                            <div className="bg-orange-100 text-orange-700 text-[10px] font-black w-7 h-7 rounded-full flex items-center justify-center shrink-0">
                               {ti + 1}
                             </div>
 
@@ -540,10 +540,10 @@ export const GrosirForm = ({ clusters, initialData, onSubmit, onCancel, loading 
                             </div>
 
                             {/* Result preview */}
-                            <div className="bg-gradient-to-r from-emerald-50 to-teal-50 border border-emerald-200 rounded-xl px-3 h-9 flex items-center gap-2">
+                            <div className="bg-linear-to-r from-emerald-50 to-teal-50 border border-emerald-200 rounded-xl px-3 h-9 flex items-center gap-2">
                               {hargaResult && hargaResult > 0 ? (
                                 <>
-                                  <ArrowRight className="h-3 w-3 text-emerald-500 flex-shrink-0" />
+                                  <ArrowRight className="h-3 w-3 text-emerald-500 shrink-0" />
                                   <div className="flex flex-col min-w-0">
                                     <span className="font-black text-emerald-700 text-xs tabular-nums truncate">
                                       {formatCurrency(hargaResult)}
@@ -562,7 +562,7 @@ export const GrosirForm = ({ clusters, initialData, onSubmit, onCancel, loading 
 
                             {/* Remove tier */}
                             {entry.tiers.length > 1 ? (
-                              <button type="button" className="text-muted-foreground hover:text-destructive transition-colors flex-shrink-0"
+                              <button type="button" className="text-muted-foreground hover:text-destructive transition-colors shrink-0"
                                 onClick={() => removeTier(entry.produk.id, tier.id)}>
                                 <Trash2 className="h-3.5 w-3.5" />
                               </button>
@@ -588,7 +588,7 @@ export const GrosirForm = ({ clusters, initialData, onSubmit, onCancel, loading 
         {/* ── Info note ── */}
         {productEntries.length > 0 && (
           <div className="p-3 bg-orange-50 border border-orange-100 rounded-xl flex items-start gap-2.5">
-            <Info className="h-4 w-4 text-orange-500 flex-shrink-0 mt-0.5" />
+            <Info className="h-4 w-4 text-orange-500 shrink-0 mt-0.5" />
             <p className="text-[10px] font-semibold text-orange-800/80 leading-relaxed">
               Setiap produk bisa punya ketentuan tier yang berbeda. Gunakan <strong>Salin ke Semua</strong> jika tier produk pertama ingin diterapkan ke semua produk (harga akan dihitung ulang per produk).
             </p>
