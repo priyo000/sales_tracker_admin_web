@@ -386,7 +386,7 @@ export const HadiahForm = ({ clusters, initialData, onSubmit, onCancel, loading 
                                 ))}
                               </select>
                             </div>
-                            <div className="max-h-[300px] overflow-y-auto scrollbar-thin scrollbar-thumb-gray-300 scrollbar-track-transparent hover:scrollbar-thumb-gray-400">
+                            <div className="max-h-[300px] overflow-y-auto pointer-events-auto" onWheel={e => e.stopPropagation()}>
                                 <div className="p-2 space-y-1">
                                     {popoverProduks.map(p => (
                                         <div key={p.id} className="flex items-center gap-4 p-3 rounded-lg hover:bg-emerald-50 cursor-pointer" onClick={() => handleSelectHadiah(p)}>
