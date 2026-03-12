@@ -129,20 +129,29 @@ export const HadiahForm = ({ clusters, initialData, onSubmit, onCancel, loading 
     e.preventDefault();
     if (formData.jenis_pemicu === 'produk' && selectedPemicuIds.length === 0) return;
     if (!formData.id_produk_hadiah) return;
+    if (formData.jenis_pemicu === 'total_nota' && (!formData.min_amount_pemicu || parseFloat(formData.min_amount_pemicu) <= 0)) return;
 
-    onSubmit({
+    const submitData: Record<string, unknown> = {
       ...formData,
       id_produk_pemicu: formData.jenis_pemicu === 'produk' ? selectedPemicuIds : null,
       id_produk_hadiah: parseInt(formData.id_produk_hadiah),
       qty_hadiah: parseInt(formData.qty_hadiah),
-      min_qty_pemicu: parseInt(formData.min_qty_pemicu),
-      min_amount_pemicu: parseFloat(formData.min_amount_pemicu),
       harga_tebus: parseFloat(formData.harga_tebus),
       id_divisi: formData.id_divisi === "null" ? null : parseInt(formData.id_divisi),
       id_promo_cluster: formData.id_promo_cluster === "null" ? null : parseInt(formData.id_promo_cluster),
       tanggal_mulai: format(formData.tanggal_mulai, "yyyy-MM-dd"),
       tanggal_akhir: format(formData.tanggal_akhir, "yyyy-MM-dd"),
-    });
+    };
+
+    if (formData.jenis_pemicu === 'produk') {
+      submitData.min_qty_pemicu = parseInt(formData.min_qty_pemicu);
+      submitData.min_amount_pemicu = null;
+    } else {
+      submitData.min_qty_pemicu = null;
+      submitData.min_amount_pemicu = parseFloat(formData.min_amount_pemicu);
+    }
+
+    onSubmit(submitData);
   };
 
   const selectedHadiah = formData.id_produk_hadiah ? persistedProdukMap[parseInt(formData.id_produk_hadiah)] : null;
@@ -262,7 +271,7 @@ export const HadiahForm = ({ clusters, initialData, onSubmit, onCancel, loading 
                   </SelectTrigger>
                   <SelectContent>
                     <SelectItem value="produk">Melalui Produk</SelectItem>
-                    <SelectItem value="nota">Melalui Total Nota</SelectItem>
+                    <SelectItem value="total_nota">Melalui Total Nota</SelectItem>
                   </SelectContent>
               </Select>
            </div>

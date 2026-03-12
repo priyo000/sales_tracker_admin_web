@@ -9,7 +9,6 @@ import { PriceRuleTable } from "@/features/promo/components/PriceRuleTable";
 import { GrosirTable } from "@/features/promo/components/GrosirTable";
 import { HadiahTable } from "@/features/promo/components/HadiahTable";
 import { Button } from "@/components/ui/button";
-import { Card, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { Modal, ConfirmModal } from "@/components/ui/Modal";
 import { ClusterForm } from "@/features/promo/components/ClusterForm";
 import { PriceRuleForm } from "@/features/promo/components/PriceRuleForm";
@@ -17,6 +16,7 @@ import { GrosirForm } from "@/features/promo/components/GrosirForm";
 import { HadiahForm } from "@/features/promo/components/HadiahForm";
 import { ClusterAssignmentModal } from "@/features/promo/components/ClusterAssignmentModal";
 import { PromoCluster, PromoAturanHarga, PromoGrosir, PromoHadiah, PromoCampaign } from "@/features/promo/types";
+import PromoDashboard from "@/features/promo/components/PromoDashboard";
 
 type PromoTab = "dashboard" | "clusters" | "prices" | "rewards";
 
@@ -179,20 +179,12 @@ const PromoPage: React.FC = () => {
       </div>
 
       {activeTab === "dashboard" && (
-        <div className="grid grid-cols-1 md:grid-cols-4 gap-4 animate-in fade-in duration-300">
-            <Card className="shadow-sm border-border/50">
-               <CardHeader className="pb-2">
-                 <CardDescription className="text-xs font-semibold uppercase tracking-wider">Total Cluster</CardDescription>
-                 <CardTitle className="text-3xl font-bold">{clusters.length}</CardTitle>
-               </CardHeader>
-            </Card>
-            <Card className="shadow-sm border-border/50">
-               <CardHeader className="pb-2">
-                 <CardDescription className="text-xs font-semibold uppercase tracking-wider">Promo Aktif</CardDescription>
-                 <CardTitle className="text-3xl font-bold text-primary">{priceRules.length + grosirRules.length + rewardRules.length}</CardTitle>
-               </CardHeader>
-            </Card>
-        </div>
+        <PromoDashboard
+          clusters={clusters}
+          priceRules={priceRules}
+          grosirRules={grosirRules}
+          rewardRules={rewardRules}
+        />
       )}
 
       {(activeTab === "clusters" || activeTab === "prices" || activeTab === "rewards") && (
