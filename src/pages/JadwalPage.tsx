@@ -61,7 +61,7 @@ const JadwalPage: React.FC = () => {
 
   // Initial Load & Filter Change
   useEffect(() => {
-    fetchOptions(activeTab === "recurring" ? "sales" : undefined);
+    fetchOptions(activeTab === "recurring" ? "Sales" : undefined);
   }, [fetchOptions, activeTab]);
 
   useEffect(() => {
