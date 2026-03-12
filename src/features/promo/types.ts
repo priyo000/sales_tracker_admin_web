@@ -44,6 +44,8 @@ export interface PromoCampaign {
   harga_spesial?: string | null;
   harga_tebus?: string;
   min_amount_pemicu?: string | null;
+  min_qty_pemicu?: number | null;
+  jenis_pemicu?: string;
   items?: (PromoAturanHarga | PromoGrosir | PromoHadiah)[];
   jenis_promo?: string;
   is_campaign?: boolean;
