@@ -15,7 +15,7 @@ interface HadiahTableProps {
   loading: boolean;
   onDelete: (row: PromoCampaign) => void;
   onView?: (campaign: PromoCampaign) => void;
-  onStatusChange?: (id: number, status: string) => void;
+  onCancel?: (id: number) => void;
 }
 
 const getStatusBadge = (status?: string) => {
@@ -38,7 +38,7 @@ export const HadiahTable: React.FC<HadiahTableProps> = ({
   loading, 
   onDelete,
   onView,
-  onStatusChange,
+  onCancel,
 }) => {
   const batchColumns: ColumnDef<PromoCampaign>[] = [
     {
@@ -121,7 +121,7 @@ export const HadiahTable: React.FC<HadiahTableProps> = ({
                 <Eye className="h-4 w-4" />
             </Button>
           )}
-          {onStatusChange && row.status !== 'BATAL' && row.status !== 'SELESAI' && (
+          {onCancel && (row.status === 'PENDING' || row.status === 'BERLANGSUNG') && (
             <DropdownMenu>
               <DropdownMenuTrigger asChild>
                 <Button variant="ghost" size="icon" className="h-8 w-8">
@@ -129,23 +129,16 @@ export const HadiahTable: React.FC<HadiahTableProps> = ({
                 </Button>
               </DropdownMenuTrigger>
               <DropdownMenuContent align="end">
-                {row.status === 'PENDING' && (
-                  <DropdownMenuItem onClick={() => onStatusChange(row.id, 'BERLANGSUNG')}>
-                    Mulai Sekarang
-                  </DropdownMenuItem>
-                )}
-                {row.status === 'BERLANGSUNG' && (
-                  <DropdownMenuItem onClick={() => onStatusChange(row.id, 'BATAL')} className="text-red-600">
-                    Batalkan
-                  </DropdownMenuItem>
-                )}
+                <DropdownMenuItem onClick={() => onCancel(row.id)} className="text-red-600">
+                  Batalkan
+                </DropdownMenuItem>
                 <DropdownMenuItem onClick={() => onDelete(row)} className="text-red-600">
                   Hapus
                 </DropdownMenuItem>
               </DropdownMenuContent>
             </DropdownMenu>
           )}
-          {(!onStatusChange || (row.status === 'BATAL' || row.status === 'SELESAI')) && (
+          {(!onCancel || row.status === 'BATAL' || row.status === 'SELESAI') && (
             <Button variant="ghost" size="icon" className="h-8 w-8 text-destructive hover:bg-destructive/10" onClick={() => onDelete(row)}>
               <Trash className="h-4 w-4" />
             </Button>

@@ -43,7 +43,7 @@ const PromoPage: React.FC = () => {
     createRewardRule,
     deleteRewardRule,
     deleteCampaign,
-    updateCampaignStatus
+    cancelCampaign
   } = usePromo();
 
   const [activeTab, setActiveTab] = useState<PromoTab>("dashboard");
@@ -112,15 +112,15 @@ const PromoPage: React.FC = () => {
     }
   };
 
-  const handleStatusChange = async (id: number, status: string) => {
-    const res = await updateCampaignStatus(id, status);
+  const handleCancelCampaign = async (id: number) => {
+    const res = await cancelCampaign(id);
     if (res.success) {
-      toast.success(`Status promo berhasil diubah ke ${status}`);
+      toast.success("Campaign berhasil dibatalkan");
       fetchRewardRules(true);
       fetchPriceRules(true);
       fetchGrosirRules(true);
     } else {
-      toast.error(res.message || "Gagal mengubah status");
+      toast.error(res.message || "Gagal membatalkan campaign");
     }
   };
 
@@ -210,7 +210,7 @@ const PromoPage: React.FC = () => {
                     <GrosirTable rules={grosirRules} loading={loading} onDelete={setTargetDeleteGrosir} onPriceToggle={() => { setPriceSubTab("standard"); fetchPriceRules(true); }} onView={setSelectedCampaignView} />
                 )
             )}
-            {activeTab === "rewards" && <HadiahTable rules={rewardRules} loading={loading} onDelete={setTargetDeleteHadiah} onView={setSelectedCampaignView} onStatusChange={handleStatusChange} />}
+            {activeTab === "rewards" && <HadiahTable rules={rewardRules} loading={loading} onDelete={setTargetDeleteHadiah} onView={setSelectedCampaignView} onCancel={handleCancelCampaign} />}
         </div>
       )}
 

@@ -256,14 +256,14 @@ export const usePromo = () => {
     }
   };
 
-  const updateCampaignStatus = async (id: number, status: string) => {
+  const cancelCampaign = async (id: number) => {
     setLoading(true);
     try {
-      const response = await api.put(`/promo/campaign/${id}/status`, { status });
+      const response = await api.put(`/promo/campaign/${id}/cancel`);
       return { success: true, data: response.data.data };
     } catch (err) {
       const error = err as AxiosError<{ message: string }>;
-      return { success: false, message: error.response?.data?.message || "Gagal mengubah status campaign" };
+      return { success: false, message: error.response?.data?.message || "Gagal membatalkan campaign" };
     } finally {
       setLoading(false);
     }
@@ -294,6 +294,6 @@ export const usePromo = () => {
     createRewardRule,
     deleteRewardRule,
     deleteCampaign,
-    updateCampaignStatus,
+    cancelCampaign,
   };
 };
