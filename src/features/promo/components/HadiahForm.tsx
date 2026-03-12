@@ -14,10 +14,11 @@ import {
   PopoverTrigger,
 } from "@/components/ui/popover";
 import { Calendar } from "@/components/ui/calendar";
-import { CalendarIcon, Gift, Package, Save, LayoutGrid, Search, Check, ChevronDown, ArrowRight, Zap, Info, Layers, Coins, Tag } from "lucide-react";
+import { CalendarIcon, Gift, Package, Save, LayoutGrid, Search, Check, ChevronDown, ArrowRight, Zap, Info, Layers, Coins, Tag, ChevronLeft, ChevronRight as ChevronRightIcon } from "lucide-react";
 import { format } from "date-fns";
 import { id } from "date-fns/locale";
 import { useProduk } from "@/features/produk/hooks/useProduk";
+import { useProductSelect } from "../hooks/useProductSelect";
 import { FormField } from "@/components/ui/FormField";
 import { useDivisi } from "@/features/divisi/hooks/useDivisi";
 import { cn } from "@/lib/utils";
@@ -35,6 +36,7 @@ interface HadiahFormProps {
 
 export const HadiahForm = ({ clusters, initialData, onSubmit, onCancel, loading }: HadiahFormProps) => {
   const { produks, fetchProduks } = useProduk();
+  const { produks: popoverProduks, loading: popoverLoading, search: popoverSearch, setSearch: setPopoverSearch, pagination, setPage } = useProductSelect();
   const { divisis, fetchDivisis } = useDivisi();
   const { user } = useAuth();
   const isSuperOrCompanyAdmin = user?.peran === "super_admin" || user?.peran === "admin_perusahaan";
@@ -74,7 +76,6 @@ export const HadiahForm = ({ clusters, initialData, onSubmit, onCancel, loading 
     tanggal_akhir: initialData?.tanggal_akhir ? new Date(initialData.tanggal_akhir) : new Date(new Date().setMonth(new Date().getMonth() + 1)),
   });
 
-  const [searchProduk, setSearchProduk] = useState("");
   const [isPemicuPopoverOpen, setIsPemicuPopoverOpen] = useState(false);
   const [isHadiahPopoverOpen, setIsHadiahPopoverOpen] = useState(false);
 
@@ -82,15 +83,7 @@ export const HadiahForm = ({ clusters, initialData, onSubmit, onCancel, loading 
     fetchDivisis();
   }, [fetchDivisis]);
 
-  // Handle search with debounce
-  useEffect(() => {
-    if (isPemicuPopoverOpen || isHadiahPopoverOpen) {
-      const timer = setTimeout(() => {
-        fetchProduks({ search: searchProduk, per_page: 20 });
-      }, 300);
-      return () => clearTimeout(timer);
-    }
-  }, [fetchProduks, searchProduk, isPemicuPopoverOpen, isHadiahPopoverOpen]);
+  // useProductSelect handles fetching automatically when popover is open
 
   // Safely sync product details to state
   // Sync produks to persisted map without triggering cascading renders in effect body
@@ -285,11 +278,12 @@ export const HadiahForm = ({ clusters, initialData, onSubmit, onCancel, loading 
                             <PopoverContent className="w-[450px] p-0 shadow-2xl rounded-lg border-none">
                                 <div className="p-3 border-b bg-card flex items-center gap-2">
                                     <Search className="h-4 w-4 text-muted-foreground" />
-                                    <input className="bg-transparent text-sm font-bold outline-none w-full" placeholder="Cari..." value={searchProduk} onChange={(e) => setSearchProduk(e.target.value)} onKeyDown={(e) => { if (e.key === 'Enter') e.preventDefault(); }} />
+                                    <input className="bg-transparent text-sm font-bold outline-none w-full" placeholder="Cari..." value={popoverSearch} onChange={(e) => setPopoverSearch(e.target.value)} onKeyDown={(e) => { if (e.key === 'Enter') e.preventDefault(); }} />
+                                    {popoverLoading && <div className="h-4 w-4 border-2 border-primary/20 border-t-primary rounded-full animate-spin" />}
                                 </div>
                                 <div className="max-h-60 overflow-y-auto w-full">
                                     <div className="p-2 space-y-1">
-                                        {produks.map(p => {
+                                        {popoverProduks.map(p => {
                                             const isSelected = selectedPemicuIds.includes(p.id);
                                             return (
                                                 <div key={p.id} className={cn("flex items-center gap-3 p-3 rounded-lg transition-all", isSelected ? "bg-primary/5" : "hover:bg-muted/50 cursor-pointer")} onClick={() => handleTogglePemicu(p)}>
@@ -305,6 +299,21 @@ export const HadiahForm = ({ clusters, initialData, onSubmit, onCancel, loading 
                                         })}
                                     </div>
                                 </div>
+                                {pagination.lastPage > 1 && (
+                                    <div className="p-2 border-t bg-muted/30 flex items-center justify-between">
+                                        <div className="text-[10px] font-semibold text-muted-foreground">
+                                            Halaman {pagination.page} dari {pagination.lastPage}
+                                        </div>
+                                        <div className="flex items-center gap-1">
+                                            <Button type="button" variant="ghost" size="sm" className="h-7 w-7 p-0" onClick={() => setPage(pagination.page - 1)} disabled={pagination.page <= 1}>
+                                                <ChevronLeft className="h-4 w-4" />
+                                            </Button>
+                                            <Button type="button" variant="ghost" size="sm" className="h-7 w-7 p-0" onClick={() => setPage(pagination.page + 1)} disabled={pagination.page >= pagination.lastPage}>
+                                                <ChevronRightIcon className="h-4 w-4" />
+                                            </Button>
+                                        </div>
+                                    </div>
+                                )}
                             </PopoverContent>
                         </Popover>
                     </FormField>
@@ -350,11 +359,12 @@ export const HadiahForm = ({ clusters, initialData, onSubmit, onCancel, loading 
                         <PopoverContent className="w-[450px] p-0 shadow-2xl rounded-lg border-none">
                             <div className="p-3 border-b bg-card flex items-center gap-2">
                                 <Search className="h-4 w-4 text-muted-foreground" />
-                                <input className="bg-transparent text-sm font-bold outline-none w-full" placeholder="Cari..." value={searchProduk} onChange={(e) => setSearchProduk(e.target.value)} onKeyDown={(e) => { if (e.key === 'Enter') e.preventDefault(); }} />
+                                <input className="bg-transparent text-sm font-bold outline-none w-full" placeholder="Cari..." value={popoverSearch} onChange={(e) => setPopoverSearch(e.target.value)} onKeyDown={(e) => { if (e.key === 'Enter') e.preventDefault(); }} />
+                                {popoverLoading && <div className="h-4 w-4 border-2 border-primary/20 border-t-primary rounded-full animate-spin" />}
                             </div>
                             <div className="max-h-60 overflow-y-auto w-full">
                                 <div className="p-2 space-y-1">
-                                    {produks.map(p => (
+                                    {popoverProduks.map(p => (
                                         <div key={p.id} className="flex items-center gap-4 p-3 rounded-lg hover:bg-emerald-50 cursor-pointer" onClick={() => handleSelectHadiah(p)}>
                                            <div className="h-8 w-8 rounded-lg bg-emerald-100 flex items-center justify-center">
                                               <Gift className="h-4 w-4 text-emerald-600" />
@@ -367,6 +377,21 @@ export const HadiahForm = ({ clusters, initialData, onSubmit, onCancel, loading 
                                     ))}
                                 </div>
                             </div>
+                            {pagination.lastPage > 1 && (
+                                <div className="p-2 border-t bg-muted/30 flex items-center justify-between">
+                                    <div className="text-[10px] font-semibold text-muted-foreground">
+                                        Halaman {pagination.page} dari {pagination.lastPage}
+                                    </div>
+                                    <div className="flex items-center gap-1">
+                                        <Button type="button" variant="ghost" size="sm" className="h-7 w-7 p-0" onClick={() => setPage(pagination.page - 1)} disabled={pagination.page <= 1}>
+                                            <ChevronLeft className="h-4 w-4" />
+                                        </Button>
+                                        <Button type="button" variant="ghost" size="sm" className="h-7 w-7 p-0" onClick={() => setPage(pagination.page + 1)} disabled={pagination.page >= pagination.lastPage}>
+                                            <ChevronRightIcon className="h-4 w-4" />
+                                        </Button>
+                                    </div>
+                                </div>
+                            )}
                         </PopoverContent>
                     </Popover>
                  </FormField>

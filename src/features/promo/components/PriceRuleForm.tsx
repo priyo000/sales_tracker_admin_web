@@ -14,10 +14,11 @@ import {
   PopoverTrigger,
 } from "@/components/ui/popover";
 import { Calendar } from "@/components/ui/calendar";
-import { CalendarIcon, Tag, Package, Percent, Save, LayoutGrid, Search, Check, ChevronDown, Trash2, Calculator, ArrowRight, Info } from "lucide-react";
+import { CalendarIcon, Tag, Package, Percent, Save, LayoutGrid, Search, Check, ChevronDown, Trash2, Calculator, ArrowRight, Info, ChevronLeft, ChevronRight as ChevronRightIcon } from "lucide-react";
 import { format } from "date-fns";
 import { id } from "date-fns/locale";
 import { useProduk } from "@/features/produk/hooks/useProduk";
+import { useProductSelect } from "../hooks/useProductSelect";
 import { FormField } from "@/components/ui/FormField";
 import { useDivisi } from "@/features/divisi/hooks/useDivisi";
 import { cn, formatCurrency } from "@/lib/utils";
@@ -44,6 +45,7 @@ interface ProductPricing {
 
 export const PriceRuleForm = ({ clusters, initialData, onSubmit, onCancel, loading }: PriceRuleFormProps) => {
   const { produks, fetchProduks, loading: searchLoading } = useProduk();
+  const { produks: popoverProduks, loading: popoverLoading, search: popoverSearch, setSearch: setPopoverSearch, pagination, setPage } = useProductSelect();
   const { divisis, fetchDivisis } = useDivisi();
   const { user } = useAuth();
   const isSuperOrCompanyAdmin = user?.peran === "super_admin" || user?.peran === "admin_perusahaan";
@@ -86,22 +88,13 @@ export const PriceRuleForm = ({ clusters, initialData, onSubmit, onCancel, loadi
     tanggal_akhir: initialData?.tanggal_akhir ? new Date(initialData.tanggal_akhir) : new Date(new Date().setMonth(new Date().getMonth() + 1)),
   });
 
-  const [searchProduk, setSearchProduk] = useState("");
   const [isProdukPopoverOpen, setIsProdukPopoverOpen] = useState(false);
 
   useEffect(() => {
     fetchDivisis();
   }, [fetchDivisis]);
 
-  // Handle search with debounce
-  useEffect(() => {
-    if (isProdukPopoverOpen) {
-      const timer = setTimeout(() => {
-        fetchProduks({ search: searchProduk, per_page: 20 });
-      }, 300);
-      return () => clearTimeout(timer);
-    }
-  }, [fetchProduks, searchProduk, isProdukPopoverOpen]);
+  // useProductSelect handles fetching automatically when popover is open
 
   // Safely sync product details to state to avoid ref-during-render issues
   useEffect(() => {
@@ -373,17 +366,17 @@ export const PriceRuleForm = ({ clusters, initialData, onSubmit, onCancel, loadi
                   <input 
                     className="bg-transparent text-sm outline-none w-full font-bold placeholder:text-muted-foreground/50" 
                     placeholder="Contoh: Indomie, P-1002, dsb..." 
-                    value={searchProduk}
-                    onChange={(e) => setSearchProduk(e.target.value)}
+                    value={popoverSearch}
+                    onChange={(e) => setPopoverSearch(e.target.value)}
                     onKeyDown={(e) => { if (e.key === 'Enter') e.preventDefault(); }}
                     autoFocus
                   />
-                  {searchLoading && <div className="h-4 w-4 border-2 border-primary/20 border-t-primary rounded-full animate-spin" />}
+                  {popoverLoading && <div className="h-4 w-4 border-2 border-primary/20 border-t-primary rounded-full animate-spin" />}
                 </div>
                 
                 <div className="max-h-[350px] overflow-y-auto w-full pointer-events-auto" onWheel={(e) => e.stopPropagation()} onTouchMove={(e) => e.stopPropagation()}>
                   <div className="p-3 space-y-1.5">
-                    {produks.length === 0 && !searchLoading && (
+                    {popoverProduks.length === 0 && !popoverLoading && (
                         <div className="py-20 text-center flex flex-col items-center gap-3">
                             <div className="p-4 bg-muted rounded-full">
                                 <Search className="h-8 w-8 text-muted-foreground/30" />
@@ -391,7 +384,7 @@ export const PriceRuleForm = ({ clusters, initialData, onSubmit, onCancel, loadi
                             <span className="text-xs font-bold text-muted-foreground lowercase">Produk tidak ditemukan</span>
                         </div>
                     )}
-                    {produks.map((p: Produk) => {
+                    {popoverProduks.map((p: Produk) => {
                       const isSelected = selectedProductIds.includes(p.id);
                       return (
                         <div
@@ -423,6 +416,36 @@ export const PriceRuleForm = ({ clusters, initialData, onSubmit, onCancel, loadi
                   </div>
                 </div>
                 
+                {pagination.lastPage > 1 && (
+                  <div className="p-3 border-t bg-muted/30 flex items-center justify-between">
+                    <div className="text-[10px] font-semibold text-muted-foreground">
+                      Halaman {pagination.page} dari {pagination.lastPage} ({pagination.total} produk)
+                    </div>
+                    <div className="flex items-center gap-1">
+                      <Button
+                        type="button"
+                        variant="ghost"
+                        size="sm"
+                        className="h-7 w-7 p-0"
+                        onClick={() => setPage(pagination.page - 1)}
+                        disabled={pagination.page <= 1}
+                      >
+                        <ChevronLeft className="h-4 w-4" />
+                      </Button>
+                      <Button
+                        type="button"
+                        variant="ghost"
+                        size="sm"
+                        className="h-7 w-7 p-0"
+                        onClick={() => setPage(pagination.page + 1)}
+                        disabled={pagination.page >= pagination.lastPage}
+                      >
+                        <ChevronRightIcon className="h-4 w-4" />
+                      </Button>
+                    </div>
+                  </div>
+                )}
+                
                 <div className="p-4 border-t bg-muted/30 flex items-center justify-between">
                   <div className="flex items-center gap-2">
                     {selectedProductIds.length > 0 && (
@@ -432,7 +455,7 @@ export const PriceRuleForm = ({ clusters, initialData, onSubmit, onCancel, loadi
                     )}
                   </div>
                   <div className="flex gap-2">
-                    {produks.length > 0 && (
+                    {popoverProduks.length > 0 && (
                       <Button
                         type="button"
                         variant="ghost"
@@ -440,7 +463,7 @@ export const PriceRuleForm = ({ clusters, initialData, onSubmit, onCancel, loadi
                         className="h-9 px-4 text-[11px] font-bold text-primary uppercase hover:bg-primary/10 rounded-lg"
                         onClick={() => {
                           const newSelections = new Set([...selectedProductIds]);
-                          produks.forEach((p: Produk) => newSelections.add(p.id));
+                          popoverProduks.forEach((p: Produk) => newSelections.add(p.id));
                           setSelectedProductIds(Array.from(newSelections));
                         }}
                       >

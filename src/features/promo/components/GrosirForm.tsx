@@ -9,11 +9,12 @@ import { Calendar } from "@/components/ui/calendar";
 import {
   CalendarIcon, Tag, Package, Percent, Save, LayoutGrid, Search,
   Check, ChevronDown, Trash2, Info, Boxes, Plus, AlertCircle,
-  ArrowRight, ChevronUp
+  ArrowRight, ChevronUp, ChevronLeft, ChevronRight as ChevronRightIcon
 } from "lucide-react";
 import { format } from "date-fns";
 import { id } from "date-fns/locale";
 import { useProduk } from "@/features/produk/hooks/useProduk";
+import { useProductSelect } from "../hooks/useProductSelect";
 import { FormField } from "@/components/ui/FormField";
 import { useDivisi } from "@/features/divisi/hooks/useDivisi";
 import { cn, formatCurrency } from "@/lib/utils";
@@ -75,6 +76,7 @@ const calcDiskon = (hargaAsli: number, harga: string): string => {
 
 export const GrosirForm = ({ clusters, initialData, onSubmit, onCancel, loading }: GrosirFormProps) => {
   const { produks, fetchProduks, loading: searchLoading } = useProduk();
+  const { produks: popoverProduks, loading: popoverLoading, search: popoverSearch, setSearch: setPopoverSearch, pagination, setPage } = useProductSelect();
   const { divisis, fetchDivisis } = useDivisi();
   const { user } = useAuth();
   const isSuperOrCompanyAdmin = user?.peran === "super_admin" || user?.peran === "admin_perusahaan";
@@ -113,14 +115,7 @@ export const GrosirForm = ({ clusters, initialData, onSubmit, onCancel, loading 
 
   useEffect(() => { fetchDivisis(); }, [fetchDivisis]);
 
-  useEffect(() => {
-    if (isProdukPopoverOpen) {
-      const timer = setTimeout(() => {
-        fetchProduks({ search: searchProduk, per_page: 30 });
-      }, 300);
-      return () => clearTimeout(timer);
-    }
-  }, [fetchProduks, searchProduk, isProdukPopoverOpen]);
+  // useProductSelect handles fetching automatically when popover is open
 
   // ─── Product management ─────────────────────────────────────────────────
 
@@ -387,17 +382,17 @@ export const GrosirForm = ({ clusters, initialData, onSubmit, onCancel, loading 
                   <input
                     className="bg-transparent text-sm outline-none w-full font-bold placeholder:text-muted-foreground/50"
                     placeholder="Cari nama produk atau SKU..."
-                    value={searchProduk}
-                    onChange={e => setSearchProduk(e.target.value)}
+                    value={popoverSearch}
+                    onChange={e => setPopoverSearch(e.target.value)}
                     onKeyDown={e => { if (e.key === 'Enter') e.preventDefault(); }}
                     autoFocus
                   />
-                  {searchLoading && <div className="h-4 w-4 border-2 border-primary/20 border-t-primary rounded-full animate-spin" />}
+                  {popoverLoading && <div className="h-4 w-4 border-2 border-primary/20 border-t-primary rounded-full animate-spin" />}
                 </div>
 
                 <div className="max-h-[320px] overflow-y-auto pointer-events-auto" onWheel={e => e.stopPropagation()}>
                   <div className="p-3 space-y-1">
-                    {produks.map(p => {
+                    {popoverProduks.map(p => {
                       const isSelected = selectedIds.includes(p.id);
                       return (
                         <div key={p.id}
@@ -419,11 +414,41 @@ export const GrosirForm = ({ clusters, initialData, onSubmit, onCancel, loading 
                         </div>
                       );
                     })}
-                    {produks.length === 0 && !searchLoading && (
+                    {popoverProduks.length === 0 && !popoverLoading && (
                       <div className="py-8 text-center text-muted-foreground text-xs font-semibold">Ketik untuk mencari produk</div>
                     )}
                   </div>
                 </div>
+
+                {pagination.lastPage > 1 && (
+                  <div className="p-3 border-t bg-muted/30 flex items-center justify-between">
+                    <div className="text-[10px] font-semibold text-muted-foreground">
+                      Halaman {pagination.page} dari {pagination.lastPage} ({pagination.total} produk)
+                    </div>
+                    <div className="flex items-center gap-1">
+                      <Button
+                        type="button"
+                        variant="ghost"
+                        size="sm"
+                        className="h-7 w-7 p-0"
+                        onClick={() => setPage(pagination.page - 1)}
+                        disabled={pagination.page <= 1}
+                      >
+                        <ChevronLeft className="h-4 w-4" />
+                      </Button>
+                      <Button
+                        type="button"
+                        variant="ghost"
+                        size="sm"
+                        className="h-7 w-7 p-0"
+                        onClick={() => setPage(pagination.page + 1)}
+                        disabled={pagination.page >= pagination.lastPage}
+                      >
+                        <ChevronRightIcon className="h-4 w-4" />
+                      </Button>
+                    </div>
+                  </div>
+                )}
 
                 <div className="p-3 border-t bg-muted/30 text-[11px] font-semibold text-muted-foreground text-center">
                   {selectedIds.length} produk dipilih — klik produk untuk tambah/hapus
