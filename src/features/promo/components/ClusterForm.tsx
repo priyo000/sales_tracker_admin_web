@@ -97,7 +97,7 @@ export const ClusterForm = ({ initialData, onSubmit, onCancel, loading }: Cluste
           />
         </FormField>
 
-        <div className="flex items-center justify-between p-3 rounded-xl bg-muted/30 border border-border/50">
+        <div className="flex items-center justify-between p-3 rounded-lg bg-muted/30 border border-border/50">
           <div className="flex items-center gap-2">
             <CheckCircle2 className="h-4 w-4 text-emerald-500" />
             <div className="space-y-0.5">

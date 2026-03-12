@@ -16,6 +16,7 @@ import {
 import { Calendar } from "@/components/ui/calendar";
 import { CalendarIcon, Tag, Package, Percent, Save, LayoutGrid, Search, Check, ChevronDown, Trash2, Calculator, ArrowRight, Info } from "lucide-react";
 import { format } from "date-fns";
+import { id } from "date-fns/locale";
 import { useProduk } from "@/features/produk/hooks/useProduk";
 import { FormField } from "@/components/ui/FormField";
 import { useDivisi } from "@/features/divisi/hooks/useDivisi";
@@ -218,11 +219,11 @@ export const PriceRuleForm = ({ clusters, initialData, onSubmit, onCancel, loadi
   };
 
   return (
-    <form onSubmit={handleSubmit} className="flex flex-col h-[750px] -m-2">
-      <div className="flex-1 overflow-y-auto p-4 space-y-6">
+    <form onSubmit={handleSubmit} className="space-y-6 py-2">
+      <div className="space-y-6">
         
         {/* Step 1: Target Scope */}
-        <div className="bg-muted/30 p-4 rounded-xl border border-border/50 shadow-inner space-y-4">
+        <div className="bg-muted/30 p-4 rounded-lg border border-border/50 shadow-inner space-y-4">
           <div className="flex items-center gap-2 mb-1">
              <div className="p-1.5 bg-primary/10 rounded-lg">
                 <Calculator className="h-4 w-4 text-primary" />
@@ -237,7 +238,7 @@ export const PriceRuleForm = ({ clusters, initialData, onSubmit, onCancel, loadi
                         placeholder="Contoh: Promo Akhir Tahun 2026" 
                         value={targetConfig.nama_promo}
                         onChange={(e) => setTargetConfig({ ...targetConfig, nama_promo: e.target.value })}
-                        className="h-10 bg-card border-border/50 text-sm font-semibold"
+                        className="h-9 bg-card border-border/50 text-sm font-semibold"
                         required
                         onKeyDown={(e) => {
                             if (e.key === 'Enter') {
@@ -260,7 +261,7 @@ export const PriceRuleForm = ({ clusters, initialData, onSubmit, onCancel, loadi
                   });
                 }}
               >
-                <SelectTrigger className="h-10 bg-card border-border/50 text-sm font-semibold">
+                <SelectTrigger className="h-9 bg-card border-border/50 text-sm font-semibold">
                   <SelectValue placeholder="Semua Pelanggan" />
                 </SelectTrigger>
                 <SelectContent>
@@ -282,7 +283,7 @@ export const PriceRuleForm = ({ clusters, initialData, onSubmit, onCancel, loadi
                                 onValueChange={(val) => setTargetConfig({ ...targetConfig, id_divisi: val })}
                                 disabled={targetConfig.id_promo_cluster !== "null"}
                             >
-                                <SelectTrigger className="h-10 bg-card border-border/50 text-sm font-semibold disabled:opacity-50">
+                                <SelectTrigger className="h-9 bg-card border-border/50 text-sm font-semibold disabled:opacity-50">
                                 <SelectValue placeholder="Global" />
                                 </SelectTrigger>
                                 <SelectContent>
@@ -311,13 +312,13 @@ export const PriceRuleForm = ({ clusters, initialData, onSubmit, onCancel, loadi
             <FormField label="Tanggal Mulai" icon={CalendarIcon} required>
                 <Popover>
                 <PopoverTrigger asChild>
-                    <Button variant="outline" className="w-full h-10 justify-start text-sm font-bold border-border/50 bg-card shadow-sm">
+                    <Button type="button" variant="outline" className="w-full h-9 justify-start text-sm font-bold border-border/50 bg-card rounded-lg">
                     <CalendarIcon className="mr-2 h-4 w-4 opacity-50" />
-                    {format(targetConfig.tanggal_mulai, "dd MMM yyyy")}
+                    {format(targetConfig.tanggal_mulai, "dd MMM yyyy", { locale: id })}
                     </Button>
                 </PopoverTrigger>
                 <PopoverContent className="w-auto p-0" align="start">
-                    <Calendar mode="single" selected={targetConfig.tanggal_mulai} onSelect={(d) => d && setTargetConfig({ ...targetConfig, tanggal_mulai: d })} />
+                    <Calendar locale={id} mode="single" selected={targetConfig.tanggal_mulai} onSelect={(d) => d && setTargetConfig({ ...targetConfig, tanggal_mulai: d })} />
                 </PopoverContent>
                 </Popover>
             </FormField>
@@ -325,13 +326,13 @@ export const PriceRuleForm = ({ clusters, initialData, onSubmit, onCancel, loadi
             <FormField label="Tanggal Berakhir" icon={CalendarIcon} required>
                 <Popover>
                 <PopoverTrigger asChild>
-                    <Button variant="outline" className="w-full h-10 justify-start text-sm font-bold border-border/50 bg-card shadow-sm">
+                    <Button type="button" variant="outline" className="w-full h-9 justify-start text-sm font-bold border-border/50 bg-card rounded-lg">
                     <CalendarIcon className="mr-2 h-4 w-4 opacity-50" />
-                    {format(targetConfig.tanggal_akhir, "dd MMM yyyy")}
+                    {format(targetConfig.tanggal_akhir, "dd MMM yyyy", { locale: id })}
                     </Button>
                 </PopoverTrigger>
                 <PopoverContent className="w-auto p-0" align="start">
-                    <Calendar mode="single" selected={targetConfig.tanggal_akhir} onSelect={(d) => d && setTargetConfig({ ...targetConfig, tanggal_akhir: d })} />
+                    <Calendar locale={id} mode="single" selected={targetConfig.tanggal_akhir} onSelect={(d) => d && setTargetConfig({ ...targetConfig, tanggal_akhir: d })} />
                 </PopoverContent>
                 </Popover>
             </FormField>
@@ -352,7 +353,7 @@ export const PriceRuleForm = ({ clusters, initialData, onSubmit, onCancel, loadi
                         type="button"
                         variant="outline"
                         className={cn(
-                            "w-full justify-between h-12 px-4 bg-card border-2 border-border/60 hover:border-primary/50 shadow-sm text-left font-bold text-sm rounded-xl transition-all",
+                            "w-full justify-between h-9 px-4 bg-card border-2 border-border/60 hover:border-primary/50 shadow-sm text-left font-bold text-sm rounded-lg transition-all",
                             selectedProductIds.length === 0 && "text-muted-foreground"
                         )}
                     >
@@ -364,7 +365,7 @@ export const PriceRuleForm = ({ clusters, initialData, onSubmit, onCancel, loadi
                     </Button>
                 </div>
               </PopoverTrigger>
-              <PopoverContent className="w-[550px] p-0 shadow-2xl rounded-2xl border-none overflow-hidden" align="start" sideOffset={8}>
+              <PopoverContent className="w-[550px] p-0 shadow-2xl rounded-lg border-none overflow-hidden" align="start" sideOffset={8}>
                 <div className="flex items-center gap-3 p-4 border-b bg-card">
                   <div className="bg-primary/10 p-2 rounded-lg">
                     <Search className="h-4 w-4 text-primary" />
@@ -396,7 +397,7 @@ export const PriceRuleForm = ({ clusters, initialData, onSubmit, onCancel, loadi
                         <div
                           key={p.id}
                           className={cn(
-                            "flex items-center gap-4 p-4 rounded-xl cursor-pointer transition-all border border-transparent",
+                            "flex items-center gap-4 p-4 rounded-lg cursor-pointer transition-all border border-transparent",
                             isSelected ? "bg-primary/5 border-primary/20" : "hover:bg-muted/50"
                           )}
                           onClick={() => handleToggleProduct(p)}
@@ -411,7 +412,7 @@ export const PriceRuleForm = ({ clusters, initialData, onSubmit, onCancel, loadi
                           <div className="flex flex-col flex-1 min-w-0">
                             <span className="font-bold text-[13px] text-foreground truncate">{p.nama_produk}</span>
                             <div className="flex items-center gap-3 mt-1">
-                               <Badge variant="outline" className="h-5 text-[9px] font-black uppercase bg-muted/50">{p.sku}</Badge>
+                               <Badge variant="outline" className="h-5 text-[9px] font-bold uppercase bg-muted/50">{p.sku}</Badge>
                                <span className="text-[10px] font-bold text-primary tabular-nums">{formatCurrency(parseFloat(p.harga_jual))}</span>
                                <span className="text-[10px] text-muted-foreground lowercase">Stok: {p.stok_tersedia}</span>
                             </div>
@@ -425,7 +426,7 @@ export const PriceRuleForm = ({ clusters, initialData, onSubmit, onCancel, loadi
                 <div className="p-4 border-t bg-muted/30 flex items-center justify-between">
                   <div className="flex items-center gap-2">
                     {selectedProductIds.length > 0 && (
-                      <span className="text-[11px] font-black uppercase text-primary bg-primary/10 px-3 py-1.5 rounded-full">
+                      <span className="text-[11px] font-bold uppercase text-primary bg-primary/10 px-3 py-1.5 rounded-full">
                         {selectedProductIds.length} Produk Dipilih
                       </span>
                     )}
@@ -436,7 +437,7 @@ export const PriceRuleForm = ({ clusters, initialData, onSubmit, onCancel, loadi
                         type="button"
                         variant="ghost"
                         size="sm"
-                        className="h-9 px-4 text-[11px] font-black text-primary uppercase hover:bg-primary/10 rounded-xl"
+                        className="h-9 px-4 text-[11px] font-bold text-primary uppercase hover:bg-primary/10 rounded-lg"
                         onClick={() => {
                           const newSelections = new Set([...selectedProductIds]);
                           produks.forEach((p: Produk) => newSelections.add(p.id));
@@ -451,7 +452,7 @@ export const PriceRuleForm = ({ clusters, initialData, onSubmit, onCancel, loadi
                         type="button"
                         variant="ghost" 
                         size="sm" 
-                        className="h-9 px-4 text-[11px] font-black text-destructive uppercase hover:bg-destructive/10 rounded-xl"
+                        className="h-9 px-4 text-[11px] font-bold text-destructive uppercase hover:bg-destructive/10 rounded-lg"
                         onClick={() => { setSelectedProductIds([]); }}
                       >
                         <Trash2 className="h-4 w-4 md:mr-2" /> <span className="hidden md:inline">Reset</span>
@@ -466,9 +467,9 @@ export const PriceRuleForm = ({ clusters, initialData, onSubmit, onCancel, loadi
           {/* Pricing Config Section */}
           {selectedProductIds.length > 0 && (
             <div className="space-y-4 animate-in fade-in slide-in-from-top-4 duration-300">
-              <div className="flex items-center justify-between bg-primary/5 p-4 rounded-2xl border border-primary/20">
+              <div className="flex items-center justify-between bg-primary/5 p-4 rounded-lg border border-primary/20">
                 <div className="flex items-center gap-3">
-                   <div className="p-2 bg-primary rounded-xl shadow-lg shadow-primary/20">
+                   <div className="p-2 bg-primary rounded-lg shadow-lg shadow-primary/20">
                       <Percent className="h-4 w-4 text-white" />
                    </div>
                    <div className="flex flex-col">
@@ -479,8 +480,8 @@ export const PriceRuleForm = ({ clusters, initialData, onSubmit, onCancel, loadi
                 
                  {/* Bulk Controls */}
                 {!initialData && selectedProductIds.length > 1 && (
-                   <div className="flex items-center gap-2 bg-white/50 dark:bg-black/20 p-1.5 rounded-xl border border-primary/20">
-                      <span className="text-[10px] font-black px-2 text-primary uppercase">Set Semua:</span>
+                   <div className="flex items-center gap-2 bg-white/50 dark:bg-black/20 p-1.5 rounded-lg border border-primary/20">
+                      <span className="text-[10px] font-bold px-2 text-primary uppercase">Set Semua:</span>
                       <div className="relative">
                         <Input 
                             placeholder="Diskon %" 
@@ -505,24 +506,24 @@ export const PriceRuleForm = ({ clusters, initialData, onSubmit, onCancel, loadi
                   const pricing = productPricings[p.id] || { id_produk: p.id, diskon_persen: "", harga_manual: "" };
 
                   return (
-                    <div key={p.id} className="group relative bg-card border-2 border-border/40 rounded-2xl p-4 shadow-sm hover:border-primary/30 transition-all">
+                    <div key={p.id} className="group relative bg-card border-2 border-border/40 rounded-lg p-4 shadow-sm hover:border-primary/30 transition-all">
                        <div className="flex flex-col xl:flex-row xl:items-center gap-5">
                           {/* Info */}
                           <div className="flex-1 min-w-0">
                              <div className="flex items-center gap-2 mb-1.5">
-                                <Badge variant="outline" className="h-5 text-[9px] font-black bg-primary/5 text-primary border-primary/10">{p.sku}</Badge>
+                                <Badge variant="outline" className="h-5 text-[9px] font-bold bg-primary/5 text-primary border-primary/10">{p.sku}</Badge>
                                 <span className="text-[14px] font-bold text-foreground truncate">{p.nama_produk}</span>
                              </div>
                              <div className="flex items-center gap-2 text-xs">
                                 <span className="text-muted-foreground font-medium">Harga Normal:</span>
-                                <span className="font-black text-foreground tabular-nums">{formatCurrency(parseFloat(p.harga_jual))}</span>
+                                <span className="font-bold text-foreground tabular-nums">{formatCurrency(parseFloat(p.harga_jual))}</span>
                              </div>
                           </div>
 
                           {/* Controls */}
                           <div className="flex items-center gap-4">
                              <div className="flex flex-col gap-1 w-28">
-                                <label className="text-[10px] font-black text-muted-foreground uppercase tracking-widest px-1">Diskon (%)</label>
+                                <label className="text-[10px] font-bold text-muted-foreground uppercase tracking-widest px-1">Diskon (%)</label>
                                 <div className="relative">
                                    <Input 
                                       type="number"
@@ -533,7 +534,7 @@ export const PriceRuleForm = ({ clusters, initialData, onSubmit, onCancel, loadi
                                               e.preventDefault();
                                           }
                                       }}
-                                      className="h-10 bg-muted/40 font-bold text-sm pl-8 border-none rounded-xl focus:ring-2 focus:ring-primary/20"
+                                      className="h-9 bg-muted/40 font-bold text-sm pl-8 border-none rounded-lg focus:ring-2 focus:ring-primary/20"
                                    />
                                    <Percent className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground/30" />
                                 </div>
@@ -544,7 +545,7 @@ export const PriceRuleForm = ({ clusters, initialData, onSubmit, onCancel, loadi
                              </div>
 
                              <div className="flex flex-col gap-1 flex-1 xl:w-48">
-                                <label className="text-[10px] font-black text-primary uppercase tracking-widest px-1">Harga Promo (Lock)</label>
+                                <label className="text-[10px] font-bold text-primary uppercase tracking-widest px-1">Harga Promo (Lock)</label>
                                 <div className="relative">
                                    <Input 
                                       type="number"
@@ -555,16 +556,16 @@ export const PriceRuleForm = ({ clusters, initialData, onSubmit, onCancel, loadi
                                               e.preventDefault();
                                           }
                                       }}
-                                      className="h-10 bg-primary/5 font-bold text-sm pl-9 text-primary border-primary/20 rounded-xl focus:ring-2 focus:ring-primary/20"
+                                      className="h-9 bg-primary/5 font-bold text-sm pl-9 text-primary border-primary/20 rounded-lg focus:ring-2 focus:ring-primary/20"
                                    />
-                                   <span className="absolute left-3 top-1/2 -translate-y-1/2 text-[10px] font-black text-primary/40">RP</span>
+                                   <span className="absolute left-3 top-1/2 -translate-y-1/2 text-[10px] font-bold text-primary/40">RP</span>
                                 </div>
                              </div>
                              
                              <Button 
                                 variant="ghost" 
                                 size="icon" 
-                                className="h-10 w-10 text-destructive hover:bg-destructive/10 rounded-xl mt-4 xl:mt-0"
+                                className="h-9 w-10 text-destructive hover:bg-destructive/10 rounded-lg mt-4 xl:mt-0"
                                 onClick={() => setSelectedProductIds(prev => prev.filter(id => id !== p.id))}
                              >
                                 <Trash2 className="h-4 w-4" />
@@ -580,32 +581,31 @@ export const PriceRuleForm = ({ clusters, initialData, onSubmit, onCancel, loadi
         </div>
       </div>
 
-      <div className="p-6 pt-4 border-t bg-muted/10 backdrop-blur-sm">
-        <div className="flex items-center justify-between mb-4">
-            <div className="flex items-center gap-2 text-xs font-bold text-muted-foreground">
-                <Info className="h-3.5 w-3.5 text-primary" />
-                <span>Tekan 'Enter' atau ketuk 'Buka' untuk menyimpan semua data ini.</span>
-            </div>
+      {/* Footer */}
+      <div className="flex items-center justify-between gap-3 pt-4 border-t font-semibold">
+        <div className="items-center gap-2 text-[10px] font-bold text-muted-foreground hidden sm:flex">
+            <Info className="h-3.5 w-3.5 text-primary" />
+            <span>Tekan 'Enter' untuk menyimpan.</span>
         </div>
-        <div className="flex justify-end gap-3">
-          <Button variant="ghost" onClick={onCancel} className="h-12 px-8 text-xs font-black uppercase tracking-widest rounded-xl hover:bg-white dark:hover:bg-black/20">
+        <div className="flex gap-3 ml-auto">
+          <Button variant="ghost" onClick={onCancel} className="h-9 px-8 text-[10px] font-bold uppercase tracking-wider text-muted-foreground hover:text-foreground rounded-lg">
             Batal
           </Button>
           <Button 
             type="submit" 
-            className="h-12 px-14 text-xs font-black uppercase tracking-widest shadow-2xl shadow-primary/30 bg-primary text-white rounded-xl hover:scale-[1.02] active:scale-95 transition-all" 
+            className="h-9 px-10 text-[10px] font-bold uppercase tracking-wider shadow-md shadow-primary/20 bg-primary hover:bg-primary/90 text-white rounded-lg transition-all" 
             disabled={loading || selectedProductIds.length === 0}
           >
             {loading ? (
-                <div className="flex items-center gap-3">
-                    <div className="h-4 w-4 border-3 border-white/30 border-t-white rounded-full animate-spin" />
-                    <span>Processing...</span>
-                </div>
+              <div className="flex items-center gap-2">
+                <div className="h-3 w-3 animate-spin rounded-full border-2 border-white border-t-transparent" />
+                <span>Menyimpan...</span>
+              </div>
             ) : (
-                <div className="flex items-center gap-2">
-                    <Save className="h-4 w-4" />
-                    <span>{initialData ? "Simpan Perubahan" : `Aktifkan ${selectedProductIds.length} Aturan Harga`}</span>
-                </div>
+              <span className="flex items-center gap-2">
+                <Save className="h-4 w-4" />
+                <span>{initialData ? "Simpan Perubahan" : `Aktifkan ${selectedProductIds.length} Aturan Harga`}</span>
+              </span>
             )}
           </Button>
         </div>

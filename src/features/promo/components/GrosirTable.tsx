@@ -64,7 +64,7 @@ export const GrosirTable: React.FC<GrosirTableProps> = ({
         key: "benefit",
         header: "Potongan",
         cell: (row) => (
-            <div className="text-xs font-black text-orange-600">
+            <div className="text-xs font-bold text-orange-600">
                 {row.is_multi_tier ? (
                     <span className="bg-orange-50 px-2 py-1 rounded border border-orange-100 italic font-bold">Bervariasi</span>
                 ) : (
