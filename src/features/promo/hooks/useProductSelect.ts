@@ -30,9 +30,6 @@ export const useProductSelect = (options: UseProductSelectOptions = {}) => {
     lastPage: 1,
   });
 
-  const loadMoreRef = useRef<HTMLDivElement | null>(null);
-  const observerRef = useRef<IntersectionObserver | null>(null);
-
   const fetchProduks = useCallback(async (isReset: boolean = true, pageNum: number = 1) => {
     if (isReset) {
       setLoading(true);
@@ -61,13 +58,15 @@ export const useProductSelect = (options: UseProductSelectOptions = {}) => {
         } else {
           setProduks(prev => [...prev, ...newProduks]);
         }
+        const currentPage = data.current_page || 1;
+        const lastPage = data.last_page || 1;
         setPagination({
-          page: data.current_page || 1,
+          page: currentPage,
           perPage: data.per_page || initialPerPage,
           total: data.total || 0,
-          lastPage: data.last_page || 1,
+          lastPage: lastPage,
         });
-        setHasMore((data.current_page || 1) < (data.last_page || 1));
+        setHasMore(currentPage < lastPage);
       } else if (Array.isArray(data)) {
         setProduks(isReset ? data : [...produks, ...data]);
         setHasMore(false);
@@ -82,6 +81,7 @@ export const useProductSelect = (options: UseProductSelectOptions = {}) => {
 
   // Initial load and when search/kategori changes
   useEffect(() => {
+    setPage(1);
     fetchProduks(true, 1);
   }, [search, idKategori]);
 
@@ -94,12 +94,10 @@ export const useProductSelect = (options: UseProductSelectOptions = {}) => {
 
   const handleSearchChange = useCallback((value: string) => {
     setSearch(value);
-    setPage(1);
   }, []);
 
   const handleKategoriChange = useCallback((value: string) => {
     setIdKategori(value);
-    setPage(1);
   }, []);
 
   const loadMore = useCallback(() => {
@@ -107,32 +105,6 @@ export const useProductSelect = (options: UseProductSelectOptions = {}) => {
       setPage(prev => prev + 1);
     }
   }, [loadingMore, hasMore]);
-
-  // IntersectionObserver for infinite scroll
-  useEffect(() => {
-    if (observerRef.current) {
-      observerRef.current.disconnect();
-    }
-
-    observerRef.current = new IntersectionObserver(
-      (entries) => {
-        if (entries[0].isIntersecting && hasMore && !loadingMore) {
-          loadMore();
-        }
-      },
-      { threshold: 0.1, rootMargin: "50px" }
-    );
-
-    if (loadMoreRef.current) {
-      observerRef.current.observe(loadMoreRef.current);
-    }
-
-    return () => {
-      if (observerRef.current) {
-        observerRef.current.disconnect();
-      }
-    };
-  }, [hasMore, loadingMore, loadMore]);
 
   const reset = useCallback(() => {
     setSearch("");
@@ -155,6 +127,5 @@ export const useProductSelect = (options: UseProductSelectOptions = {}) => {
     loadMore,
     fetchProduks,
     reset,
-    loadMoreRef,
   };
 };

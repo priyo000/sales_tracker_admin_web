@@ -46,7 +46,7 @@ interface ProductPricing {
 
 export const PriceRuleForm = ({ clusters, initialData, onSubmit, onCancel, loading }: PriceRuleFormProps) => {
   const { produks, fetchProduks, loading: searchLoading } = useProduk();
-  const { produks: popoverProduks, loading: popoverLoading, loadingMore: popoverLoadingMore, search: popoverSearch, setSearch: setPopoverSearch, idKategori, setIdKategori, hasMore, loadMoreRef } = useProductSelect();
+  const { produks: popoverProduks, loading: popoverLoading, loadingMore: popoverLoadingMore, search: popoverSearch, setSearch: setPopoverSearch, idKategori, setIdKategori, hasMore, loadMore } = useProductSelect();
   const { kategoris, fetchKategoris } = useKategoriProduk();
   const { divisis, fetchDivisis } = useDivisi();
   const { user } = useAuth();
@@ -435,13 +435,15 @@ export const PriceRuleForm = ({ clusters, initialData, onSubmit, onCancel, loadi
                 </div>
                 
                 {hasMore && (
-                  <div ref={loadMoreRef} className="p-3 border-t bg-muted/30 text-center">
-                    <div className="flex items-center justify-center gap-2">
-                      {popoverLoadingMore && <div className="h-4 w-4 border-2 border-primary/20 border-t-primary rounded-full animate-spin" />}
-                      <span className="text-[10px] font-semibold text-muted-foreground">
-                        {popoverLoadingMore ? "Memuat..." : "Scroll untuk load lebih banyak"}
-                      </span>
-                    </div>
+                  <div className="p-3 border-t bg-muted/30 text-center">
+                    <button 
+                      type="button"
+                      className="text-[10px] font-semibold text-primary hover:underline"
+                      onClick={() => loadMore()}
+                      disabled={popoverLoadingMore}
+                    >
+                      {popoverLoadingMore ? "Memuat..." : "Tampilkan lebih banyak"}
+                    </button>
                   </div>
                 )}
                 
