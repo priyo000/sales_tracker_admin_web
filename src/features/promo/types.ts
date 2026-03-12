@@ -32,6 +32,7 @@ export interface PromoCampaign {
   tanggal_mulai: string;
   tanggal_akhir: string;
   id_promo_cluster: number | null;
+  status?: 'PENDING' | 'BERLANGSUNG' | 'BATAL' | 'SELESAI';
   items_count?: number;
   products_summary?: string;
   pemicu_summary?: string;

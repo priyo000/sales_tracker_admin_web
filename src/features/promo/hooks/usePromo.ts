@@ -256,6 +256,19 @@ export const usePromo = () => {
     }
   };
 
+  const updateCampaignStatus = async (id: number, status: string) => {
+    setLoading(true);
+    try {
+      const response = await api.put(`/promo/campaign/${id}/status`, { status });
+      return { success: true, data: response.data.data };
+    } catch (err) {
+      const error = err as AxiosError<{ message: string }>;
+      return { success: false, message: error.response?.data?.message || "Gagal mengubah status campaign" };
+    } finally {
+      setLoading(false);
+    }
+  };
+
   return {
     clusters,
     priceRules,
@@ -281,5 +294,6 @@ export const usePromo = () => {
     createRewardRule,
     deleteRewardRule,
     deleteCampaign,
+    updateCampaignStatus,
   };
 };

@@ -1,21 +1,44 @@
-import { Trash, Calendar, Target, Layers, Package, Eye } from "lucide-react";
+import { Trash, Calendar, Target, Layers, Package, Eye, MoreHorizontal } from "lucide-react";
 import { PromoCampaign } from "../types";
 import { DataTable, type ColumnDef } from "@/components/ui/data-table";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
+import { 
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
 
 interface HadiahTableProps {
   rules: PromoCampaign[];
   loading: boolean;
   onDelete: (row: PromoCampaign) => void;
   onView?: (campaign: PromoCampaign) => void;
+  onStatusChange?: (id: number, status: string) => void;
 }
+
+const getStatusBadge = (status?: string) => {
+  switch (status) {
+    case 'PENDING':
+      return <Badge className="bg-yellow-100 text-yellow-800 hover:bg-yellow-100">PENDING</Badge>;
+    case 'BERLANGSUNG':
+      return <Badge className="bg-green-100 text-green-800 hover:bg-green-100">BERLANGSUNG</Badge>;
+    case 'BATAL':
+      return <Badge className="bg-red-100 text-red-800 hover:bg-red-100">BATAL</Badge>;
+    case 'SELESAI':
+      return <Badge className="bg-gray-100 text-gray-800 hover:bg-gray-100">SELESAI</Badge>;
+    default:
+      return <Badge variant="secondary">{status || '-'}</Badge>;
+  }
+};
 
 export const HadiahTable: React.FC<HadiahTableProps> = ({ 
   rules, 
   loading, 
   onDelete,
   onView,
+  onStatusChange,
 }) => {
   const batchColumns: ColumnDef<PromoCampaign>[] = [
     {
@@ -34,6 +57,15 @@ export const HadiahTable: React.FC<HadiahTableProps> = ({
               <Package className="h-3 w-3" /> {row.items_count} Item
             </div>
           </div>
+        </div>
+      ),
+    },
+    {
+      key: "status",
+      header: "Status",
+      cell: (row) => (
+        <div className={row.status === 'BATAL' || row.status === 'SELESAI' ? 'opacity-60' : ''}>
+          {getStatusBadge(row.status)}
         </div>
       ),
     },
@@ -89,9 +121,35 @@ export const HadiahTable: React.FC<HadiahTableProps> = ({
                 <Eye className="h-4 w-4" />
             </Button>
           )}
-          <Button variant="ghost" size="icon" className="h-8 w-8 text-destructive hover:bg-destructive/10" onClick={() => onDelete(row)}>
-            <Trash className="h-4 w-4" />
-          </Button>
+          {onStatusChange && row.status !== 'BATAL' && row.status !== 'SELESAI' && (
+            <DropdownMenu>
+              <DropdownMenuTrigger asChild>
+                <Button variant="ghost" size="icon" className="h-8 w-8">
+                  <MoreHorizontal className="h-4 w-4" />
+                </Button>
+              </DropdownMenuTrigger>
+              <DropdownMenuContent align="end">
+                {row.status === 'PENDING' && (
+                  <DropdownMenuItem onClick={() => onStatusChange(row.id, 'BERLANGSUNG')}>
+                    Mulai Sekarang
+                  </DropdownMenuItem>
+                )}
+                {row.status === 'BERLANGSUNG' && (
+                  <DropdownMenuItem onClick={() => onStatusChange(row.id, 'BATAL')} className="text-red-600">
+                    Batalkan
+                  </DropdownMenuItem>
+                )}
+                <DropdownMenuItem onClick={() => onDelete(row)} className="text-red-600">
+                  Hapus
+                </DropdownMenuItem>
+              </DropdownMenuContent>
+            </DropdownMenu>
+          )}
+          {(!onStatusChange || (row.status === 'BATAL' || row.status === 'SELESAI')) && (
+            <Button variant="ghost" size="icon" className="h-8 w-8 text-destructive hover:bg-destructive/10" onClick={() => onDelete(row)}>
+              <Trash className="h-4 w-4" />
+            </Button>
+          )}
         </div>
       ),
     },

@@ -42,7 +42,8 @@ const PromoPage: React.FC = () => {
     deleteGrosirRule,
     createRewardRule,
     deleteRewardRule,
-    deleteCampaign
+    deleteCampaign,
+    updateCampaignStatus
   } = usePromo();
 
   const [activeTab, setActiveTab] = useState<PromoTab>("dashboard");
@@ -108,6 +109,18 @@ const PromoPage: React.FC = () => {
       setIsClusterModalOpen(false);
     } else {
       toast.error(res.message || "Terjadi kesalahan");
+    }
+  };
+
+  const handleStatusChange = async (id: number, status: string) => {
+    const res = await updateCampaignStatus(id, status);
+    if (res.success) {
+      toast.success(`Status promo berhasil diubah ke ${status}`);
+      fetchRewardRules(true);
+      fetchPriceRules(true);
+      fetchGrosirRules(true);
+    } else {
+      toast.error(res.message || "Gagal mengubah status");
     }
   };
 
@@ -197,7 +210,7 @@ const PromoPage: React.FC = () => {
                     <GrosirTable rules={grosirRules} loading={loading} onDelete={setTargetDeleteGrosir} onPriceToggle={() => { setPriceSubTab("standard"); fetchPriceRules(true); }} onView={setSelectedCampaignView} />
                 )
             )}
-            {activeTab === "rewards" && <HadiahTable rules={rewardRules} loading={loading} onDelete={setTargetDeleteHadiah} onView={setSelectedCampaignView} />}
+            {activeTab === "rewards" && <HadiahTable rules={rewardRules} loading={loading} onDelete={setTargetDeleteHadiah} onView={setSelectedCampaignView} onStatusChange={handleStatusChange} />}
         </div>
       )}
 
