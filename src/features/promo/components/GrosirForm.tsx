@@ -447,7 +447,8 @@ export const GrosirForm = ({ clusters, initialData, onSubmit, onCancel, loading 
                 )}
 
                 <div className="p-3 border-t bg-muted/30 text-[11px] font-semibold text-muted-foreground text-center">
-                  {selectedIds.length} produk dipilih — klik produk untuk tambah/hapus
+                  {selectedIds.length > 0 && <span className="text-primary">✓ {selectedIds.length} produk dipilih</span>}
+                  <span className={selectedIds.length > 0 ? "ml-2" : ""}>Total {popoverProduks.length} produk</span>
                 </div>
               </PopoverContent>
             </Popover>

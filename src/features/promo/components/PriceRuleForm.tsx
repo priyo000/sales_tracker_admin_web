@@ -446,12 +446,15 @@ export const PriceRuleForm = ({ clusters, initialData, onSubmit, onCancel, loadi
                 )}
                 
                 <div className="p-4 border-t bg-muted/30 flex items-center justify-between">
-                  <div className="flex items-center gap-2">
+                  <div className="flex flex-col gap-1">
                     {selectedProductIds.length > 0 && (
-                      <span className="text-[11px] font-bold uppercase text-primary bg-primary/10 px-3 py-1.5 rounded-full">
-                        {selectedProductIds.length} Produk Dipilih
+                      <span className="text-[11px] font-bold text-primary">
+                        ✓ {selectedProductIds.length} Produk Dipilih
                       </span>
                     )}
+                    <span className="text-[10px] font-semibold text-muted-foreground">
+                      Total {pagination.total} produk tersedia
+                    </span>
                   </div>
                   <div className="flex gap-2">
                     {popoverProduks.length > 0 && (
@@ -466,7 +469,7 @@ export const PriceRuleForm = ({ clusters, initialData, onSubmit, onCancel, loadi
                           setSelectedProductIds(Array.from(newSelections));
                         }}
                       >
-                        Pilih Semua Filter
+                        Pilih Semua
                       </Button>
                     )}
                     {selectedProductIds.length > 0 && (
