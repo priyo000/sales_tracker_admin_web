@@ -17,7 +17,6 @@ import { Calendar } from "@/components/ui/calendar";
 import { CalendarIcon, Gift, Package, Save, LayoutGrid, Search, Check, ChevronDown, ArrowRight, Zap, Info, Layers, Coins, Tag } from "lucide-react";
 import { format } from "date-fns";
 import { id } from "date-fns/locale";
-import { useProduk } from "@/features/produk/hooks/useProduk";
 import { useProductSelect } from "../hooks/useProductSelect";
 import { useKategoriProduk } from "@/features/produk/hooks/useKategoriProduk";
 import { FormField } from "@/components/ui/FormField";
@@ -36,7 +35,6 @@ interface HadiahFormProps {
 }
 
 export const HadiahForm = ({ clusters, initialData, onSubmit, onCancel, loading }: HadiahFormProps) => {
-  const { produks, fetchProduks } = useProduk();
   const { produks: popoverProduks, loading: popoverLoading, loadingMore: popoverLoadingMore, search: popoverSearch, setSearch: setPopoverSearch, idKategori, setIdKategori, hasMore, loadMore } = useProductSelect();
   const { kategoris, fetchKategoris } = useKategoriProduk();
   const { divisis, fetchDivisis } = useDivisi();
@@ -91,21 +89,21 @@ export const HadiahForm = ({ clusters, initialData, onSubmit, onCancel, loading 
   // useProductSelect handles fetching automatically when popover is open
 
   // Safely sync product details to state
-  // Sync produks to persisted map without triggering cascading renders in effect body
+  // Sync popoverProduks to persisted map without triggering cascading renders in effect body
   // instead of setState, we just update the map if needed when we see new products
   useEffect(() => {
-    if (produks.length > 0) {
-      const hasNew = produks.some(p => !persistedProdukMap[p.id]);
+    if (popoverProduks.length > 0) {
+      const hasNew = popoverProduks.some(p => !persistedProdukMap[p.id]);
       if (hasNew) {
         // eslint-disable-next-line 
         setPersistedProdukMap(prev => {
             const next = { ...prev };
-            produks.forEach(p => { if (!next[p.id]) next[p.id] = p; });
+            popoverProduks.forEach(p => { if (!next[p.id]) next[p.id] = p; });
             return next;
         });
       }
     }
-  }, [produks, persistedProdukMap]);
+  }, [popoverProduks, persistedProdukMap]);
 
   const handleTogglePemicu = (product: Produk) => {
     if (initialData) {
@@ -317,13 +315,15 @@ export const HadiahForm = ({ clusters, initialData, onSubmit, onCancel, loading 
                                     </div>
                                 </div>
                                 {hasMore && (
-                                  <div ref={loadMoreRef} className="p-2 border-t bg-muted/30 text-center">
-                                    <div className="flex items-center justify-center gap-2">
-                                      {popoverLoadingMore && <div className="h-4 w-4 border-2 border-primary/20 border-t-primary rounded-full animate-spin" />}
-                                      <span className="text-[10px] font-semibold text-muted-foreground">
-                                        {popoverLoadingMore ? "Memuat..." : "Scroll untuk load lebih banyak"}
-                                      </span>
-                                    </div>
+                                  <div className="p-2 border-t bg-muted/30 text-center">
+                                    <button 
+                                      type="button"
+                                      className="text-[10px] font-semibold text-primary hover:underline"
+                                      onClick={() => loadMore()}
+                                      disabled={popoverLoadingMore}
+                                    >
+                                      {popoverLoadingMore ? "Memuat..." : "Tampilkan lebih banyak"}
+                                    </button>
                                   </div>
                                 )}
                             </PopoverContent>

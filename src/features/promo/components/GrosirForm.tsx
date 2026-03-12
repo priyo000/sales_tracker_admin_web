@@ -13,7 +13,6 @@ import {
 } from "lucide-react";
 import { format } from "date-fns";
 import { id } from "date-fns/locale";
-import { useProduk } from "@/features/produk/hooks/useProduk";
 import { useProductSelect } from "../hooks/useProductSelect";
 import { useKategoriProduk } from "@/features/produk/hooks/useKategoriProduk";
 import { FormField } from "@/components/ui/FormField";
@@ -76,7 +75,6 @@ const calcDiskon = (hargaAsli: number, harga: string): string => {
 // ─── Component ───────────────────────────────────────────────────────────────
 
 export const GrosirForm = ({ clusters, initialData, onSubmit, onCancel, loading }: GrosirFormProps) => {
-  const { produks, fetchProduks, loading: searchLoading } = useProduk();
   const { produks: popoverProduks, loading: popoverLoading, loadingMore: popoverLoadingMore, search: popoverSearch, setSearch: setPopoverSearch, idKategori, setIdKategori, hasMore, loadMore } = useProductSelect();
   const { kategoris, fetchKategoris } = useKategoriProduk();
   const { divisis, fetchDivisis } = useDivisi();

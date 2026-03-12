@@ -17,7 +17,6 @@ import { Calendar } from "@/components/ui/calendar";
 import { CalendarIcon, Tag, Package, Percent, Save, LayoutGrid, Search, Check, ChevronDown, Trash2, Calculator, ArrowRight, Info } from "lucide-react";
 import { format } from "date-fns";
 import { id } from "date-fns/locale";
-import { useProduk } from "@/features/produk/hooks/useProduk";
 import { useProductSelect } from "../hooks/useProductSelect";
 import { useKategoriProduk } from "@/features/produk/hooks/useKategoriProduk";
 import { FormField } from "@/components/ui/FormField";
@@ -45,7 +44,6 @@ interface ProductPricing {
 }
 
 export const PriceRuleForm = ({ clusters, initialData, onSubmit, onCancel, loading }: PriceRuleFormProps) => {
-  const { produks, fetchProduks, loading: searchLoading } = useProduk();
   const { produks: popoverProduks, loading: popoverLoading, loadingMore: popoverLoadingMore, search: popoverSearch, setSearch: setPopoverSearch, idKategori, setIdKategori, hasMore, loadMore } = useProductSelect();
   const { kategoris, fetchKategoris } = useKategoriProduk();
   const { divisis, fetchDivisis } = useDivisi();
@@ -103,11 +101,11 @@ export const PriceRuleForm = ({ clusters, initialData, onSubmit, onCancel, loadi
 
   // Safely sync product details to state to avoid ref-during-render issues
   useEffect(() => {
-    if (produks.length > 0) {
+    if (popoverProduks.length > 0) {
       setPersistedProdukMap(prev => {
         const next = { ...prev };
         let changed = false;
-        produks.forEach(p => {
+        popoverProduks.forEach(p => {
           if (!next[p.id]) {
             next[p.id] = p;
             changed = true;
@@ -116,7 +114,7 @@ export const PriceRuleForm = ({ clusters, initialData, onSubmit, onCancel, loadi
         return changed ? next : prev;
       });
     }
-  }, [produks]);
+  }, [popoverProduks]);
 
   // Derive details for selected products
   const selectedProduksDetails = useMemo(() => {
