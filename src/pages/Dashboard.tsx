@@ -260,7 +260,7 @@ const Dashboard: React.FC = () => {
                 {/* Left Column Container */}
                 <div className="col-span-1 lg:col-span-2 flex flex-col gap-4 lg:gap-6 order-2 lg:order-1">
                     {/* Chart Section */}
-                    <Card className="shadow-sm flex flex-col h-[400px]">
+                    <Card className="shadow-sm flex flex-col">
                         <CardHeader>
                             <CardTitle className="flex items-center justify-between">
                                 <div>Omset Tahunan</div>
@@ -272,7 +272,7 @@ const Dashboard: React.FC = () => {
                                 Total omset penjualan SUKSES per bulan.
                             </CardDescription>
                         </CardHeader>
-                        <CardContent className="px-2 grow min-h-[250px] pb-6">
+                        <CardContent className="px-2 grow min-h-108 pb-6">
                             {stats.sales_chart && stats.sales_chart.length > 0 ? (
                                 <ResponsiveContainer width="100%" height="100%">
                                     <BarChart data={stats.sales_chart} margin={{ top: 10, right: 10, left: 15, bottom: 5 }} barCategoryGap="25%">
@@ -321,7 +321,7 @@ const Dashboard: React.FC = () => {
                                 <Badge variant="secondary" className="font-normal text-xs">{stats.recent_orders?.length || 0} recent</Badge>
                             </CardTitle>
                         </CardHeader>
-                        <CardContent className="px-0 py-0 flex-1 relative min-h-[300px]">
+                        <CardContent className="px-0 py-0 flex-1 relative">
                             <div className="absolute inset-0">
                                 <ScrollArea className="h-full">
                                     {stats.recent_orders.length === 0 ? (
@@ -419,7 +419,7 @@ const Dashboard: React.FC = () => {
                             </CardTitle>
                         </CardHeader>
                         <CardContent className="px-0 py-0">
-                            <ScrollArea className="h-full max-h-[260px]">
+                            <ScrollArea className="h-full">
                                 {!stats.best_selling_products || stats.best_selling_products.length === 0 ? (
                                     <div className="flex h-[150px] items-center justify-center text-sm text-muted-foreground">
                                         Belum ada data penjualan produk.
