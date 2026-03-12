@@ -51,10 +51,14 @@ export const useJadwal = () => {
         }
     }, []);
 
-    const fetchOptions = useCallback(async () => {
+    const fetchOptions = useCallback(async (roleFilter?: string) => {
         try {
+            const params: Record<string, unknown> = { has_user: true };
+            if (roleFilter) {
+                params.role = roleFilter;
+            }
             const [karyawanRes, ruteRes] = await Promise.all([
-                api.get('/karyawan', { params: { has_user: true } }),
+                api.get('/karyawan', { params }),
                 api.get('/rute', { params: { all: true } })
             ]);
             setKaryawanOptions(karyawanRes.data.data);
