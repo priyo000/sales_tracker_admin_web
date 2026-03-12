@@ -9,12 +9,13 @@ import { Calendar } from "@/components/ui/calendar";
 import {
   CalendarIcon, Tag, Package, Percent, Save, LayoutGrid, Search,
   Check, ChevronDown, Trash2, Info, Boxes, Plus, AlertCircle,
-  ArrowRight, ChevronUp, ChevronLeft, ChevronRight as ChevronRightIcon
+  ArrowRight, ChevronUp
 } from "lucide-react";
 import { format } from "date-fns";
 import { id } from "date-fns/locale";
 import { useProduk } from "@/features/produk/hooks/useProduk";
 import { useProductSelect } from "../hooks/useProductSelect";
+import { useKategoriProduk } from "@/features/produk/hooks/useKategoriProduk";
 import { FormField } from "@/components/ui/FormField";
 import { useDivisi } from "@/features/divisi/hooks/useDivisi";
 import { cn, formatCurrency } from "@/lib/utils";
@@ -76,7 +77,8 @@ const calcDiskon = (hargaAsli: number, harga: string): string => {
 
 export const GrosirForm = ({ clusters, initialData, onSubmit, onCancel, loading }: GrosirFormProps) => {
   const { produks, fetchProduks, loading: searchLoading } = useProduk();
-  const { produks: popoverProduks, loading: popoverLoading, search: popoverSearch, setSearch: setPopoverSearch, pagination, setPage } = useProductSelect();
+  const { produks: popoverProduks, loading: popoverLoading, loadingMore: popoverLoadingMore, search: popoverSearch, setSearch: setPopoverSearch, idKategori, setIdKategori, hasMore, loadMoreRef } = useProductSelect();
+  const { kategoris, fetchKategoris } = useKategoriProduk();
   const { divisis, fetchDivisis } = useDivisi();
   const { user } = useAuth();
   const isSuperOrCompanyAdmin = user?.peran === "super_admin" || user?.peran === "admin_perusahaan";
@@ -109,11 +111,11 @@ export const GrosirForm = ({ clusters, initialData, onSubmit, onCancel, loading 
     return [];
   });
 
-  const [searchProduk, setSearchProduk] = useState("");
   const [isProdukPopoverOpen, setIsProdukPopoverOpen] = useState(false);
   const [errors, setErrors] = useState<string[]>([]);
 
   useEffect(() => { fetchDivisis(); }, [fetchDivisis]);
+  useEffect(() => { fetchKategoris(); }, [fetchKategoris]);
 
   // useProductSelect handles fetching automatically when popover is open
 
@@ -377,7 +379,7 @@ export const GrosirForm = ({ clusters, initialData, onSubmit, onCancel, loading 
                 </Button>
               </PopoverTrigger>
               <PopoverContent className="w-[560px] p-0 shadow-2xl rounded-lg border-none overflow-hidden" align="end" sideOffset={8}>
-                <div className="flex items-center gap-3 p-4 border-b bg-card">
+                <div className="flex items-center gap-2 p-4 border-b bg-card">
                   <div className="bg-primary/10 p-2 rounded-lg"><Search className="h-4 w-4 text-primary" /></div>
                   <input
                     className="bg-transparent text-sm outline-none w-full font-bold placeholder:text-muted-foreground/50"
@@ -388,6 +390,19 @@ export const GrosirForm = ({ clusters, initialData, onSubmit, onCancel, loading 
                     autoFocus
                   />
                   {popoverLoading && <div className="h-4 w-4 border-2 border-primary/20 border-t-primary rounded-full animate-spin" />}
+                </div>
+
+                <div className="px-4 py-2 border-b bg-muted/30">
+                  <select
+                    className="w-full h-8 text-xs font-bold bg-white border border-border rounded-lg px-3 outline-none focus:ring-2 focus:ring-primary/20"
+                    value={idKategori}
+                    onChange={e => setIdKategori(e.target.value)}
+                  >
+                    <option value="">Semua Kategori</option>
+                    {kategoris.map(kat => (
+                      <option key={kat.id} value={kat.id.toString()}>{kat.nama_kategori}</option>
+                    ))}
+                  </select>
                 </div>
 
                 <div className="max-h-[320px] overflow-y-auto pointer-events-auto" onWheel={e => e.stopPropagation()}>
@@ -415,37 +430,18 @@ export const GrosirForm = ({ clusters, initialData, onSubmit, onCancel, loading 
                       );
                     })}
                     {popoverProduks.length === 0 && !popoverLoading && (
-                      <div className="py-8 text-center text-muted-foreground text-xs font-semibold">Ketik untuk mencari produk</div>
+                      <div className="py-8 text-center text-muted-foreground text-xs font-semibold">Produk tidak ditemukan</div>
                     )}
                   </div>
                 </div>
 
-                {pagination.lastPage > 1 && (
-                  <div className="p-3 border-t bg-muted/30 flex items-center justify-between">
-                    <div className="text-[10px] font-semibold text-muted-foreground">
-                      Halaman {pagination.page} dari {pagination.lastPage} ({pagination.total} produk)
-                    </div>
-                    <div className="flex items-center gap-1">
-                      <Button
-                        type="button"
-                        variant="ghost"
-                        size="sm"
-                        className="h-7 w-7 p-0"
-                        onClick={() => setPage(pagination.page - 1)}
-                        disabled={pagination.page <= 1}
-                      >
-                        <ChevronLeft className="h-4 w-4" />
-                      </Button>
-                      <Button
-                        type="button"
-                        variant="ghost"
-                        size="sm"
-                        className="h-7 w-7 p-0"
-                        onClick={() => setPage(pagination.page + 1)}
-                        disabled={pagination.page >= pagination.lastPage}
-                      >
-                        <ChevronRightIcon className="h-4 w-4" />
-                      </Button>
+                {hasMore && (
+                  <div ref={loadMoreRef} className="p-3 border-t bg-muted/30 text-center">
+                    <div className="flex items-center justify-center gap-2">
+                      {popoverLoadingMore && <div className="h-4 w-4 border-2 border-primary/20 border-t-primary rounded-full animate-spin" />}
+                      <span className="text-[10px] font-semibold text-muted-foreground">
+                        {popoverLoadingMore ? "Memuat..." : "Scroll untuk load lebih banyak"}
+                      </span>
                     </div>
                   </div>
                 )}
