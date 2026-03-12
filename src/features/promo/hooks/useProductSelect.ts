@@ -30,42 +30,46 @@ export const useProductSelect = (options: UseProductSelectOptions = {}) => {
     lastPage: 1,
   });
 
-  const observerRef = useRef<IntersectionObserver | null>(null);
   const loadMoreRef = useRef<HTMLDivElement | null>(null);
+  const observerRef = useRef<IntersectionObserver | null>(null);
 
-  const fetchProduks = useCallback(async (reset: boolean = true) => {
-    if (reset) {
+  const fetchProduks = useCallback(async (isReset: boolean = true, pageNum: number = 1) => {
+    if (isReset) {
       setLoading(true);
       setProduks([]);
-      setPage(1);
       setHasMore(true);
     } else {
       setLoadingMore(true);
     }
 
     try {
-      const response = await api.get("/produk", {
-        params: {
-          search: search || undefined,
-          id_kategori: idKategori || undefined,
-          page: reset ? 1 : page,
-          per_page: initialPerPage,
-        },
-      });
+      const params: Record<string, unknown> = {
+        page: pageNum,
+        per_page: initialPerPage,
+      };
+      
+      if (search) params.search = search;
+      if (idKategori) params.id_kategori = idKategori;
+
+      const response = await api.get("/produk", { params });
       const data = response.data;
       
       if (data && data.data) {
         const newProduks = data.data;
-        setProduks(prev => reset ? newProduks : [...prev, ...newProduks]);
+        if (isReset) {
+          setProduks(newProduks);
+        } else {
+          setProduks(prev => [...prev, ...newProduks]);
+        }
         setPagination({
           page: data.current_page || 1,
           perPage: data.per_page || initialPerPage,
           total: data.total || 0,
           lastPage: data.last_page || 1,
         });
-        setHasMore(data.current_page < data.last_page);
+        setHasMore((data.current_page || 1) < (data.last_page || 1));
       } else if (Array.isArray(data)) {
-        setProduks(reset ? data : [...produks, ...data]);
+        setProduks(isReset ? data : [...produks, ...data]);
         setHasMore(false);
       }
     } catch (error) {
@@ -74,14 +78,23 @@ export const useProductSelect = (options: UseProductSelectOptions = {}) => {
       setLoading(false);
       setLoadingMore(false);
     }
-  }, [search, idKategori, page, initialPerPage]);
+  }, [search, idKategori, initialPerPage]);
 
+  // Initial load and when search/kategori changes
   useEffect(() => {
-    fetchProduks(true);
+    fetchProduks(true, 1);
   }, [search, idKategori]);
+
+  // Load more when page changes
+  useEffect(() => {
+    if (page > 1) {
+      fetchProduks(false, page);
+    }
+  }, [page]);
 
   const handleSearchChange = useCallback((value: string) => {
     setSearch(value);
+    setPage(1);
   }, []);
 
   const handleKategoriChange = useCallback((value: string) => {
@@ -95,23 +108,24 @@ export const useProductSelect = (options: UseProductSelectOptions = {}) => {
     }
   }, [loadingMore, hasMore]);
 
+  // IntersectionObserver for infinite scroll
   useEffect(() => {
-    if (!hasMore || loadingMore) return;
+    if (observerRef.current) {
+      observerRef.current.disconnect();
+    }
 
-    const observer = new IntersectionObserver(
+    observerRef.current = new IntersectionObserver(
       (entries) => {
         if (entries[0].isIntersecting && hasMore && !loadingMore) {
           loadMore();
         }
       },
-      { threshold: 0.1 }
+      { threshold: 0.1, rootMargin: "50px" }
     );
 
     if (loadMoreRef.current) {
-      observer.observe(loadMoreRef.current);
+      observerRef.current.observe(loadMoreRef.current);
     }
-
-    observerRef.current = observer;
 
     return () => {
       if (observerRef.current) {
@@ -119,12 +133,6 @@ export const useProductSelect = (options: UseProductSelectOptions = {}) => {
       }
     };
   }, [hasMore, loadingMore, loadMore]);
-
-  useEffect(() => {
-    if (page > 1) {
-      fetchProduks(false);
-    }
-  }, [page]);
 
   const reset = useCallback(() => {
     setSearch("");
