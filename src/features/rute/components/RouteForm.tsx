@@ -6,15 +6,11 @@ import { useDivisi } from "../../divisi/hooks/useDivisi";
 import { useAuth } from "../../../hooks/useAuth";
 import RouteCustomerMap from "./RouteCustomerMap";
 import {
-  Search,
   Info,
   CheckCircle2,
-  User as UserIcon,
   LayoutGrid,
-  X,
   Type,
   FileText,
-  Save,
 } from "lucide-react";
 import api from "../../../services/api";
 import { cn } from "@/lib/utils";
@@ -28,6 +24,8 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { FormField } from "@/components/ui/FormField";
+
+type RuteFilterStatus = "all" | "unassigned" | "in_this_route";
 
 interface RouteFormProps {
   initialData?: Rute | null;
@@ -69,6 +67,7 @@ const RouteForm: React.FC<RouteFormProps> = ({
     lng: number;
     timestamp: number;
   } | null>(null);
+  const [ruteFilterStatus, setRuteFilterStatus] = useState<RuteFilterStatus>("all");
 
   const [formData, setFormData] = useState<RuteFormData>({
     nama_rute: initialData?.nama_rute || "",
@@ -95,15 +94,33 @@ const RouteForm: React.FC<RouteFormProps> = ({
     }
   }, [fetchFilterOptions, fetchDivisis, user]);
 
-  // Fetch customers (active & pending)
-  useEffect(() => {
-    fetchPelanggans({
+  // Fetch customers based on filter - get ALL for map, list will be paginated
+  const loadCustomers = useCallback(() => {
+    const params: {
+      status: string;
+      per_page: number;
+      page?: number;
+      id_karyawan?: number;
+      id_rute?: number;
+    } = {
       status: "active,pending",
-      per_page: -1,
+      per_page: -1, // Get all for map
       id_karyawan:
         selectedKaryawanId === "all" ? undefined : selectedKaryawanId,
-    });
-  }, [fetchPelanggans, selectedKaryawanId]);
+    };
+
+    // If filter "Di Rute Ini" - use backend filter
+    if (ruteFilterStatus === "in_this_route" && initialData?.id) {
+      params.id_rute = initialData.id;
+    }
+
+    fetchPelanggans(params);
+  }, [fetchPelanggans, selectedKaryawanId, ruteFilterStatus, initialData?.id]);
+
+  // Auto-load customers on mount and when filter changes
+  useEffect(() => {
+    loadCustomers();
+  }, [loadCustomers]);
 
   // Fetch existing route details if editing
   useEffect(() => {
@@ -139,7 +156,7 @@ const RouteForm: React.FC<RouteFormProps> = ({
   }, [initialData]);
 
   const toggleCustomer = useCallback(
-    (id: number) => {
+    (id: number, fromList: boolean = false) => {
       setFormData((prev) => {
         const currentIds = prev.customer_ids || [];
         if (currentIds.includes(id)) {
@@ -152,9 +169,11 @@ const RouteForm: React.FC<RouteFormProps> = ({
         }
       });
 
-      // Focus map on this customer
+      // Always scroll to list item (regardless of click source)
       const customer = pelanggans.find((p) => p.id === id);
-      if (customer?.latitude && customer?.longitude) {
+      
+      // Only focus map if clicked from list
+      if (fromList && customer?.latitude && customer?.longitude) {
         setFocusLocation({
           lat: customer.latitude,
           lng: customer.longitude,
@@ -162,7 +181,7 @@ const RouteForm: React.FC<RouteFormProps> = ({
         });
       }
 
-      // Auto-scroll list and focus
+      // Always scroll to list item
       setTimeout(() => {
         const element = document.getElementById(`customer-item-${id}`);
         if (element) {
@@ -198,13 +217,25 @@ const RouteForm: React.FC<RouteFormProps> = ({
   };
 
   const filteredCustomers = useMemo(() => {
-    return pelanggans.filter(
+    let filtered = pelanggans.filter(
       (p) =>
         p.nama_toko.toLowerCase().includes(searchQuery.toLowerCase()) ||
         (p.alamat_usaha &&
           p.alamat_usaha.toLowerCase().includes(searchQuery.toLowerCase())),
     );
-  }, [pelanggans, searchQuery]);
+
+    // Filter by route status
+    if (ruteFilterStatus === "unassigned") {
+      filtered = filtered.filter(
+        (p) => !p.details_rute || p.details_rute.length === 0,
+      );
+    }
+
+    return filtered;
+  }, [pelanggans, searchQuery, ruteFilterStatus]);
+
+  // Paginated customers for list (show all for now to fix scroll issue)
+  const paginatedCustomers = filteredCustomers;
 
   const selectedIdsSet = useMemo(
     () => new Set(formData.customer_ids),
@@ -214,176 +245,186 @@ const RouteForm: React.FC<RouteFormProps> = ({
   const isLoading = loading || detailsLoading;
   const selectedCount = formData.customer_ids?.length || 0;
 
+  // Map shows ALL filtered customers (not paginated)
+  const mapCustomers = filteredCustomers;
+
   return (
     <form
       onSubmit={handleSubmit}
       className="flex h-[80vh] w-full bg-background overflow-hidden"
     >
-      {/* LEFT SIDEBAR - CONTROL PANEL */}
+      {/* LEFT SIDE - Search/Filters + Customer List */}
       <div className="w-[320px] flex flex-col border-r border-border bg-card z-10 shrink-0">
-        {/* Header Section */}
-        <div className="p-4 border-b border-border bg-background space-y-3">
-          <div className="space-y-3">
-            {(user?.peran === "super_admin" ||
-              user?.peran === "admin_perusahaan") && (
-              <FormField label="Divisi Rute" icon={LayoutGrid} required>
-                <Select value={idDivisi} onValueChange={setIdDivisi} required>
-                  <SelectTrigger className="h-9 bg-muted/20 border-border font-semibold rounded-lg">
-                    <SelectValue placeholder="Pilih Divisi..." />
-                  </SelectTrigger>
-                  <SelectContent>
-                    {divisis.map((div) => (
-                      <SelectItem key={div.id} value={div.id.toString()}>
-                        {div.nama_divisi}
-                      </SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
-              </FormField>
-            )}
+        {/* Search & Filters */}
+        <div className="p-2 border-b border-border space-y-2">
+          {/* Label */}
+          <div className="text-[10px] font-bold uppercase text-muted-foreground">
+            Pencarian & Filter
+          </div>
+          
+          {/* Search */}
+          <Input
+            type="text"
+            placeholder="Cari nama toko atau alamat..."
+            className="h-8 text-xs"
+            value={searchQuery}
+            onChange={(e) => setSearchQuery(e.target.value)}
+          />
 
-            <FormField label="Nama Rute" icon={Type} required>
-              <Input
-                name="nama_rute"
-                type="text"
-                required
-                className="h-9 bg-card border-border font-semibold rounded-lg"
-                value={namaRute}
-                onChange={(e) => setNamaRute(e.target.value)}
-                placeholder="Ex: Rute Senin Barat"
-              />
-            </FormField>
+          {/* Filters Row */}
+          <div className="flex gap-1.5">
+            <div className="flex-1">
+              <div className="text-[9px] text-muted-foreground mb-1">Sales</div>
+              <Select
+                value={selectedKaryawanId.toString()}
+                onValueChange={(val) =>
+                  setSelectedKaryawanId(val === "all" ? "all" : Number(val))
+                }
+              >
+                <SelectTrigger className="h-8 text-[10px]">
+                  <SelectValue placeholder="Semua Sales" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="all">Semua Sales</SelectItem>
+                  {filterOptions.map((opt) => (
+                    <SelectItem key={opt.id} value={opt.id.toString()}>
+                      {opt.nama_lengkap}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </div>
 
-            <FormField label="Keterangan Rute" icon={FileText}>
-              <Input
-                name="deskripsi"
-                className="h-9 bg-card border-border text-xs rounded-lg"
-                value={deskripsi}
-                onChange={(e) => setDeskripsi(e.target.value)}
-                placeholder="Contoh: Fokus toko besar"
-              />
-            </FormField>
+            <div className="flex-1">
+              <div className="text-[9px] text-muted-foreground mb-1">Status</div>
+              <Select
+                value={ruteFilterStatus}
+                onValueChange={(val) => setRuteFilterStatus(val as RuteFilterStatus)}
+              >
+                <SelectTrigger className="h-8 text-[10px]">
+                  <SelectValue placeholder="Semua" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="all">Semua</SelectItem>
+                  <SelectItem value="unassigned">Belum Masuk Rute</SelectItem>
+                  <SelectItem value="in_this_route">Sudah Di Rute Ini</SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
+          </div>
+
+          <div className="text-[9px] text-muted-foreground pt-1">
+            {filteredCustomers.length} pelanggan • {selectedCount} dipilih
           </div>
         </div>
 
-        {/* Search & List Header */}
-        <div className="px-4 py-3 bg-muted/30 border-b border-border space-y-3">
-          <div className="relative group">
-            <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-3.5 w-3.5 text-muted-foreground z-10 group-focus-within:text-primary transition-colors" />
-            <Input
-              type="text"
-              placeholder="Cari Toko atau Alamat..."
-              className="w-full pl-9 pr-3 h-9 bg-card border-border focus-visible:ring-primary text-xs rounded-lg shadow-sm"
-              value={searchQuery}
-              onChange={(e) => setSearchQuery(e.target.value)}
-            />
-          </div>
-
-          <FormField label="Filter Berdasarkan Sales" icon={UserIcon} className="space-y-1">
-            <Select
-              value={selectedKaryawanId.toString()}
-              onValueChange={(val) =>
-                setSelectedKaryawanId(val === "all" ? "all" : Number(val))
-              }
-            >
-              <SelectTrigger className="w-full bg-card border-border h-9 text-[10px] font-semibold rounded-lg">
-                <SelectValue placeholder="Semua Sales" />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="all">Semua Sales</SelectItem>
-                {filterOptions.map((opt) => (
-                  <SelectItem key={opt.id} value={opt.id.toString()}>
-                    {opt.nama_lengkap} {!opt.has_account ? "(No Acc)" : ""}{" "}
-                    {opt.has_data ? "✓" : ""}
-                  </SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
-          </FormField>
-
-          <div className="flex items-center justify-between text-[9px] font-bold uppercase tracking-wider text-muted-foreground/80 px-1">
-            <span>{filteredCustomers.length} Pelanggan</span>
-            <span
-              className={cn(
-                "transition-colors",
-                selectedCount > 0 ? "text-primary/90" : "",
-              )}
-            >
-              {selectedCount} Terpilih
-            </span>
-          </div>
-        </div>
-
-        <div className="flex-1 overflow-y-auto p-4 space-y-2 bg-muted/5">
+        {/* Customer List */}
+        <div className="flex-1 overflow-y-auto p-2 bg-muted/5">
           {pelanggansLoading ? (
-            <div className="flex flex-col items-center justify-center h-40 text-muted-foreground space-y-2">
-              <div className="animate-spin h-5 w-5 border-2 border-primary/50 border-t-transparent rounded-full" />
-              <span className="text-[9px] font-bold uppercase tracking-widest opacity-60">Memuat...</span>
+            <div className="flex flex-col items-center justify-center h-32">
+              <div className="animate-spin h-5 w-5 border border-primary/50 border-t-transparent rounded-full" />
             </div>
           ) : filteredCustomers.length === 0 ? (
-            <div className="flex flex-col items-center justify-center h-40 text-muted-foreground/50 space-y-2">
-              <Info className="h-6 w-6" />
-              <span className="text-[9px] font-bold uppercase tracking-widest">Tidak ada data</span>
+            <div className="flex flex-col items-center justify-center h-32 text-muted-foreground/50">
+              <Info className="h-4 w-4" />
             </div>
           ) : (
-            <CustomerListItems
-              customers={filteredCustomers}
-              selectedIds={selectedIdsSet}
-              onToggle={toggleCustomer}
-            />
-          )}
-        </div>
-
-        {/* FOOTER ACTIONS */}
-        <div className="p-4 border-t border-border bg-background shadow-sm z-20 space-y-4">
-          <div className="flex items-center justify-between text-[10px] font-bold uppercase tracking-widest text-muted-foreground/80">
-            <span>Stop Points:</span>
-            <span className="text-foreground/90 bg-muted px-2 py-0.5 rounded-lg">
-              {selectedCount} Lokasi
-            </span>
-          </div>
-          <div className="grid grid-cols-2 gap-2">
-            <Button
-              type="button"
-              variant="outline"
-              onClick={onCancel}
-              disabled={isLoading}
-              className="h-9 text-[10px] font-bold uppercase tracking-widest text-muted-foreground hover:bg-muted/50 rounded-lg border-border/60"
-            >
-              <X className="mr-2 h-3.5 w-3.5" /> Batal
-            </Button>
-            <Button
-              type="submit"
-              disabled={isLoading}
-              className="h-9 text-[10px] font-bold uppercase tracking-widest shadow-lg shadow-primary/20 bg-primary hover:bg-primary/90 text-white rounded-lg transition-all"
-            >
-              {isLoading ? (
-                <div className="h-3.5 w-3.5 animate-spin rounded-full border-2 border-white border-t-transparent" />
-              ) : (
-                <span className="flex items-center gap-2">
-                  <Save className="h-3.5 w-3.5" /> Simpan
-                </span>
-              )}
-            </Button>
-          </div>
+              <CustomerListItems
+                customers={paginatedCustomers}
+                selectedIds={selectedIdsSet}
+                onToggle={toggleCustomer}
+              />
+            )}
         </div>
       </div>
 
-      {/* RIGHT MAIN - MAP */}
-      <div className="flex-1 relative bg-muted/20">
+      {/* RIGHT SIDE - Map + Floating Form */}
+      <div className="flex-1 relative">
+        {/* Floating Form - Right Side */}
+        <div className="absolute top-4 right-4 z-50 bg-background/95 backdrop-blur shadow-xl border border-border rounded-xl p-4 space-y-3 w-[260px]">
+          <div className="text-xs font-bold uppercase tracking-wider">
+            {initialData ? "Edit Rute" : "Buat Rute Baru"}
+          </div>
+          
+          {(user?.peran === "super_admin" ||
+            user?.peran === "admin_perusahaan") && (
+            <FormField label="Divisi" icon={LayoutGrid}>
+              <Select value={idDivisi} onValueChange={setIdDivisi}>
+                <SelectTrigger className="h-8 text-xs">
+                  <SelectValue placeholder="Pilih..." />
+                </SelectTrigger>
+                <SelectContent>
+                  {divisis.map((div) => (
+                    <SelectItem key={div.id} value={div.id.toString()}>
+                      {div.nama_divisi}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </FormField>
+          )}
+
+          <FormField label="Nama Rute" icon={Type}>
+            <Input
+              name="nama_rute"
+              type="text"
+              required
+              className="h-8 text-xs"
+              value={namaRute}
+              onChange={(e) => setNamaRute(e.target.value)}
+              placeholder="Ex: Rute Senin Barat"
+            />
+          </FormField>
+
+          <FormField label="Keterangan" icon={FileText}>
+            <Input
+              name="deskripsi"
+              className="h-8 text-xs"
+              value={deskripsi}
+              onChange={(e) => setDeskripsi(e.target.value)}
+            />
+          </FormField>
+
+          <div className="text-[10px] font-bold">
+            Stop Points: <span className="text-primary">{selectedCount}</span>
+          </div>
+
+          <div className="grid grid-cols-2 gap-2 pt-2">
+            <Button
+              type="button"
+              variant="outline"
+              size="sm"
+              onClick={onCancel}
+              disabled={isLoading}
+              className="h-8 text-[10px]"
+            >
+              Batal
+            </Button>
+            <Button
+              type="submit"
+              size="sm"
+              disabled={isLoading}
+              className="h-8 text-[10px]"
+            >
+              {isLoading ? "..." : "Simpan"}
+            </Button>
+          </div>
+        </div>
+
+        {/* Map */}
         <RouteCustomerMap
-          customers={pelanggans}
+          customers={mapCustomers}
           selectedIds={selectedIdsSet}
           onToggle={toggleCustomer}
           focusLocation={focusLocation || null}
           height="h-full"
         />
 
-        {/* Floating Map Hint */}
-        <div className="absolute top-4 left-1/2 -translate-x-1/2 z-50 pointer-events-none w-max">
-          <div className="bg-background/90 backdrop-blur shadow-xl border border-border/50 px-5 py-2 rounded-xl text-[9px] font-bold uppercase tracking-widest text-foreground flex items-center gap-3 animate-in slide-in-from-top-4 duration-700">
-            <div className="h-1.5 w-1.5 rounded-full bg-primary animate-pulse" />
-            <span>Klik marker untuk pilih</span>
+        {/* Map Hint */}
+        <div className="absolute bottom-4 left-1/2 -translate-x-1/2 z-40 pointer-events-none">
+          <div className="bg-background/90 backdrop-blur px-4 py-1.5 rounded-full text-[9px] font-bold flex items-center gap-2">
+            <div className="h-2 w-2 rounded-full bg-primary animate-pulse" />
+              Klik marker untuk pilih
           </div>
         </div>
       </div>
@@ -433,12 +474,12 @@ const CustomerItem = memo(
   }: {
     customer: Pelanggan;
     isSelected: boolean;
-    onToggle: (id: number) => void;
+    onToggle: (id: number, shouldFocus?: boolean) => void;
   }) => {
     return (
       <div
         id={`customer-item-${customer.id}`}
-        onClick={() => onToggle(customer.id)}
+        onClick={() => onToggle(customer.id, true)}
         className={cn(
           "relative p-3 rounded-xl border transition-all duration-300 cursor-pointer group mb-2 last:mb-0",
           isSelected
@@ -501,9 +542,6 @@ const CustomerItem = memo(
             </div>
           </div>
         </div>
-        {isSelected && (
-          <div className="absolute right-0 top-0 bottom-0 w-1 bg-primary rounded-r-xl" />
-        )}
       </div>
     );
   },
