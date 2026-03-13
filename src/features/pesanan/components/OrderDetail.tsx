@@ -261,14 +261,14 @@ const OrderDetail: React.FC<OrderDetailProps> = ({
 
         {/* Product search for editing */}
         {isEditing && showProductSearch && (
-          <Card className="bg-indigo-50/50 border border-indigo-100 p-3 rounded-xl animate-in fade-in slide-in-from-top-2">
+          <Card className="bg-indigo-50/50 dark:bg-indigo-950/30 border border-indigo-100 dark:border-indigo-800/50 p-3 rounded-xl animate-in fade-in slide-in-from-top-2">
             <div className="relative mb-2">
               <Search className="absolute left-2.5 top-1/2 -translate-y-1/2 h-3.5 w-3.5 text-indigo-400" />
               <input
                 autoFocus
                 type="text"
                 placeholder="Ketik nama produk untuk mencari..."
-                className="w-full pl-8 pr-4 py-2 text-xs bg-white border border-indigo-200 rounded-lg focus:ring-1 focus:ring-indigo-500 outline-none font-medium"
+                className="w-full pl-8 pr-4 py-2 text-xs bg-white dark:bg-slate-900 border border-indigo-200 dark:border-indigo-700 rounded-lg focus:ring-1 focus:ring-indigo-500 outline-none font-medium"
                 value={productSearch}
                 onChange={(e) => setProductSearch(e.target.value)}
               />
@@ -292,7 +292,7 @@ const OrderDetail: React.FC<OrderDetailProps> = ({
           </Card>
         )}
 
-        <div className="rounded-xl border border-border shadow-sm overflow-hidden bg-white">
+        <div className="rounded-xl border border-border shadow-sm overflow-hidden bg-white dark:bg-slate-950">
           <Table>
             <TableHeader className="bg-muted/40">
               <TableRow className="hover:bg-transparent">
@@ -332,16 +332,16 @@ const OrderDetail: React.FC<OrderDetailProps> = ({
                     {item.jumlah_pesanan || item.jumlah}
                   </TableCell>
                   <TableCell className="px-4 py-2.5 text-center bg-primary/5">
-                    {isEditing ? (
+                      {isEditing ? (
                       <div className="flex items-center justify-center gap-2">
                         <button
                           onClick={() => handleUpdateItemQty(item.id_produk, item.jumlah - 1)}
-                          className="h-6 w-6 rounded-md border border-primary/20 bg-white shadow-sm flex items-center justify-center hover:bg-primary hover:text-white transition-colors text-primary font-bold text-base"
+                          className="h-6 w-6 rounded-md border border-primary/20 bg-white dark:bg-slate-800 shadow-sm flex items-center justify-center hover:bg-primary hover:text-white transition-colors text-primary font-bold text-base"
                         > - </button>
                         <span className="w-6 text-[11px] font-bold text-primary">{item.jumlah}</span>
                         <button
                           onClick={() => handleUpdateItemQty(item.id_produk, item.jumlah + 1)}
-                          className="h-6 w-6 rounded-md border border-primary/20 bg-white shadow-sm flex items-center justify-center hover:bg-primary hover:text-white transition-colors text-primary font-bold text-base"
+                          className="h-6 w-6 rounded-md border border-primary/20 bg-white dark:bg-slate-800 shadow-sm flex items-center justify-center hover:bg-primary hover:text-white transition-colors text-primary font-bold text-base"
                         > + </button>
                       </div>
                     ) : (
@@ -349,7 +349,7 @@ const OrderDetail: React.FC<OrderDetailProps> = ({
                     )}
                   </TableCell>
                   <TableCell className="px-4 py-2.5 text-center">
-                    <Badge variant="secondary" className="h-5 text-[10px] font-bold text-amber-600 bg-amber-50 rounded-md">
+                    <Badge variant="secondary" className="h-5 text-[10px] font-bold text-amber-600 dark:text-amber-400 bg-amber-50 dark:bg-amber-950/50 rounded-md">
                       {(item.jumlah_pesanan || item.jumlah) - item.jumlah}
                     </Badge>
                   </TableCell>
@@ -370,7 +370,7 @@ const OrderDetail: React.FC<OrderDetailProps> = ({
                   )}
                 </TableRow>
               ))}
-              <TableRow className="bg-slate-50/80 hover:bg-slate-50/80">
+              <TableRow className="bg-slate-50/80 dark:bg-slate-900/50 hover:bg-slate-50/80 dark:hover:bg-slate-900/50">
                 <TableCell colSpan={5} className="text-right px-4 py-3 text-[10px] font-bold uppercase text-muted-foreground tracking-widest">
                   Total Tagihan Disetujui
                 </TableCell>
@@ -390,7 +390,7 @@ const OrderDetail: React.FC<OrderDetailProps> = ({
         </label>
         {isEditing ? (
           <textarea
-            className="w-full text-xs font-semibold bg-white border border-border rounded-xl p-3 h-16 focus:ring-1 focus:ring-primary outline-none transition-all shadow-sm"
+            className="w-full text-xs font-semibold bg-white dark:bg-slate-900 border border-border rounded-xl p-3 h-16 focus:ring-1 focus:ring-primary outline-none transition-all shadow-sm"
             value={catatan}
             onChange={(e) => setCatatan(e.target.value)}
             placeholder="Tambahkan instruksi khusus untuk gudang atau pengiriman..."
