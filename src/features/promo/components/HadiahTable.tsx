@@ -3,6 +3,7 @@ import { PromoCampaign } from "../types";
 import { DataTable, type ColumnDef } from "@/components/ui/data-table";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
+import { formatDate } from "@/lib/utils";
 import { 
   DropdownMenu,
   DropdownMenuContent,
@@ -106,7 +107,7 @@ export const HadiahTable: React.FC<HadiahTableProps> = ({
       cell: (row) => (
         <div className="flex items-center gap-2 text-xs font-medium text-muted-foreground tabular-nums opacity-80">
           <Calendar className="h-3.5 w-3.5 opacity-50" />
-          <span>{row.tanggal_akhir ? new Date(row.tanggal_akhir).toLocaleDateString('id-ID') : '-'}</span>
+          <span>{row.tanggal_akhir ? formatDate(row.tanggal_akhir) : '-'}</span>
         </div>
       ),
     },

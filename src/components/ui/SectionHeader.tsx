@@ -19,11 +19,11 @@ export const SectionHeader = ({
       <Icon className="h-5 w-5 text-primary" />
     </div>
     <div className="space-y-1">
-      <h3 className="text-sm font-black text-foreground uppercase tracking-wider">
+      <h3 className="text-sm font-bold text-foreground uppercase tracking-wider">
         {title}
       </h3>
       {description && (
-        <p className="text-[10px] text-muted-foreground font-black uppercase tracking-tight italic opacity-70">
+        <p className="text-[10px] text-muted-foreground font-semibold uppercase tracking-tight italic opacity-70">
           {description}
         </p>
       )}

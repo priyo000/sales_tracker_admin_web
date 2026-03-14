@@ -191,13 +191,13 @@ const KunjunganPage = () => {
               <CalendarIcon className="h-4 w-4" />
             </div>
             <div className="flex flex-col">
-              <span className="text-[9px] uppercase font-black text-muted-foreground/60 leading-none mb-0.5 tracking-tighter">
+              <span className="text-[9px] uppercase font-bold text-muted-foreground/60 leading-none mb-0.5 tracking-tighter">
                 Periode Monitoring
               </span>
               <DatePicker
                 date={parse(selectedDate, "yyyy-MM-dd", new Date())}
                 onChange={handleDateSelect}
-                className="bg-transparent border-none p-0 text-xs font-black text-foreground focus-visible:ring-0 cursor-pointer w-auto shadow-none h-auto min-h-0 hover:bg-transparent"
+                className="bg-transparent border-none p-0 text-xs font-bold text-foreground focus-visible:ring-0 cursor-pointer w-auto shadow-none h-auto min-h-0 hover:bg-transparent"
               />
             </div>
           </div>

@@ -71,8 +71,8 @@ export const useProductSelect = (options: UseProductSelectOptions = {}) => {
         setProduks(isReset ? data : [...produks, ...data]);
         setHasMore(false);
       }
-    } catch (error) {
-      console.error("Failed to fetch products:", error);
+    } catch {
+      // silently fail
     } finally {
       setLoading(false);
       setLoadingMore(false);

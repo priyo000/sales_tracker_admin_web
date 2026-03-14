@@ -24,7 +24,7 @@ export const FormField = ({
     <Label className="flex items-center gap-1.5 text-[10px] font-bold uppercase tracking-wider text-muted-foreground/90">
       {Icon && <Icon className="h-3 w-3 text-primary/80 shrink-0" />}
       {label}
-      {required && <span className="text-destructive font-black ml-0.5">*</span>}
+      {required && <span className="text-destructive font-bold ml-0.5">*</span>}
     </Label>
     {children}
     {description && (

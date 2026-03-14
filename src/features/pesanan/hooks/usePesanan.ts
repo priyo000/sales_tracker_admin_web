@@ -49,7 +49,6 @@ export const usePesanan = () => {
       } catch (err) {
         const error = err as AxiosError<{ message: string }>;
         setError(error.response?.data?.message || "Gagal memuat data pesanan.");
-        console.error(err);
       } finally {
         setLoading(false);
       }

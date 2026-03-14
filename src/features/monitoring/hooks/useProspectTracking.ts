@@ -34,8 +34,8 @@ export const useProspectTracking = () => {
         total: response.data.total,
         perPage: response.data.per_page,
       });
-    } catch (error) {
-      console.error("Error fetching prospect tracking:", error);
+    } catch {
+      // silently fail
     } finally {
       setLoading(false);
     }
@@ -48,8 +48,8 @@ export const useProspectTracking = () => {
         params: { id_karyawan, date }
       });
       setDetails(response.data);
-    } catch (error) {
-      console.error("Error fetching prospect details:", error);
+    } catch {
+      // silently fail
     } finally {
       setLoadingDetails(false);
     }

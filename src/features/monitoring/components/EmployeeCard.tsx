@@ -1,5 +1,5 @@
 import { MonitoringEmployee } from "../types";
-import { cn } from "@/lib/utils";
+import { cn, formatCurrency } from "@/lib/utils";
 import { BadgeCheck, MapPin, AlertTriangle } from "lucide-react";
 
 interface EmployeeCardProps {
@@ -14,14 +14,6 @@ export const EmployeeCard = ({
   onClick,
 }: EmployeeCardProps) => {
   const { karyawan, stats, color } = data;
-
-  const formatIDR = (val: number) => {
-    return new Intl.NumberFormat("id-ID", {
-      style: "currency",
-      currency: "IDR",
-      minimumFractionDigits: 0,
-    }).format(val);
-  };
 
   return (
     <div
@@ -117,7 +109,7 @@ export const EmployeeCard = ({
           Sales Order
         </span>
         <span className="text-sm font-bold text-green-600 dark:text-green-500">
-          {formatIDR(stats.sales_total)}
+          {formatCurrency(stats.sales_total)}
         </span>
       </div>
     </div>

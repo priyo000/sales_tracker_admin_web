@@ -5,6 +5,7 @@ export const BASE_URL =
 
 const api = axios.create({
   baseURL: `${BASE_URL}/api`,
+  timeout: 30000,
   headers: {
     "Content-Type": "application/json",
     Accept: "application/json",
@@ -27,6 +28,18 @@ api.interceptors.request.use(
     return config;
   },
   (error) => Promise.reject(error),
+);
+
+// Add a response interceptor for 401 handling
+api.interceptors.response.use(
+  (response) => response,
+  (error) => {
+    if (error.response?.status === 401) {
+      localStorage.removeItem("token");
+      window.location.href = "/login";
+    }
+    return Promise.reject(error);
+  },
 );
 
 export default api;

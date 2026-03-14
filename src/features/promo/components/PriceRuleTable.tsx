@@ -3,6 +3,7 @@ import { PromoCampaign } from "../types";
 import { DataTable, type ColumnDef } from "@/components/ui/data-table";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
+import { formatDate } from "@/lib/utils";
 
 interface PriceRuleTableProps {
   rules: PromoCampaign[];
@@ -71,9 +72,9 @@ export const PriceRuleTable: React.FC<PriceRuleTableProps> = ({
         cell: (row) => (
           <div className="flex items-center gap-2 text-xs font-medium text-muted-foreground tabular-nums">
             <Calendar className="h-3.5 w-3.5 opacity-50" />
-            <span>{new Date(row.tanggal_mulai).toLocaleDateString('id-ID')}</span>
+            <span>{formatDate(row.tanggal_mulai)}</span>
             <span className="opacity-30">-</span>
-            <span>{new Date(row.tanggal_akhir).toLocaleDateString('id-ID')}</span>
+            <span>{formatDate(row.tanggal_akhir)}</span>
           </div>
         ),
     },

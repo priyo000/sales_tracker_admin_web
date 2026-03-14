@@ -133,7 +133,7 @@ const UserPage: React.FC = () => {
             <Building2 className="h-4 w-4 text-purple-600 dark:text-purple-400" />
           </div>
           <div className="min-w-0">
-            <p className="text-[10px] font-black uppercase tracking-widest text-purple-600/70 dark:text-purple-400/70">
+            <p className="text-[10px] font-bold uppercase tracking-widest text-purple-600/70 dark:text-purple-400/70">
               Konteks Perusahaan Aktif
             </p>
             <p className="text-sm font-bold text-purple-700 dark:text-purple-300 truncate">

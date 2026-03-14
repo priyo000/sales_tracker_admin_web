@@ -148,7 +148,7 @@ const AppUpdatePage: React.FC = () => {
               >
                 {index === 0 && (
                   <div className="absolute top-0 right-0">
-                    <div className="bg-primary text-white text-[10px] font-black px-4 py-1.5 rounded-bl-xl uppercase tracking-[0.2em] shadow-sm">
+                    <div className="bg-primary text-white text-[10px] font-bold px-4 py-1.5 rounded-bl-xl uppercase tracking-[0.2em] shadow-sm">
                       Latest Release
                     </div>
                   </div>
@@ -162,7 +162,7 @@ const AppUpdatePage: React.FC = () => {
                       </div>
                       <div>
                         <div className="flex items-center gap-3">
-                           <CardTitle className="text-2xl font-black">v{update.version_name}</CardTitle>
+                           <CardTitle className="text-2xl font-bold">v{update.version_name}</CardTitle>
                            <Badge variant="outline" className="bg-white/50 font-mono text-[10px]">
                               Build #{update.version_code}
                            </Badge>
@@ -200,7 +200,7 @@ const AppUpdatePage: React.FC = () => {
                 <CardContent className="px-6 pb-6 pt-0 space-y-5">
                    {update.release_notes && (
                     <div className="rounded-2xl bg-muted/40 p-5 border border-border/40 relative group/notes">
-                       <p className="text-[10px] font-black uppercase text-muted-foreground/60 tracking-widest mb-2 flex items-center gap-2">
+                       <p className="text-[10px] font-bold uppercase text-muted-foreground/60 tracking-widest mb-2 flex items-center gap-2">
                           <History className="h-3 w-3" /> Change Log
                        </p>
                        <p className="text-sm text-foreground/80 leading-relaxed whitespace-pre-line italic font-serif">
@@ -241,7 +241,7 @@ const AppUpdatePage: React.FC = () => {
         <form onSubmit={handleSubmit} className="space-y-6 pt-2">
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
             <div className="space-y-2">
-              <Label className="text-xs font-black uppercase tracking-widest text-muted-foreground">Nama Versi</Label>
+              <Label className="text-xs font-bold uppercase tracking-widest text-muted-foreground">Nama Versi</Label>
               <Input
                 required
                 placeholder="misal: 1.0.8"
@@ -252,7 +252,7 @@ const AppUpdatePage: React.FC = () => {
               <p className="text-[10px] text-muted-foreground px-1">Terlihat oleh pengguna di aplikasi mobile.</p>
             </div>
             <div className="space-y-2">
-              <Label className="text-xs font-black uppercase tracking-widest text-muted-foreground">Kode Versi (Build)</Label>
+              <Label className="text-xs font-bold uppercase tracking-widest text-muted-foreground">Kode Versi (Build)</Label>
               <Input
                 required
                 type="number"
@@ -266,7 +266,7 @@ const AppUpdatePage: React.FC = () => {
           </div>
 
           <div className="space-y-2">
-            <Label className="text-xs font-black uppercase tracking-widest text-muted-foreground">URL Download Langsung</Label>
+            <Label className="text-xs font-bold uppercase tracking-widest text-muted-foreground">URL Download Langsung</Label>
             <Input
               required
               type="url"
@@ -279,7 +279,7 @@ const AppUpdatePage: React.FC = () => {
           </div>
 
           <div className="space-y-2">
-            <Label className="text-xs font-black uppercase tracking-widest text-muted-foreground">Catatan Rilis</Label>
+            <Label className="text-xs font-bold uppercase tracking-widest text-muted-foreground">Catatan Rilis</Label>
             <Textarea
               className="rounded-xl border-border/60 focus-visible:ring-primary shadow-sm min-h-[120px] resize-none"
               placeholder="Jelaskan perubahan di versi ini (perbaikan bug, fitur baru, dll)..."

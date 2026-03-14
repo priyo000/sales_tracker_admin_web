@@ -125,7 +125,6 @@ export const ExportReportModal: React.FC<ExportReportModalProps> = ({
       toast.success("Laporan berhasil diunduh.");
       onClose();
     } catch (error) {
-      console.error("Export error:", error);
       const err = error as { response?: { data?: { text?: () => Promise<string> } } };
       const text = await err.response?.data?.text?.();
       let message = "Gagal mengunduh laporan.";

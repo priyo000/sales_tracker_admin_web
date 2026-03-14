@@ -22,7 +22,6 @@ export const useJadwalRecurring = () => {
         } catch (err) {
             const error = err as AxiosError<{ message: string }>;
             setError(error.response?.data?.message || error.message || 'Gagal memuat master jadwal.');
-            console.error(err);
             return { patterns: [], groups: [] };
         } finally {
             setLoading(false);

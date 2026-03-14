@@ -12,8 +12,8 @@ export const useGroupRute = () => {
         try {
             const response = await api.get('/group-rute-mingguan');
             setGroups(response.data);
-        } catch (err) {
-            console.error(err);
+        } catch {
+            // silently fail
         } finally {
             setLoading(false);
         }

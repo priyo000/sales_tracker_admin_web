@@ -4,6 +4,7 @@ import { Pesanan } from "../types";
 import { DataTable, type ColumnDef } from "@/components/ui/data-table";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
+import { formatDate } from "@/lib/utils";
 
 interface OrderTableProps {
   data: Pesanan[];
@@ -54,11 +55,7 @@ const OrderTable: React.FC<OrderTableProps> = ({
           </div>
           <div className="flex items-center gap-1 text-xs text-muted-foreground mt-0.5">
             <Clock className="h-3 w-3" />
-            {new Date(row.tanggal_transaksi).toLocaleDateString("id-ID", {
-              day: "numeric",
-              month: "short",
-              year: "numeric",
-            })}
+            {formatDate(row.tanggal_transaksi)}
           </div>
         </div>
       ),

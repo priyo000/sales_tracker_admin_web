@@ -32,8 +32,8 @@ export const useMonitoring = () => {
         try {
             const response = await api.get(`/monitoring/map`, { params: { date } });
             setAllPoints(response.data);
-        } catch (err: unknown) {
-            console.error("Failed to fetch map points", err);
+        } catch {
+            // silently fail
         }
     }, []);
 

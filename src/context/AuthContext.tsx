@@ -29,7 +29,6 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
             window.location.reload(); 
             return true;
         } catch (error) {
-            console.error("Switch company failed:", error);
             return false;
         }
     };
@@ -43,7 +42,6 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
                      const response = await api.get('/me');
                      setUser(response.data.user);
                  } catch (error) {
-                     console.error("Auth check failed:", error);
                      logout();
                  }
              }

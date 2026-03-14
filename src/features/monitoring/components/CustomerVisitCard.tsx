@@ -8,7 +8,7 @@ import {
 } from "lucide-react";
 import { useState } from "react";
 import { Modal } from "@/components/ui/Modal";
-import { getImageUrl, cn } from "@/lib/utils";
+import { getImageUrl, cn, formatCurrency } from "@/lib/utils";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 
@@ -31,14 +31,6 @@ export const CustomerVisitCard = ({
       hour: "2-digit",
       minute: "2-digit",
     });
-  };
-
-  const formatCurrency = (amount: number) => {
-    return new Intl.NumberFormat("id-ID", {
-      style: "currency",
-      currency: "IDR",
-      minimumFractionDigits: 0,
-    }).format(amount);
   };
 
   const images = [
@@ -191,7 +183,7 @@ export const CustomerVisitCard = ({
         <BadgeCheck className="h-4 w-4" />
           <span>Detail Transaksi</span>
           {visit.pesanan_summary.count > 1 && (
-          <span className="ml-auto bg-green-500/20 text-green-700 px-1.5 py-0.5 rounded text-[9px] font-black">
+          <span className="ml-auto bg-green-500/20 text-green-700 px-1.5 py-0.5 rounded text-[9px] font-bold">
           {visit.pesanan_summary.count} ORDER
         </span>
         )}
@@ -230,10 +222,10 @@ export const CustomerVisitCard = ({
                       </div>
                     ))}
                     <div className="flex justify-between items-center pt-1">
-                      <span className="text-[10px] font-black uppercase tracking-wider text-green-800">
+                      <span className="text-[10px] font-bold uppercase tracking-wider text-green-800">
                         Total
                       </span>
-                      <span className="font-black text-sm text-green-700 tabular-nums">
+                      <span className="font-bold text-sm text-green-700 tabular-nums">
                         {formatCurrency(visit.pesanan_summary.total_tagihan)}
                       </span>
                     </div>

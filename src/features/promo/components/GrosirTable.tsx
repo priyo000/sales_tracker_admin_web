@@ -2,7 +2,7 @@ import { Trash, Calendar, Package, Layers, Eye } from "lucide-react";
 import { PromoCampaign } from "../types";
 import { DataTable, type ColumnDef } from "@/components/ui/data-table";
 import { Button } from "@/components/ui/button";
-import { formatCurrency } from "@/lib/utils";
+import { formatCurrency, formatDate } from "@/lib/utils";
 
 interface GrosirTableProps {
   rules: PromoCampaign[];
@@ -80,9 +80,9 @@ export const GrosirTable: React.FC<GrosirTableProps> = ({
         cell: (row) => (
           <div className="flex items-center gap-2 text-xs font-medium text-muted-foreground tabular-nums">
             <Calendar className="h-3.5 w-3.5 opacity-50" />
-            <span>{new Date(row.tanggal_mulai).toLocaleDateString('id-ID')}</span>
+            <span>{formatDate(row.tanggal_mulai)}</span>
             <span className="opacity-30">-</span>
-            <span>{new Date(row.tanggal_akhir).toLocaleDateString('id-ID')}</span>
+            <span>{formatDate(row.tanggal_akhir)}</span>
           </div>
         ),
     },

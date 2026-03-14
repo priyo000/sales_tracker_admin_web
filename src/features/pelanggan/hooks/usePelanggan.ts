@@ -1,137 +1,60 @@
-import { useState, useCallback } from "react";
-import api from "../../../services/api";
+import { useCallback } from "react";
+import api from "@/services/api";
+import { useCrudResource } from "@/hooks/useCrudResource";
+import { handleApiError } from "@/lib/utils";
 import { Pelanggan, PelangganFormData } from "../types";
-import { AxiosError } from "axios";
 
 export const usePelanggan = () => {
-  const [pelanggans, setPelanggans] = useState<Pelanggan[]>([]);
-  const [loading, setLoading] = useState(false);
-  const [error, setError] = useState<string | null>(null);
-  const [pagination, setPagination] = useState<{
-    currentPage: number;
-    lastPage: number;
-    total: number;
-    perPage: number;
-  }>({
-    currentPage: 1,
-    lastPage: 1,
-    total: 0,
-    perPage: 20,
+  const crud = useCrudResource<Pelanggan>("/pelanggan", {
+    resourceName: "pelanggan",
+    autoRefreshOnMutate: false,
   });
 
-  const fetchPelanggans = useCallback(
-    async (params?: {
-      search?: string;
-      status?: string;
-      per_page?: number;
-      page?: number;
-      id_sales?: number;
-      id_karyawan?: number;
-    }) => {
-      setLoading(true);
-      setError(null);
-      try {
-        const response = await api.get("/pelanggan", { params });
-        if (response.data.data && Array.isArray(response.data.data)) {
-          setPelanggans(response.data.data);
-          if (response.data.current_page) {
-            setPagination({
-              currentPage: response.data.current_page,
-              lastPage: response.data.last_page,
-              total: response.data.total,
-              perPage: response.data.per_page,
-            });
-          }
-        } else {
-          setPelanggans(response.data); // Fallback for non-paginated -1
-        }
-      } catch (err) {
-        const error = err as AxiosError<{ message: string }>;
-        setError(
-          error.response?.data?.message ||
-            error.message ||
-            "Failed to fetch customers",
-        );
-        console.error(err);
-      } finally {
-        setLoading(false);
-      }
-    },
-    [],
-  );
-
   const updateStatus = async (id: number, action: "approve" | "reject") => {
-    setLoading(true);
-    setError(null);
+    crud.setLoading(true);
+    crud.setError(null);
     try {
       await api.post(`/pelanggan/${id}/${action}`);
-      // Optimistic update or refetch
-      return { success: true };
+      return { success: true as const };
     } catch (err) {
-      const error = err as AxiosError<{ message: string }>;
-      const msg =
-        error.response?.data?.message || `Gagal melakukan ${action} pelanggan.`;
-      setError(msg);
-      return { success: false, message: msg };
+      const result = handleApiError(
+        err,
+        `Gagal melakukan ${action} pelanggan.`,
+      );
+      crud.setError(result.message);
+      return result;
     } finally {
-      setLoading(false);
+      crud.setLoading(false);
     }
   };
 
   const createPelanggan = async (data: PelangganFormData) => {
-    setLoading(true);
-    setError(null);
+    crud.setLoading(true);
+    crud.setError(null);
     try {
       const response = await api.post("/pelanggan", data);
-      return { success: true, data: response.data };
+      return { success: true as const, data: response.data };
     } catch (err) {
-      const error = err as AxiosError<{ message: string }>;
-      const msg =
-        error.response?.data?.message || "Gagal menambahkan pelanggan";
-      setError(msg);
-      return { success: false, message: msg };
+      const result = handleApiError(err, "Gagal menambahkan pelanggan.");
+      crud.setError(result.message);
+      return result;
     } finally {
-      setLoading(false);
+      crud.setLoading(false);
     }
   };
 
   const updatePelanggan = async (id: number, data: PelangganFormData) => {
-    setLoading(true);
-    setError(null);
+    crud.setLoading(true);
+    crud.setError(null);
     try {
       const response = await api.put(`/pelanggan/${id}`, data);
-      return { success: true, data: response.data };
+      return { success: true as const, data: response.data };
     } catch (err) {
-      const error = err as AxiosError<{ message: string }>;
-      const msg =
-        error.response?.data?.message || "Gagal memperbarui pelanggan";
-      setError(msg);
-      return { success: false, message: msg };
+      const result = handleApiError(err, "Gagal memperbarui pelanggan.");
+      crud.setError(result.message);
+      return result;
     } finally {
-      setLoading(false);
-    }
-  };
-
-  const importPelanggan = async (file: File) => {
-    setLoading(true);
-    setError(null);
-    const formData = new FormData();
-    formData.append("file", file);
-    try {
-      const response = await api.post("/pelanggan/import", formData, {
-        headers: { "Content-Type": "multipart/form-data" },
-      });
-      await fetchPelanggans();
-      return { success: true, data: response.data };
-    } catch (err) {
-      const error = err as AxiosError<{ message: string; error?: string }>;
-      const errData = error.response?.data;
-      const msg =
-        errData?.error || errData?.message || "Gagal mengimport pelanggan";
-      setError(msg);
-      return { success: false, message: msg };
-    } finally {
-      setLoading(false);
+      crud.setLoading(false);
     }
   };
 
@@ -140,17 +63,21 @@ export const usePelanggan = () => {
       try {
         const response = await api.get("/pelanggan/filter-options", { params });
         return response.data.data;
-      } catch (err) {
-        console.error("Failed to fetch filter options", err);
+      } catch {
         return [];
       }
     },
     [],
   );
 
-  const exportPelanggan = async (params: { status?: string; search?: string; id_divisi?: number; sales_id?: number }) => {
-    setLoading(true);
-    setError(null);
+  const exportPelanggan = async (params: {
+    status?: string;
+    search?: string;
+    id_divisi?: number;
+    sales_id?: number;
+  }) => {
+    crud.setLoading(true);
+    crud.setError(null);
     try {
       const response = await api.get("/pelanggan/export", {
         params,
@@ -160,31 +87,33 @@ export const usePelanggan = () => {
       const url = window.URL.createObjectURL(new Blob([response.data]));
       const link = document.createElement("a");
       link.href = url;
-      link.setAttribute("download", `Laporan_Pelanggan_${new Date().toISOString().slice(0, 10)}.xlsx`);
+      link.setAttribute(
+        "download",
+        `Laporan_Pelanggan_${new Date().toISOString().slice(0, 10)}.xlsx`,
+      );
       document.body.appendChild(link);
       link.click();
       link.remove();
       return { success: true };
-    } catch (err) {
-      console.error("Export failed", err);
-      setError("Gagal mengeksport data pelanggan.");
+    } catch {
+      crud.setError("Gagal mengeksport data pelanggan.");
       return { success: false };
     } finally {
-      setLoading(false);
+      crud.setLoading(false);
     }
   };
 
   return {
-    pelanggans,
-    loading,
-    error,
-    fetchPelanggans,
+    pelanggans: crud.items,
+    loading: crud.loading,
+    error: crud.error,
+    fetchPelanggans: crud.fetchItems,
     updateStatus,
     createPelanggan,
     updatePelanggan,
-    importPelanggan,
+    importPelanggan: (file: File) => crud.importItems(file),
     fetchFilterOptions,
     exportPelanggan,
-    pagination,
+    pagination: crud.pagination,
   };
 };

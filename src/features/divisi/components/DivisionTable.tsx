@@ -4,6 +4,7 @@ import { Divisi } from "../types";
 import { DataTable, type ColumnDef } from "@/components/ui/data-table";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
+import { formatDate } from "@/lib/utils";
 
 interface DivisionTableProps {
   data: Divisi[];
@@ -80,11 +81,7 @@ const DivisionTable: React.FC<DivisionTableProps> = ({
       cell: (row) => (
         <span className="text-sm text-muted-foreground tabular-nums">
           {row.created_at
-            ? new Date(row.created_at).toLocaleDateString("id-ID", {
-                day: "numeric",
-                month: "short",
-                year: "numeric",
-              })
+            ? formatDate(row.created_at)
             : "-"}
         </span>
       ),

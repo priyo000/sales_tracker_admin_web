@@ -152,11 +152,11 @@ const ProspectTrackingTable: React.FC<ProspectTrackingTableProps> = ({
               <table className="w-full text-sm text-left border-collapse bg-card">
                 <thead className="bg-muted/50 border-b border-border/60">
                   <tr>
-                    <th className="px-4 py-3 text-[10px] font-black uppercase tracking-widest text-muted-foreground w-12 text-center">No</th>
-                    <th className="px-4 py-3 text-[10px] font-black uppercase tracking-widest text-muted-foreground">Toko</th>
-                    <th className="px-4 py-3 text-[10px] font-black uppercase tracking-widest text-muted-foreground">Lokasi</th>
-                    <th className="px-4 py-3 text-[10px] font-black uppercase tracking-widest text-muted-foreground">Dikunjungi</th>
-                    <th className="px-4 py-3 text-[10px] font-black uppercase tracking-widest text-muted-foreground">Alasan/Keterangan</th>
+                    <th className="px-4 py-3 text-[10px] font-bold uppercase tracking-widest text-muted-foreground w-12 text-center">No</th>
+                    <th className="px-4 py-3 text-[10px] font-bold uppercase tracking-widest text-muted-foreground">Toko</th>
+                    <th className="px-4 py-3 text-[10px] font-bold uppercase tracking-widest text-muted-foreground">Lokasi</th>
+                    <th className="px-4 py-3 text-[10px] font-bold uppercase tracking-widest text-muted-foreground">Dikunjungi</th>
+                    <th className="px-4 py-3 text-[10px] font-bold uppercase tracking-widest text-muted-foreground">Alasan/Keterangan</th>
                   </tr>
                 </thead>
                 <tbody className="divide-y divide-border/40">

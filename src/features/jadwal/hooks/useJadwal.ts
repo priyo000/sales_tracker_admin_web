@@ -45,7 +45,6 @@ export const useJadwal = () => {
         } catch (err: unknown) {
             const error = err as AxiosError<{ message: string }>;
             setError(error.message || 'Gagal memuat jadwal.');
-            console.error(err);
         } finally {
             setLoading(false);
         }
@@ -63,8 +62,8 @@ export const useJadwal = () => {
             ]);
             setKaryawanOptions(karyawanRes.data.data);
             setRuteOptions(ruteRes.data.data);
-        } catch (err) {
-            console.error("Failed fetching options", err);
+        } catch {
+            // silently fail
         }
     }, []);
 

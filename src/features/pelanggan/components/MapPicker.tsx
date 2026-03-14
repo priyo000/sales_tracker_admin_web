@@ -50,8 +50,8 @@ const LocationMarker = ({ lat, lng, onChange }: {
                     const state = data.address.state || "";
                     onChange(newLat, newLng, data.display_name, city, district, state);
                 }
-            } catch (err) {
-                console.error("Reverse Geocoding failed:", err);
+            } catch {
+                // silently fail
             }
             map.flyTo(e.latlng, map.getZoom());
         },
@@ -89,8 +89,8 @@ const MapPicker: React.FC<MapPickerProps> = ({ lat, lng, onChange, hideSearch = 
                 setNoResults(true);
                 setTimeout(() => setNoResults(false), 3000);
             }
-        } catch (error) {
-            console.error('Search error:', error);
+        } catch {
+            // silently fail
         } finally {
             setIsSearching(false);
         }
@@ -152,7 +152,7 @@ const MapPicker: React.FC<MapPickerProps> = ({ lat, lng, onChange, hideSearch = 
                                 type="button"
                                 onClick={handleSearch}
                                 disabled={isSearching}
-                                className="h-9 px-4 bg-primary hover:bg-primary/90 text-white font-black text-[9px] uppercase tracking-widest rounded-lg shadow-xl transition-all hover:scale-[1.02] active:scale-[0.98]"
+                                className="h-9 px-4 bg-primary hover:bg-primary/90 text-white font-bold text-[9px] uppercase tracking-widest rounded-lg shadow-xl transition-all hover:scale-[1.02] active:scale-[0.98]"
                             >
                                 Cari
                             </Button>

@@ -16,7 +16,7 @@ import {
   Calendar,
 } from "lucide-react";
 import { Pelanggan } from "../types";
-import { getImageUrl } from "@/lib/utils";
+import { getImageUrl, formatCurrency } from "@/lib/utils";
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { SectionHeader } from "@/components/ui/SectionHeader";
@@ -86,7 +86,7 @@ const CustomerDetail: React.FC<CustomerDetailProps> = ({ data }) => {
         <div className="flex-1 space-y-4 py-2 w-full">
           <div>
             <div className="flex flex-wrap items-center gap-3 mb-1">
-              <h2 className="text-3xl font-black tracking-tight text-foreground uppercase">
+              <h2 className="text-3xl font-bold tracking-tight text-foreground uppercase">
                 {data.nama_toko}
               </h2>
               {data.kode_pelanggan && (
@@ -199,7 +199,7 @@ const CustomerDetail: React.FC<CustomerDetailProps> = ({ data }) => {
                 <div className="grid grid-cols-2 gap-6 p-4 bg-primary/5 rounded-xl border border-primary/10 shadow-inner">
                   <InfoRow 
                     label="Limit Kredit Awal" 
-                    value={`Rp ${new Intl.NumberFormat('id-ID').format(data.limit_kredit_awal || 0)}`} 
+                    value={formatCurrency(data.limit_kredit_awal || 0)} 
                   />
                   <InfoRow label="Durasi TOP" value={`${data.top_hari || 0} Hari`} />
                 </div>
@@ -208,7 +208,7 @@ const CustomerDetail: React.FC<CustomerDetailProps> = ({ data }) => {
               {data.cara_pembayaran !== "Cash" && (
                 <div className="space-y-4 pt-2">
                   <div className="p-4 rounded-xl border border-border bg-muted/40 space-y-3">
-                    <div className="flex items-center gap-2 text-[10px] font-black uppercase text-muted-foreground/60 tracking-tighter">
+                    <div className="flex items-center gap-2 text-[10px] font-bold uppercase text-muted-foreground/60 tracking-tighter">
                        <Landmark className="h-3 w-3" /> Rekening Bank Terdaftar
                     </div>
                     <div className="grid grid-cols-2 gap-4">
@@ -268,7 +268,7 @@ const CustomerDetail: React.FC<CustomerDetailProps> = ({ data }) => {
                       <div className="flex items-center gap-2 text-[10px] font-bold uppercase tracking-wider text-muted-foreground">
                          <Calendar className="h-3.5 w-3.5" /> Terdaftar Pada
                       </div>
-                      <div className="text-xs font-black">
+                      <div className="text-xs font-bold">
                          {data.created_at ? new Date(data.created_at).toLocaleDateString('id-ID', {
                             day: 'numeric', month: 'long', year: 'numeric'
                          }) : "—"}
@@ -278,7 +278,7 @@ const CustomerDetail: React.FC<CustomerDetailProps> = ({ data }) => {
                       <div className="flex items-center gap-2 text-[10px] font-bold uppercase tracking-wider text-muted-foreground">
                          <User className="h-3.5 w-3.5" /> Dibuat Oleh
                       </div>
-                      <div className="text-xs font-black text-primary">
+                      <div className="text-xs font-bold text-primary">
                          {data.creator?.nama_lengkap || "System"}
                       </div>
                    </div>
@@ -286,7 +286,7 @@ const CustomerDetail: React.FC<CustomerDetailProps> = ({ data }) => {
                 
                 {data.catatan_lain && (
                   <div className="space-y-2 pt-2">
-                    <div className="flex items-center gap-2 text-[10px] font-black uppercase text-muted-foreground/60 tracking-tighter">
+                    <div className="flex items-center gap-2 text-[10px] font-bold uppercase text-muted-foreground/60 tracking-tighter">
                        <Info className="h-3 w-3" /> Catatan Tambahan
                     </div>
                     <p className="text-xs text-foreground/80 leading-relaxed bg-amber-50/50 p-4 rounded-xl border border-amber-100/50 italic font-medium">

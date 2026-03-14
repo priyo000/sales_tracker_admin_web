@@ -1,147 +1,32 @@
 import { useState, useCallback } from 'react';
-import api from '../../../services/api';
+import api from '@/services/api';
+import { useCrudResource } from '@/hooks/useCrudResource';
 import { Karyawan, KaryawanFormData } from '../types';
-import { AxiosError } from 'axios';
 
 export const useKaryawan = () => {
-    const [karyawans, setKaryawans] = useState<Karyawan[]>([]);
-    const [loading, setLoading] = useState(false);
-    const [error, setError] = useState<string | null>(null);
-    const [pagination, setPagination] = useState<{
-        currentPage: number;
-        lastPage: number;
-        total: number;
-        perPage: number;
-    }>({
-        currentPage: 1,
-        lastPage: 1,
-        total: 0,
-        perPage: 20,
-    });
-
-    const [divisiOptions, setDivisiOptions] = useState<{ id: number, nama_divisi: string }[]>([]);
+    const crud = useCrudResource<Karyawan>('/karyawan', { resourceName: 'karyawan' });
+    const [divisiOptions, setDivisiOptions] = useState<{ id: number; nama_divisi: string }[]>([]);
 
     const fetchDivisiOptions = useCallback(async () => {
         try {
-            const response = await api.get('/divisi', { params: { per_page: -1 } }); 
+            const response = await api.get('/divisi', { params: { per_page: -1 } });
             setDivisiOptions(response.data.data);
-        } catch (err) {
-            console.error('Failed to fetch divisions', err);
+        } catch {
+            // silently fail
         }
     }, []);
-
-    const fetchKaryawans = useCallback(async (params?: { search?: string, page?: number, per_page?: number }) => {
-        setLoading(true);
-        setError(null);
-        try {
-            const response = await api.get('/karyawan', { params });
-            if (response.data.data && Array.isArray(response.data.data)) {
-                setKaryawans(response.data.data);
-                if (response.data.current_page) {
-                    setPagination({
-                        currentPage: response.data.current_page,
-                        lastPage: response.data.last_page,
-                        total: response.data.total,
-                        perPage: response.data.per_page,
-                    });
-                }
-            } else {
-                setKaryawans(response.data.data || []);
-            }
-        } catch (err) {
-            const error = err as AxiosError<{ message: string }>;
-            setError(error.response?.data?.message || error.message || 'Gagal memuat data karyawan.');
-            console.error(err);
-        } finally {
-            setLoading(false);
-        }
-    }, []);
-
-    const createKaryawan = async (data: KaryawanFormData) => {
-        setLoading(true);
-        setError(null);
-        try {
-            await api.post('/karyawan', data);
-            await fetchKaryawans();
-            return { success: true };
-        } catch (err) {
-            const error = err as AxiosError<{ message: string }>;
-            const msg = error.response?.data?.message || 'Gagal menambah karyawan.';
-            setError(msg);
-            return { success: false, message: msg };
-        } finally {
-            setLoading(false);
-        }
-    };
-
-    const updateKaryawan = async (id: number, data: KaryawanFormData) => {
-        setLoading(true);
-        setError(null);
-        try {
-            await api.put(`/karyawan/${id}`, data);
-            await fetchKaryawans();
-            return { success: true };
-        } catch (err) {
-             const error = err as AxiosError<{ message: string }>;
-             const msg = error.response?.data?.message || 'Gagal memperbarui data karyawan.';
-             setError(msg);
-             return { success: false, message: msg };
-        } finally {
-            setLoading(false);
-        }
-    };
-
-    const deleteKaryawan = async (id: number) => {
-        setLoading(true);
-        setError(null);
-        try {
-            await api.delete(`/karyawan/${id}`);
-            await fetchKaryawans();
-            return { success: true };
-        } catch (err) {
-             const error = err as AxiosError<{ message: string }>;
-             const msg = error.response?.data?.message || 'Gagal menghapus karyawan.';
-             setError(msg);
-             return { success: false, message: msg };
-        } finally {
-            setLoading(false);
-        }
-    };
-
-    const importKaryawan = async (file: File) => {
-        setLoading(true);
-        setError(null);
-        try {
-            const formData = new FormData();
-            formData.append('file', file);
-            await api.post('/karyawan/import', formData, {
-                headers: {
-                    'Content-Type': 'multipart/form-data',
-                },
-            });
-            await fetchKaryawans();
-            return { success: true };
-        } catch (err) {
-            const error = err as AxiosError<{ message: string }>;
-            const msg = error.response?.data?.message || 'Gagal mengimport data karyawan.';
-            setError(msg);
-            return { success: false, message: msg };
-        } finally {
-            setLoading(false);
-        }
-    };
 
     return {
-        karyawans,
+        karyawans: crud.items,
         divisiOptions,
-        loading,
-        error,
-        fetchKaryawans,
+        loading: crud.loading,
+        error: crud.error,
+        fetchKaryawans: crud.fetchItems,
         fetchDivisiOptions,
-        createKaryawan,
-        updateKaryawan,
-        deleteKaryawan,
-        importKaryawan,
-        pagination
+        createKaryawan: (data: KaryawanFormData) => crud.createItem(data),
+        updateKaryawan: (id: number, data: KaryawanFormData) => crud.updateItem(id, data),
+        deleteKaryawan: (id: number) => crud.deleteItem(id),
+        importKaryawan: (file: File) => crud.importItems(file),
+        pagination: crud.pagination,
     };
 };

@@ -4,6 +4,7 @@ import { Edit, Trash, Building2, Mail, Phone } from "lucide-react";
 import { DataTable, type ColumnDef } from "@/components/ui/data-table";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
+import { formatDate } from "@/lib/utils";
 
 interface PerusahaanTableProps {
   data: Perusahaan[];
@@ -94,11 +95,7 @@ const PerusahaanTable: React.FC<PerusahaanTableProps> = ({
       cell: (row) => (
         <span className="text-sm text-muted-foreground tabular-nums">
           {row.tanggal_bergabung
-            ? new Date(row.tanggal_bergabung).toLocaleDateString("id-ID", {
-                day: "numeric",
-                month: "short",
-                year: "numeric",
-              })
+            ? formatDate(row.tanggal_bergabung)
             : "—"}
         </span>
       ),

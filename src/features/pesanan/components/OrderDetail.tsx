@@ -374,7 +374,7 @@ const OrderDetail: React.FC<OrderDetailProps> = ({
                 <TableCell colSpan={5} className="text-right px-4 py-3 text-[10px] font-bold uppercase text-muted-foreground tracking-widest">
                   Total Tagihan Disetujui
                 </TableCell>
-                <TableCell className="text-right px-4 py-3 text-sm font-black text-primary tracking-tight">
+                <TableCell className="text-right px-4 py-3 text-sm font-bold text-primary tracking-tight">
                   Rp {(Number(isEditing ? totalTagihan : pesanan.total_tagihan) || 0).toLocaleString("id-ID")}
                 </TableCell>
                 {isEditing && <TableCell></TableCell>}

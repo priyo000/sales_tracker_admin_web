@@ -2,7 +2,7 @@ import React, { useEffect, useState } from "react";
 import { Tag, Plus, Users, Package, Gift, BarChart3, Layers, Calendar } from "lucide-react";
 import toast from "react-hot-toast";
 import { Badge } from "@/components/ui/badge";
-import { cn, formatCurrency } from "@/lib/utils";
+import { cn, formatCurrency, formatDate } from "@/lib/utils";
 import { usePromo } from "@/features/promo/hooks/usePromo";
 import { ClusterTable } from "@/features/promo/components/ClusterTable";
 import { PriceRuleTable } from "@/features/promo/components/PriceRuleTable";
@@ -336,28 +336,28 @@ const PromoPage: React.FC = () => {
         <div className="p-5 space-y-5">
             <div className="grid grid-cols-1 md:grid-cols-4 gap-4 bg-muted/30 p-5 rounded-2xl border border-border/50">
                <div className="col-span-1 md:col-span-2">
-                  <div className="text-[10px] text-muted-foreground uppercase tracking-[0.2em] font-black mb-1.5 opacity-70 flex items-center gap-1.5">
+                  <div className="text-[10px] text-muted-foreground uppercase tracking-[0.2em] font-bold mb-1.5 opacity-70 flex items-center gap-1.5">
                     <Tag className="h-3 w-3" /> Nama Program
                   </div>
-                  <div className="font-black text-xl text-foreground leading-tight tracking-tight uppercase">
+                  <div className="font-bold text-xl text-foreground leading-tight tracking-tight uppercase">
                     {selectedCampaignView?.nama_promo}
                   </div>
                </div>
                
                <div className="space-y-4">
                   <div>
-                    <div className="text-[10px] text-muted-foreground uppercase tracking-[0.2em] font-black mb-1 flex items-center gap-1.5 opacity-70">
+                    <div className="text-[10px] text-muted-foreground uppercase tracking-[0.2em] font-bold mb-1 flex items-center gap-1.5 opacity-70">
                       <Calendar className="h-3 w-3" /> Masa Berlaku
                     </div>
                     <div className="font-bold text-sm bg-background/50 px-2 py-1 rounded inline-block">
-                      {selectedCampaignView?.tanggal_mulai ? new Date(selectedCampaignView.tanggal_mulai).toLocaleDateString('id-ID', { day: 'numeric', month: 'short', year: 'numeric' }) : '-'} — {selectedCampaignView?.tanggal_akhir ? new Date(selectedCampaignView.tanggal_akhir).toLocaleDateString('id-ID', { day: 'numeric', month: 'short', year: 'numeric' }) : '-'}
+                      {selectedCampaignView?.tanggal_mulai ? formatDate(selectedCampaignView.tanggal_mulai) : '-'} — {selectedCampaignView?.tanggal_akhir ? formatDate(selectedCampaignView.tanggal_akhir) : '-'}
                     </div>
                   </div>
                   <div>
-                    <div className="text-[10px] text-muted-foreground uppercase tracking-[0.2em] font-black mb-1 flex items-center gap-1.5 opacity-70">
+                    <div className="text-[10px] text-muted-foreground uppercase tracking-[0.2em] font-bold mb-1 flex items-center gap-1.5 opacity-70">
                       <Users className="h-3 w-3" /> Target Cluster
                     </div>
-                    <div className="font-black text-xs text-primary bg-primary/5 border border-primary/10 px-2 py-1 rounded-lg inline-block">
+                    <div className="font-bold text-xs text-primary bg-primary/5 border border-primary/10 px-2 py-1 rounded-lg inline-block">
                       {selectedCampaignView?.cluster?.nama_cluster || 'Seluruh Pelanggan'}
                     </div>
                   </div>
@@ -365,16 +365,16 @@ const PromoPage: React.FC = () => {
 
                <div className="space-y-4">
                   <div>
-                    <div className="text-[10px] text-muted-foreground uppercase tracking-[0.2em] font-black mb-1 flex items-center gap-1.5 opacity-70">
+                    <div className="text-[10px] text-muted-foreground uppercase tracking-[0.2em] font-bold mb-1 flex items-center gap-1.5 opacity-70">
                       <Layers className="h-3 w-3" /> Jenis Program
                     </div>
-                    <div className="font-black uppercase text-[11px] text-orange-600 bg-orange-50 border border-orange-100 px-2.5 py-1 rounded-full inline-block">
+                    <div className="font-bold uppercase text-[11px] text-orange-600 bg-orange-50 border border-orange-100 px-2.5 py-1 rounded-full inline-block">
                       {selectedCampaignView?.jenis_promo?.replace('_', ' ')}
                     </div>
                   </div>
                   {selectedCampaignView?.divisi && (
                     <div>
-                      <div className="text-[10px] text-muted-foreground uppercase tracking-[0.2em] font-black mb-1 flex items-center gap-1.5 opacity-70">
+                      <div className="text-[10px] text-muted-foreground uppercase tracking-[0.2em] font-bold mb-1 flex items-center gap-1.5 opacity-70">
                         <Package className="h-3 w-3" /> Divisi
                       </div>
                       <div className="font-bold text-xs bg-muted border border-border/50 px-2 py-1 rounded inline-block">
@@ -388,9 +388,9 @@ const PromoPage: React.FC = () => {
             <div className="flex items-center justify-between">
                 <div className="flex items-center gap-2">
                   <div className="h-2 w-2 bg-primary rounded-full animate-pulse" />
-                  <span className="font-black text-xs uppercase tracking-widest text-muted-foreground">Daftar Item &amp; Ketentuan Benefit</span>
+                  <span className="font-bold text-xs uppercase tracking-widest text-muted-foreground">Daftar Item &amp; Ketentuan Benefit</span>
                 </div>
-                <Badge variant="outline" className="bg-primary/5 text-primary border-primary/20 font-black px-3 py-1 text-[11px]">
+                <Badge variant="outline" className="bg-primary/5 text-primary border-primary/20 font-bold px-3 py-1 text-[11px]">
                   {selectedCampaignView?.jenis_promo === 'grosir'
                     ? `${selectedCampaignView.items_count || [...new Set(((selectedCampaignView?.items ?? []) as any[]).map((i) => i.id_produk))].length} Produk`
                     : `${selectedCampaignView?.items?.length || 0} Aturan`}
@@ -399,7 +399,7 @@ const PromoPage: React.FC = () => {
 
             <div className="max-h-[450px] overflow-y-auto border border-border/50 rounded-2xl bg-card shadow-sm">
                 <table className="w-full text-sm text-left border-collapse">
-                    <thead className="bg-muted/50 text-[10px] uppercase font-black text-muted-foreground tracking-widest sticky top-0 shadow-sm z-10">
+                    <thead className="bg-muted/50 text-[10px] uppercase font-bold text-muted-foreground tracking-widest sticky top-0 shadow-sm z-10">
                        <tr>
                           <th className="px-5 py-4 border-b w-[45%]">Pemicu / Target Produk</th>
                           <th className="px-5 py-4 border-b border-l bg-primary/2 text-primary">Detail / Benefit Promo</th>
@@ -426,7 +426,7 @@ const PromoPage: React.FC = () => {
                                     <span className="font-bold text-sm text-foreground leading-snug">{produk?.nama_produk || `Produk #${produkId}`}</span>
                                     {produk?.sku && (
                                       <div className="flex items-center gap-2">
-                                        <span className="text-[10px] bg-muted px-1.5 py-0.5 rounded font-black text-muted-foreground tracking-wider uppercase border border-border/30">{produk.sku}</span>
+                                        <span className="text-[10px] bg-muted px-1.5 py-0.5 rounded font-bold text-muted-foreground tracking-wider uppercase border border-border/30">{produk.sku}</span>
                                         {produk.harga_jual && (
                                           <span className="text-[10px] font-bold text-primary italic">Base: {formatCurrency(parseFloat(produk.harga_jual))}</span>
                                         )}
@@ -439,21 +439,21 @@ const PromoPage: React.FC = () => {
                                     {/* eslint-disable-next-line @typescript-eslint/no-explicit-any */}
                                     {sorted.map((tier: any, ti: number) => (
                                       <div key={tier.id} className="flex items-center gap-3 p-2 rounded-xl bg-background border border-border/30 shadow-sm hover:border-primary/20 transition-all">
-                                        <div className="bg-orange-600 text-white text-[10px] font-black w-6 h-6 rounded-full flex items-center justify-center flex-shrink-0">
+                                        <div className="bg-orange-600 text-white text-[10px] font-bold w-6 h-6 rounded-full flex items-center justify-center flex-shrink-0">
                                           {ti+1}
                                         </div>
                                         <div className="flex-1 flex items-center justify-between min-w-0">
                                           <div className="flex flex-col">
-                                            <span className="text-[10px] text-muted-foreground font-black uppercase tracking-widest opacity-60">Minimal Pembelian</span>
-                                            <strong className="text-sm font-black text-foreground">{tier.min_qty} <span className="text-[10px] opacity-50 font-bold uppercase ml-0.5">Pcs</span></strong>
+                                            <span className="text-[10px] text-muted-foreground font-bold uppercase tracking-widest opacity-60">Minimal Pembelian</span>
+                                            <strong className="text-sm font-bold text-foreground">{tier.min_qty} <span className="text-[10px] opacity-50 font-bold uppercase ml-0.5">Pcs</span></strong>
                                           </div>
                                           <div className="h-8 w-px bg-border/50 mx-2" />
                                           <div className="flex flex-col items-end">
-                                            <span className="text-[10px] text-muted-foreground font-black uppercase tracking-widest opacity-60">Potongan Harga</span>
+                                            <span className="text-[10px] text-muted-foreground font-bold uppercase tracking-widest opacity-60">Potongan Harga</span>
                                             {parseFloat(tier.diskon_persen || "0") > 0 ? (
-                                              <span className="text-sm font-black text-emerald-600">Diskon {tier.diskon_persen}%</span>
+                                              <span className="text-sm font-bold text-emerald-600">Diskon {tier.diskon_persen}%</span>
                                             ) : (
-                                              <span className="text-sm font-black text-orange-600">{formatCurrency(parseFloat(tier.harga_spesial || "0"))}</span>
+                                              <span className="text-sm font-bold text-orange-600">{formatCurrency(parseFloat(tier.harga_spesial || "0"))}</span>
                                             )}
                                           </div>
                                         </div>
@@ -477,7 +477,7 @@ const PromoPage: React.FC = () => {
                                 {i.produk ? i.produk.nama_produk : (i.pemicu ? i.pemicu.nama_produk : 'Global / Syarat Total Nota Khusus')}
                               </span>
                               {i.produk?.sku && (
-                                <span className="text-[10px] bg-muted w-fit px-1.5 py-0.5 rounded font-black text-muted-foreground tracking-wider uppercase border border-border/30">{i.produk.sku}</span>
+                                <span className="text-[10px] bg-muted w-fit px-1.5 py-0.5 rounded font-bold text-muted-foreground tracking-wider uppercase border border-border/30">{i.produk.sku}</span>
                               )}
                             </div>
                           </td>
@@ -486,14 +486,14 @@ const PromoPage: React.FC = () => {
                               <div className="flex items-center gap-4">
                                 {parseFloat(i.diskon_persen || "0") > 0 && (
                                   <div className="flex flex-col">
-                                    <span className="text-[10px] text-muted-foreground font-black uppercase tracking-widest opacity-60">Potongan %</span>
-                                    <span className="font-black text-emerald-600 text-sm">Diskon {i.diskon_persen}%</span>
+                                    <span className="text-[10px] text-muted-foreground font-bold uppercase tracking-widest opacity-60">Potongan %</span>
+                                    <span className="font-bold text-emerald-600 text-sm">Diskon {i.diskon_persen}%</span>
                                   </div>
                                 )}
                                 {parseFloat(i.harga_manual || "0") > 0 && (
                                   <div className="flex flex-col">
-                                    <span className="text-[10px] text-muted-foreground font-black uppercase tracking-widest opacity-60">Harga Khusus</span>
-                                    <span className="font-black text-orange-600 text-sm">{formatCurrency(parseFloat(i.harga_manual))}</span>
+                                    <span className="text-[10px] text-muted-foreground font-bold uppercase tracking-widest opacity-60">Harga Khusus</span>
+                                    <span className="font-bold text-orange-600 text-sm">{formatCurrency(parseFloat(i.harga_manual))}</span>
                                   </div>
                                 )}
                                 {!parseFloat(i.diskon_persen || "0") && !parseFloat(i.harga_manual || "0") && <span className="text-muted-foreground italic text-[11px]">Tidak ada benefit tersimpan</span>}
@@ -502,7 +502,7 @@ const PromoPage: React.FC = () => {
                             {selectedCampaignView?.jenis_promo === 'hadiah' && (
                               <div className="flex items-center gap-6">
                                 <div className="flex flex-col">
-                                  <span className="text-[10px] text-muted-foreground font-black uppercase tracking-widest opacity-60 whitespace-nowrap">Syarat Pembelian</span>
+                                  <span className="text-[10px] text-muted-foreground font-bold uppercase tracking-widest opacity-60 whitespace-nowrap">Syarat Pembelian</span>
                                   <div className="flex items-center gap-2 mt-0.5">
                                     {parseFloat(i.min_amount_pemicu || "0") > 0 && <span className="bg-muted px-2 py-0.5 rounded text-[11px] font-bold">Min. Rp{parseFloat(i.min_amount_pemicu).toLocaleString('id-ID')}</span>}
                                     {parseFloat(i.min_qty_pemicu || "0") > 0 && <span className="bg-muted px-2 py-0.5 rounded text-[11px] font-bold">Min. {i.min_qty_pemicu} Pcs</span>}
@@ -510,14 +510,14 @@ const PromoPage: React.FC = () => {
                                 </div>
                                 <div className="h-8 w-px bg-border/50" />
                                 <div className="flex flex-col flex-1">
-                                  <span className="text-[10px] text-muted-foreground font-black uppercase tracking-widest opacity-60">Hadiah / Bonus</span>
+                                  <span className="text-[10px] text-muted-foreground font-bold uppercase tracking-widest opacity-60">Hadiah / Bonus</span>
                                   <div className="flex items-center gap-2 mt-0.5">
                                     <Gift className="h-4 w-4 text-primary" />
-                                    <span className="font-black text-primary text-sm">
+                                    <span className="font-bold text-primary text-sm">
                                       {i.hadiah?.nama_produk || 'Item Spesial'} <span className="text-muted-foreground text-[10px] ml-1 bg-primary/10 px-1.5 rounded">x{i.qty_hadiah}</span>
                                     </span>
                                   </div>
-                                  <span className="text-[10px] font-black mt-1 uppercase text-emerald-600 bg-emerald-50 px-2 py-0.5 rounded-full w-fit border border-emerald-100">
+                                  <span className="text-[10px] font-bold mt-1 uppercase text-emerald-600 bg-emerald-50 px-2 py-0.5 rounded-full w-fit border border-emerald-100">
                                     Tebusan: {formatCurrency(parseFloat(i.harga_tebus || "0"))}
                                   </span>
                                 </div>

@@ -78,8 +78,7 @@ export const ClusterAssignmentModal: React.FC<ClusterAssignmentModalProps> = ({
       } else {
         setAssigned([]);
       }
-    } catch (e) {
-      console.error("Failed to load assigned", e);
+    } catch {
       setAssigned([]);
     } finally {
       setIsFetching(false);
@@ -107,7 +106,7 @@ export const ClusterAssignmentModal: React.FC<ClusterAssignmentModalProps> = ({
       if (selectedRoute !== "all") params.id_rute = selectedRoute;
       
       if (debouncedSearch.length >= 2 || selectedRoute !== "all") {
-        fetchPelanggans(params).catch(err => console.error("Search failed", err));
+        fetchPelanggans(params).catch(() => { /* silently fail */ });
       }
     }
   }, [debouncedSearch, selectedRoute, isOpen, fetchPelanggans]);
@@ -143,8 +142,7 @@ export const ClusterAssignmentModal: React.FC<ClusterAssignmentModalProps> = ({
       } else {
         toast.error(res.message || "Gagal menambahkan pelanggan");
       }
-    } catch (e) {
-      console.error("Bulk assign crashed", e);
+    } catch {
       toast.error("Terjadi kesalahan sistem saat menambahkan pelanggan");
     }
   };
@@ -159,8 +157,7 @@ export const ClusterAssignmentModal: React.FC<ClusterAssignmentModalProps> = ({
       } else {
         toast.error(res.message || "Gagal mengeluarkan pelanggan");
       }
-    } catch (e) {
-      console.error("Remove crashed", e);
+    } catch {
       toast.error("Terjadi kesalahan saat mengeluarkan pelanggan");
     }
   };

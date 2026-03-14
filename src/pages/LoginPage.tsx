@@ -52,7 +52,7 @@ const LoginPage: React.FC = () => {
           <div className="mx-auto w-16 h-16 bg-primary rounded-3xl flex items-center justify-center shadow-2xl shadow-primary/40 rotate-12 mb-6">
             <Lock className="h-8 w-8 text-white -rotate-12" />
           </div>
-          <h1 className="text-4xl font-black tracking-tighter text-foreground uppercase">
+          <h1 className="text-4xl font-bold tracking-tighter text-foreground uppercase">
             Admin Portal
           </h1>
           <p className="text-sm text-muted-foreground font-medium uppercase tracking-[0.2em]">
@@ -62,7 +62,7 @@ const LoginPage: React.FC = () => {
 
         <Card className="border-none shadow-[0_20px_50px_rgba(0,0,0,0.1)] overflow-hidden bg-card/80 backdrop-blur-xl">
           <CardHeader className="space-y-1 pt-8">
-            <CardTitle className="text-xl font-black uppercase text-center">Sign In</CardTitle>
+            <CardTitle className="text-xl font-bold uppercase text-center">Sign In</CardTitle>
             <CardDescription className="text-center text-xs font-bold uppercase tracking-wider text-muted-foreground/60">
               Masukkan kredensial Anda untuk melanjutkan
             </CardDescription>
@@ -73,7 +73,7 @@ const LoginPage: React.FC = () => {
                 <div className="space-y-2">
                   <Label 
                     htmlFor="username" 
-                    className="text-[10px] font-black uppercase tracking-[0.15em] text-muted-foreground ml-1"
+                    className="text-[10px] font-bold uppercase tracking-[0.15em] text-muted-foreground ml-1"
                   >
                     Username
                   </Label>
@@ -94,7 +94,7 @@ const LoginPage: React.FC = () => {
                 <div className="space-y-2">
                    <Label 
                     htmlFor="password" 
-                    className="text-[10px] font-black uppercase tracking-[0.15em] text-muted-foreground ml-1"
+                    className="text-[10px] font-bold uppercase tracking-[0.15em] text-muted-foreground ml-1"
                   >
                     Password Access
                   </Label>
@@ -123,7 +123,7 @@ const LoginPage: React.FC = () => {
               <Button
                 type="submit"
                 disabled={loading}
-                className="w-full h-12 text-xs font-black uppercase tracking-widest shadow-xl shadow-primary/20 bg-primary hover:bg-primary/90 text-primary-foreground group transition-all"
+                className="w-full h-12 text-xs font-bold uppercase tracking-widest shadow-xl shadow-primary/20 bg-primary hover:bg-primary/90 text-primary-foreground group transition-all"
               >
                 {loading ? (
                   <Loader2 className="h-5 w-5 animate-spin" />

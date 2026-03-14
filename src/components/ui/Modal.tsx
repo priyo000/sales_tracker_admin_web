@@ -127,7 +127,7 @@ export const ConfirmModal: React.FC<ConfirmModalProps> = ({
           </div>
 
           <div className="space-y-2">
-            <DialogTitle className="text-xl font-black text-foreground uppercase tracking-tight">
+            <DialogTitle className="text-xl font-bold text-foreground uppercase tracking-tight">
               {title}
             </DialogTitle>
             <DialogDescription className="text-sm text-muted-foreground font-medium">

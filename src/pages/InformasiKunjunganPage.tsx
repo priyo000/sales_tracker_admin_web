@@ -122,7 +122,7 @@ const InformasiKunjunganPage: React.FC = () => {
         <button
           onClick={() => setActiveTab("rekap")}
           className={cn(
-            "px-6 py-2 text-xs font-black uppercase tracking-widest transition-all rounded-lg whitespace-nowrap",
+            "px-6 py-2 text-xs font-bold uppercase tracking-widest transition-all rounded-lg whitespace-nowrap",
             activeTab === "rekap"
               ? "bg-primary text-white shadow-md shadow-primary/20"
               : "text-muted-foreground hover:text-foreground hover:bg-muted"
@@ -133,7 +133,7 @@ const InformasiKunjunganPage: React.FC = () => {
         <button
           onClick={() => setActiveTab("prospect")}
           className={cn(
-            "px-6 py-2 text-xs font-black uppercase tracking-widest transition-all rounded-lg whitespace-nowrap",
+            "px-6 py-2 text-xs font-bold uppercase tracking-widest transition-all rounded-lg whitespace-nowrap",
             activeTab === "prospect"
               ? "bg-primary text-white shadow-md shadow-primary/20"
               : "text-muted-foreground hover:text-foreground hover:bg-muted"
@@ -144,7 +144,7 @@ const InformasiKunjunganPage: React.FC = () => {
         <button
           onClick={() => setActiveTab("kalender")}
           className={cn(
-            "px-6 py-2 text-xs font-black uppercase tracking-widest transition-all rounded-lg whitespace-nowrap",
+            "px-6 py-2 text-xs font-bold uppercase tracking-widest transition-all rounded-lg whitespace-nowrap",
             activeTab === "kalender"
               ? "bg-primary text-white shadow-md shadow-primary/20"
               : "text-muted-foreground hover:text-foreground hover:bg-muted"

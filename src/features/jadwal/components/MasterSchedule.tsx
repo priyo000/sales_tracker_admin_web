@@ -376,7 +376,7 @@ const MasterSchedule: React.FC<MasterScheduleProps> = ({
                   key={w}
                   onClick={() => setSelectedWeek(w)}
                   className={cn(
-                    "px-5 py-2 text-xs font-black transition-all rounded-lg whitespace-nowrap",
+                    "px-5 py-2 text-xs font-bold transition-all rounded-lg whitespace-nowrap",
                     selectedWeek === w
                       ? "bg-primary text-white shadow-lg shadow-primary/30"
                       : "text-muted-foreground hover:text-foreground hover:bg-muted",
@@ -417,16 +417,16 @@ const MasterSchedule: React.FC<MasterScheduleProps> = ({
           <table className="w-full border-collapse text-left text-[11px]">
             <thead>
               <tr className="bg-muted/30 border-b border-border/50">
-                <th className="px-6 py-4 font-black uppercase tracking-widest text-muted-foreground/70 sticky left-0 z-10 bg-muted/80 backdrop-blur-md">
+                <th className="px-6 py-4 font-bold uppercase tracking-widest text-muted-foreground/70 sticky left-0 z-10 bg-muted/80 backdrop-blur-md">
                   Sales
                 </th>
-                <th className="px-6 py-4 font-black uppercase tracking-widest text-muted-foreground/70 min-w-[200px]">
+                <th className="px-6 py-4 font-bold uppercase tracking-widest text-muted-foreground/70 min-w-[200px]">
                   Template Rute
                 </th>
                 {DAYS.map((d) => (
                   <th
                     key={d.id}
-                    className="px-4 py-4 font-black uppercase tracking-widest text-muted-foreground/70 min-w-[150px] text-center"
+                    className="px-4 py-4 font-bold uppercase tracking-widest text-muted-foreground/70 min-w-[150px] text-center"
                   >
                     {d.label.toUpperCase()}
                   </th>
@@ -462,11 +462,11 @@ const MasterSchedule: React.FC<MasterScheduleProps> = ({
                   >
                     <td className="px-6 py-4 sticky left-0 z-10 bg-card group-hover:bg-muted/50 transition-colors shadow-[4px_0_12px_-4px_rgba(0,0,0,0.1)]">
                       <div className="flex items-center gap-3">
-                        <div className="h-8 w-8 rounded-lg bg-primary/10 flex items-center justify-center text-primary font-black text-[10px] shrink-0">
+                        <div className="h-8 w-8 rounded-lg bg-primary/10 flex items-center justify-center text-primary font-bold text-[10px] shrink-0">
                           {k.nama_lengkap.charAt(0)}
                         </div>
                         <div>
-                          <div className="font-black text-foreground uppercase tracking-tight leading-none mb-1 group-hover:text-primary transition-colors">
+                          <div className="font-bold text-foreground uppercase tracking-tight leading-none mb-1 group-hover:text-primary transition-colors">
                             {k.nama_lengkap}
                           </div>
                           <div className="text-[9px] text-muted-foreground font-bold tracking-tighter uppercase opacity-60">
@@ -627,11 +627,11 @@ const MasterSchedule: React.FC<MasterScheduleProps> = ({
                     className="bg-card border border-border/50 rounded-2xl p-5 hover:border-primary/50 transition-all flex items-center justify-between group shadow-sm hover:shadow-xl hover:shadow-primary/5"
                   >
                     <div className="flex items-center gap-4">
-                      <div className="bg-primary/10 text-primary h-12 w-12 rounded-xl flex items-center justify-center font-black text-xl shadow-inner border border-primary/5">
+                      <div className="bg-primary/10 text-primary h-12 w-12 rounded-xl flex items-center justify-center font-bold text-xl shadow-inner border border-primary/5">
                         {idx + 1}
                       </div>
                       <div>
-                        <h3 className="text-sm font-black text-foreground uppercase tracking-tight">
+                        <h3 className="text-sm font-bold text-foreground uppercase tracking-tight">
                           {g.nama_group}
                         </h3>
                         <div className="flex items-center gap-3 mt-1.5">

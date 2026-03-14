@@ -291,7 +291,7 @@ const PelangganPage: React.FC = () => {
       <ImportCustomerModal
         isOpen={isImportModalOpen}
         onClose={() => setIsImportModalOpen(false)}
-        onImport={importPelanggan}
+        onImport={importPelanggan as (file: File) => Promise<any>}
       />
 
       {/* Export Modal */}

@@ -28,8 +28,8 @@ const FitBounds = ({ points, focusPoints }: { points: VisitPoint[], focusPoints?
                 const bounds = L.latLngBounds(latLngs);
                 try {
                     map.fitBounds(bounds, { padding: [50, 50], maxZoom: 16 });
-                } catch (e) {
-                    console.error("Map fitBounds failed", e);
+                } catch {
+                    // silently fail
                 }
             }
         }

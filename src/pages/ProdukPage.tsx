@@ -167,7 +167,7 @@ const ProdukPage: React.FC = () => {
       <ImportProductModal
         isOpen={isImportModalOpen}
         onClose={() => setIsImportModalOpen(false)}
-        onImport={importProduk}
+        onImport={importProduk as (file: File) => Promise<any>}
         onSuccess={handleImportSuccess}
       />
 

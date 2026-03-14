@@ -143,7 +143,7 @@ const RouteForm: React.FC<RouteFormProps> = ({
             setFormData((prev) => ({ ...prev, customer_ids: ids }));
           }
         } catch (error) {
-          console.error("Failed to fetch route details:", error);
+          // silently fail
         } finally {
           setDetailsLoading(false);
         }
@@ -521,7 +521,7 @@ const CustomerItem = memo(
                   {customer.details_rute.map((dr) => (
                     <span
                       key={dr.id}
-                      className="inline-flex items-center px-2 py-0.5 rounded-lg text-[9px] font-black uppercase bg-amber-100/50 text-amber-700 border border-amber-200/50"
+                      className="inline-flex items-center px-2 py-0.5 rounded-lg text-[9px] font-bold uppercase bg-amber-100/50 text-amber-700 border border-amber-200/50"
                     >
                       Rute: {dr.rute?.nama_rute || "N/A"}
                     </span>

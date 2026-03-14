@@ -184,7 +184,7 @@ const JadwalPage: React.FC = () => {
         <button
           onClick={() => setActiveTab("daily")}
           className={cn(
-            "px-6 py-2 text-xs font-black uppercase tracking-widest transition-all rounded-lg",
+            "px-6 py-2 text-xs font-bold uppercase tracking-widest transition-all rounded-lg",
             activeTab === "daily"
               ? "bg-primary text-white shadow-md shadow-primary/20"
               : "text-muted-foreground hover:text-foreground hover:bg-muted",
@@ -195,7 +195,7 @@ const JadwalPage: React.FC = () => {
         <button
           onClick={() => setActiveTab("recurring")}
           className={cn(
-            "px-6 py-2 text-xs font-black uppercase tracking-widest transition-all rounded-lg",
+            "px-6 py-2 text-xs font-bold uppercase tracking-widest transition-all rounded-lg",
             activeTab === "recurring"
               ? "bg-primary text-white shadow-md shadow-primary/20"
               : "text-muted-foreground hover:text-foreground hover:bg-muted",
@@ -244,7 +244,7 @@ const JadwalPage: React.FC = () => {
                       setDateRange({ from: today, to: today });
                       setSearchTerm("");
                     }}
-                    className="text-destructive h-10 px-4 hover:bg-destructive/10 text-xs font-black uppercase tracking-widest"
+                    className="text-destructive h-10 px-4 hover:bg-destructive/10 text-xs font-bold uppercase tracking-widest"
                   >
                     Reset Filter
                   </Button>
