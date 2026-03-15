@@ -27,8 +27,10 @@ const PesananPage: React.FC = () => {
   const {
     pesanans,
     loading,
+    detailLoading,
     error,
     fetchPesanans,
+    getPesananDetail,
     updateStatus,
     updatePesanan,
     pagination,
@@ -36,6 +38,7 @@ const PesananPage: React.FC = () => {
   const [searchTerm, setSearchTerm] = useState("");
   const [statusFilter, setStatusFilter] = useState("all");
   const [selectedOrderId, setSelectedOrderId] = useState<number | null>(null);
+  const [selectedOrderDetail, setSelectedOrderDetail] = useState<import("../features/pesanan/types").Pesanan | null>(null);
   const [isExporting, setIsExporting] = useState(false);
   const [isExportModalOpen, setIsExportModalOpen] = useState(false);
 
@@ -87,10 +90,15 @@ const PesananPage: React.FC = () => {
     setPage(1);
   };
 
-  const selectedOrder = useMemo(
-    () => pesanans.find((p) => p.id === selectedOrderId),
-    [pesanans, selectedOrderId],
-  );
+  useEffect(() => {
+    if (selectedOrderId === null) {
+      setSelectedOrderDetail(null);
+      return;
+    }
+    getPesananDetail(selectedOrderId).then((res) => {
+      if (res.success && res.data) setSelectedOrderDetail(res.data);
+    });
+  }, [selectedOrderId, getPesananDetail]);
 
   const handleExport = async (statuses: string[], dateRange: {startDate: string, endDate: string}) => {
     setIsExporting(true);
@@ -241,21 +249,37 @@ const PesananPage: React.FC = () => {
       />
 
       {/* Detail Modal */}
-      {selectedOrder && (
-        <Modal
-          isOpen={!!selectedOrderId}
-          onClose={() => setSelectedOrderId(null)}
-          title={`Detail Pesanan: ${selectedOrder.no_pesanan}`}
-          size="5xl"
-        >
+      <Modal
+        isOpen={!!selectedOrderId}
+        onClose={() => setSelectedOrderId(null)}
+        title={selectedOrderDetail ? `Detail Pesanan: ${selectedOrderDetail.no_pesanan}` : "Memuat Detail..."}
+        size="5xl"
+      >
+        {detailLoading && (
+          <div className="flex items-center justify-center py-16">
+            <div className="h-6 w-6 animate-spin rounded-full border-2 border-primary border-t-transparent" />
+          </div>
+        )}
+        {!detailLoading && selectedOrderDetail && (
           <OrderDetail
-            pesanan={selectedOrder}
-            onStatusChange={handleStatusChange}
-            onUpdatePesanan={updatePesanan}
+            pesanan={selectedOrderDetail}
+            onStatusChange={async (id, status) => {
+              await handleStatusChange(id, status);
+              const res = await getPesananDetail(id);
+              if (res.success && res.data) setSelectedOrderDetail(res.data);
+            }}
+            onUpdatePesanan={async (id, data) => {
+              const res = await updatePesanan(id, data);
+              if (res.success) {
+                const detail = await getPesananDetail(id);
+                if (detail.success && detail.data) setSelectedOrderDetail(detail.data);
+              }
+              return res;
+            }}
             onClose={() => setSelectedOrderId(null)}
           />
-        </Modal>
-      )}
+        )}
+      </Modal>
     </div>
   );
 };

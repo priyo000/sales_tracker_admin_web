@@ -1,7 +1,7 @@
 export interface ItemPesanan {
     id: number;
     id_produk: number;
-    nama_barang?: string; // Optional for legacy or if joining
+    nama_barang?: string;
     produk?: {
         nama_produk: string;
         satuan: string;
@@ -11,6 +11,9 @@ export interface ItemPesanan {
     jumlah_pesanan?: number;
     harga_satuan: number;
     total_harga: number;
+    is_hadiah?: boolean;
+    harga_tebus?: number | string;
+    keterangan?: string;
 }
 
 export interface Pesanan {
@@ -35,6 +38,9 @@ export interface Pesanan {
     waktu_selesai?: string;
     waktu_batal?: string;
     catatan?: string;
+    id_promo_campaign?: number | null;
+    nama_promo?: string | null;
+    diskon_total?: number | string | null;
     items?: ItemPesanan[];
     created_at?: string;
     updated_at?: string;

@@ -243,6 +243,56 @@ const OrderDetail: React.FC<OrderDetailProps> = ({
         </CardContent>
       </Card>
 
+      {/* Promo Section */}
+      {(pesanan.nama_promo || (Number(pesanan.diskon_total) > 0)) && (
+        <Card className="border border-border/60 shadow-sm overflow-hidden rounded-xl">
+          <CardContent className="p-4 space-y-3">
+            <h3 className="text-[10px] font-bold text-muted-foreground uppercase tracking-wider border-b border-border/40 pb-3">
+              Informasi Promo
+            </h3>
+            <div className="grid grid-cols-2 gap-x-6 gap-y-3 text-xs">
+              {pesanan.nama_promo && (
+                <div className="col-span-2">
+                  <p className="text-[9px] text-muted-foreground font-bold uppercase tracking-widest mb-0.5">Promo Diterapkan</p>
+                  <p className="font-semibold text-foreground">{pesanan.nama_promo}</p>
+                </div>
+              )}
+              {Number(pesanan.diskon_total) > 0 && (
+                <div>
+                  <p className="text-[9px] text-muted-foreground font-bold uppercase tracking-widest mb-0.5">Diskon</p>
+                  <p className="font-bold text-green-600">- Rp {Number(pesanan.diskon_total).toLocaleString("id-ID")}</p>
+                </div>
+              )}
+            </div>
+            {/* Hadiah items */}
+            {(() => {
+              const hadiahItems = pesanan.items?.filter(i => i.is_hadiah);
+              if (!hadiahItems?.length) return null;
+              return (
+                <div className="pt-2 border-t border-border/30">
+                  <p className="text-[9px] text-muted-foreground font-bold uppercase tracking-widest mb-2">Item Hadiah / Tebus</p>
+                  <div className="space-y-1.5">
+                    {hadiahItems.map((item) => (
+                      <div key={item.id} className="flex justify-between items-center bg-amber-50/60 dark:bg-amber-950/20 border border-amber-100 dark:border-amber-800/40 rounded-lg px-3 py-2">
+                        <div>
+                          <p className="text-[11px] font-bold text-foreground/90">{item.produk?.nama_produk || item.nama_barang || "Produk N/A"}</p>
+                          <p className="text-[9px] text-muted-foreground font-medium">{item.keterangan || "Hadiah Promo"} • {item.jumlah} {item.produk?.satuan || "pcs"}</p>
+                        </div>
+                        <p className="text-[11px] font-bold text-amber-600">
+                          {Number(item.harga_tebus) > 0
+                            ? `Rp ${Number(item.harga_tebus).toLocaleString("id-ID")}`
+                            : "Gratis"}
+                        </p>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              );
+            })()}
+          </CardContent>
+        </Card>
+      )}
+
       <div className="space-y-3">
         <div className="flex justify-between items-center">
           <h4 className="text-[10px] font-bold text-muted-foreground uppercase tracking-widest ml-1">
@@ -306,7 +356,7 @@ const OrderDetail: React.FC<OrderDetailProps> = ({
               </TableRow>
             </TableHeader>
             <TableBody>
-              {(isEditing ? editedItems : pesanan.items)?.map((item) => (
+              {(isEditing ? editedItems : pesanan.items?.filter(i => !i.is_hadiah))?.map((item) => (
                 <TableRow key={item.id_produk} className="hover:bg-muted/20 border-border/40">
                   <TableCell className="px-4 py-2.5">
                     <p className="text-[11px] font-bold leading-tight text-foreground/90">

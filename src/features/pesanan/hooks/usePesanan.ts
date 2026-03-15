@@ -6,6 +6,7 @@ import { AxiosError } from "axios";
 export const usePesanan = () => {
   const [pesanans, setPesanans] = useState<Pesanan[]>([]);
   const [loading, setLoading] = useState(false);
+  const [detailLoading, setDetailLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [pagination, setPagination] = useState<{
     currentPage: number;
@@ -57,7 +58,7 @@ export const usePesanan = () => {
   );
 
   const getPesananDetail = async (id: number) => {
-    setLoading(true);
+    setDetailLoading(true);
     setError(null);
     try {
       const response = await api.get(`/pesanan/${id}`);
@@ -69,7 +70,7 @@ export const usePesanan = () => {
       setError(msg);
       return { success: false, message: msg };
     } finally {
-      setLoading(false);
+      setDetailLoading(false);
     }
   };
 
@@ -147,6 +148,7 @@ export const usePesanan = () => {
   return {
     pesanans,
     loading,
+    detailLoading,
     error,
     fetchPesanans,
     getPesananDetail,
