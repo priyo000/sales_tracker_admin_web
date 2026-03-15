@@ -4,6 +4,7 @@ export interface Divisi {
     nama_divisi: string;
     radius_toleransi?: number;
     view_scope?: 'SELF' | 'DIVISION' | 'COMPANY';
+    allow_open_price?: boolean;
     created_at?: string;
     updated_at?: string;
 }
@@ -12,4 +13,5 @@ export interface DivisiFormData {
     nama_divisi: string;
     radius_toleransi?: number;
     view_scope?: 'SELF' | 'DIVISION' | 'COMPANY';
+    allow_open_price?: boolean;
 }

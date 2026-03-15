@@ -9,6 +9,7 @@ import {
   User,
   Users,
   Globe,
+  Tag,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -34,6 +35,9 @@ const DivisionForm: React.FC<DivisionFormProps> = ({
   const [viewScope, setViewScope] = useState<"SELF" | "DIVISION" | "COMPANY">(
     initialData?.view_scope || "SELF",
   );
+  const [allowOpenPrice, setAllowOpenPrice] = useState<boolean>(
+    initialData?.allow_open_price ?? true,
+  );
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
@@ -41,6 +45,7 @@ const DivisionForm: React.FC<DivisionFormProps> = ({
       nama_divisi: namaDivisi,
       radius_toleransi: radiusToleransi,
       view_scope: viewScope,
+      allow_open_price: allowOpenPrice,
     });
   };
 
@@ -138,6 +143,32 @@ const DivisionForm: React.FC<DivisionFormProps> = ({
               </button>
             ))}
           </div>
+        </FormField>
+        <FormField
+          label="Open Price"
+          icon={Tag}
+          description="* Izinkan sales mengubah harga jual produk secara manual."
+        >
+          <button
+            type="button"
+            onClick={() => setAllowOpenPrice(!allowOpenPrice)}
+            className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors focus:outline-none ${
+              allowOpenPrice ? "bg-primary" : "bg-muted-foreground/30"
+            }`}
+          >
+            <span
+              className={`inline-block h-4 w-4 transform rounded-full bg-white shadow-sm transition-transform ${
+                allowOpenPrice ? "translate-x-6" : "translate-x-1"
+              }`}
+            />
+          </button>
+          <p className="text-[10px] font-semibold mt-1.5">
+            {allowOpenPrice ? (
+              <span className="text-primary">Aktif — sales dapat ubah harga jual</span>
+            ) : (
+              <span className="text-muted-foreground">Nonaktif — harga jual terkunci, promo tetap bisa digunakan</span>
+            )}
+          </p>
         </FormField>
       </div>
 

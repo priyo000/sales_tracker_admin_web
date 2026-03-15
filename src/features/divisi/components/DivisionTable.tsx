@@ -75,6 +75,15 @@ const DivisionTable: React.FC<DivisionTableProps> = ({
       },
     },
     {
+      key: "allow_open_price",
+      header: "Open Price",
+      cell: (row) => (
+        row.allow_open_price !== false
+          ? <Badge variant="success">Aktif</Badge>
+          : <Badge variant="secondary">Nonaktif</Badge>
+      ),
+    },
+    {
       key: "created_at",
       header: "Dibuat Pada",
       sortable: true,
