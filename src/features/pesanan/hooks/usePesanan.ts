@@ -57,7 +57,7 @@ export const usePesanan = () => {
     [],
   );
 
-  const getPesananDetail = async (id: number) => {
+  const getPesananDetail = useCallback(async (id: number) => {
     setDetailLoading(true);
     setError(null);
     try {
@@ -72,7 +72,7 @@ export const usePesanan = () => {
     } finally {
       setDetailLoading(false);
     }
-  };
+  }, []);
 
   const updateStatus = async (id: number, status: string) => {
     setLoading(true);
