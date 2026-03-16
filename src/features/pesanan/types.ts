@@ -1,3 +1,13 @@
+export interface PesananPromo {
+    id: number;
+    id_pesanan: number;
+    id_promo_campaign: number;
+    nama_promo: string;
+    jenis: 'aturan_harga' | 'grosir' | 'hadiah' | 'hadiah_nota';
+    id_produk?: number | null;
+    diskon_amount: number | string;
+}
+
 export interface ItemPesanan {
     id: number;
     id_produk: number;
@@ -41,6 +51,7 @@ export interface Pesanan {
     id_promo_campaign?: number | null;
     nama_promo?: string | null;
     diskon_total?: number | string | null;
+    promos?: PesananPromo[];
     items?: ItemPesanan[];
     created_at?: string;
     updated_at?: string;

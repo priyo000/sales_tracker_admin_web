@@ -243,27 +243,59 @@ const OrderDetail: React.FC<OrderDetailProps> = ({
         </CardContent>
       </Card>
 
-      {/* Promo Section */}
-      {(pesanan.nama_promo || (Number(pesanan.diskon_total) > 0)) && (
+      {/* Promo Section — multi-promo per produk */}
+      {((pesanan.promos && pesanan.promos.length > 0) || Number(pesanan.diskon_total) > 0) && (
         <Card className="border border-border/60 shadow-sm overflow-hidden rounded-xl">
           <CardContent className="p-4 space-y-3">
-            <h3 className="text-[10px] font-bold text-muted-foreground uppercase tracking-wider border-b border-border/40 pb-3">
-              Informasi Promo
-            </h3>
-            <div className="grid grid-cols-2 gap-x-6 gap-y-3 text-xs">
-              {pesanan.nama_promo && (
-                <div className="col-span-2">
-                  <p className="text-[9px] text-muted-foreground font-bold uppercase tracking-widest mb-0.5">Promo Diterapkan</p>
-                  <p className="font-semibold text-foreground">{pesanan.nama_promo}</p>
-                </div>
-              )}
+            <div className="flex justify-between items-center border-b border-border/40 pb-3">
+              <h3 className="text-[10px] font-bold text-muted-foreground uppercase tracking-wider">
+                Informasi Promo
+              </h3>
               {Number(pesanan.diskon_total) > 0 && (
-                <div>
-                  <p className="text-[9px] text-muted-foreground font-bold uppercase tracking-widest mb-0.5">Diskon</p>
-                  <p className="font-bold text-green-600">- Rp {Number(pesanan.diskon_total).toLocaleString("id-ID")}</p>
-                </div>
+                <span className="text-[11px] font-bold text-green-600">
+                  Total Diskon: - Rp {Number(pesanan.diskon_total).toLocaleString("id-ID")}
+                </span>
               )}
             </div>
+
+            {/* Per-produk promo breakdown */}
+            {pesanan.promos && pesanan.promos.length > 0 ? (
+              <div className="space-y-2">
+                {pesanan.promos.map((promo) => {
+                  const jenisLabel: Record<string, string> = {
+                    aturan_harga: "Aturan Harga",
+                    grosir: "Grosir",
+                    hadiah: "Hadiah Produk",
+                    hadiah_nota: "Hadiah Nota",
+                  };
+                  const produkNama = promo.id_produk
+                    ? pesanan.items?.find(i => i.id_produk === promo.id_produk)?.produk?.nama_produk
+                    : null;
+                  return (
+                    <div key={promo.id} className="flex justify-between items-start bg-muted/20 rounded-lg px-3 py-2 border border-border/20">
+                      <div>
+                        <p className="text-[11px] font-bold text-foreground/90">{promo.nama_promo}</p>
+                        <p className="text-[9px] text-muted-foreground font-medium uppercase tracking-wide">
+                          {jenisLabel[promo.jenis] ?? promo.jenis}
+                          {produkNama && ` • ${produkNama}`}
+                          {!promo.id_produk && " • Per Nota"}
+                        </p>
+                      </div>
+                      {Number(promo.diskon_amount) > 0 && (
+                        <span className="text-[11px] font-bold text-green-600 whitespace-nowrap ml-2">
+                          - Rp {Number(promo.diskon_amount).toLocaleString("id-ID")}
+                        </span>
+                      )}
+                    </div>
+                  );
+                })}
+              </div>
+            ) : (
+              pesanan.nama_promo && (
+                <p className="text-xs font-semibold text-foreground/80">{pesanan.nama_promo}</p>
+              )
+            )}
+
             {/* Hadiah items */}
             {(() => {
               const hadiahItems = pesanan.items?.filter(i => i.is_hadiah);
