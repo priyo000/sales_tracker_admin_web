@@ -21,6 +21,7 @@ interface DivisionTableProps {
   };
   onPageChange?: (page: number) => void;
   onPerPageChange?: (perPage: number) => void;
+  canDelete?: boolean;
 }
 
 const DivisionTable: React.FC<DivisionTableProps> = ({
