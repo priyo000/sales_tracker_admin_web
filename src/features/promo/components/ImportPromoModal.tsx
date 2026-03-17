@@ -10,6 +10,7 @@ import {
 import { useDivisi } from "../../divisi/hooks/useDivisi";
 import { useAuth } from "@/hooks/useAuth";
 import api from "@/services/api";
+import { downloadCsvTemplate } from "@/lib/downloadTemplate";
 
 type ImportType = "cluster" | "aturan_harga" | "grosir";
 
@@ -19,6 +20,33 @@ interface ImportPromoModalProps {
   importType: ImportType;
   onSuccess?: () => void;
 }
+
+const TEMPLATE_DATA: Record<ImportType, { headers: string[]; rows: string[][] }> = {
+  cluster: {
+    headers: ['nama_cluster', 'kode_pelanggan', 'deskripsi', 'is_aktif'],
+    rows: [
+      ['Cluster VIP', 'KP-001', 'Pelanggan VIP Area Barat', 'true'],
+      ['Cluster VIP', 'KP-002', '', ''],
+      ['Cluster Regular', 'KP-003', 'Pelanggan Regular', 'true'],
+    ],
+  },
+  aturan_harga: {
+    headers: ['nama_promo', 'kode_produk', 'harga_manual', 'diskon_persen', 'tanggal_mulai', 'tanggal_akhir', 'nama_cluster'],
+    rows: [
+      ['Promo Lebaran 2026', 'PRD-001', '15000', '', '2026-04-01', '2026-04-30', 'Cluster VIP'],
+      ['Promo Lebaran 2026', 'PRD-002', '', '10', '2026-04-01', '2026-04-30', 'Cluster VIP'],
+      ['Diskon Reguler', 'PRD-003', '', '5', '2026-03-01', '2026-03-31', ''],
+    ],
+  },
+  grosir: {
+    headers: ['nama_promo', 'kode_produk', 'min_qty', 'harga_spesial', 'diskon_persen', 'tanggal_mulai', 'tanggal_akhir', 'nama_cluster'],
+    rows: [
+      ['Grosir Maret 2026', 'PRD-001', '10', '12000', '', '2026-03-01', '2026-03-31', ''],
+      ['Grosir Maret 2026', 'PRD-001', '50', '10000', '', '2026-03-01', '2026-03-31', ''],
+      ['Grosir Maret 2026', 'PRD-002', '20', '', '8', '2026-03-01', '2026-03-31', 'Cluster VIP'],
+    ],
+  },
+};
 
 const IMPORT_CONFIG: Record<
   ImportType,
@@ -100,6 +128,11 @@ const ImportPromoModal: React.FC<ImportPromoModalProps> = ({
     user?.peran === "super_admin" || user?.peran === "admin_perusahaan";
 
   const config = IMPORT_CONFIG[importType];
+  const template = TEMPLATE_DATA[importType];
+
+  const handleDownloadTemplate = () => {
+    downloadCsvTemplate(`template_${importType}.csv`, template.headers, template.rows);
+  };
 
   useEffect(() => {
     if (isOpen && showDivisiSelector) {
@@ -152,7 +185,8 @@ const ImportPromoModal: React.FC<ImportPromoModalProps> = ({
       onImport={handleImport}
       title={config.title}
       uploadLabel={`Upload File ${config.title}`}
-      accept=".xlsx, .xls"
+      accept=".xlsx, .xls, .csv"
+      onDownloadTemplate={handleDownloadTemplate}
       failureLabelFn={(fail) =>
         (fail as { nama?: string }).nama || ""
       }

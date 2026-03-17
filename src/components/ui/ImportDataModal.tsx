@@ -8,6 +8,7 @@ import {
   ChevronDown,
   ChevronUp,
   Info,
+  Download,
 } from "lucide-react";
 import { Modal } from "./Modal";
 import { Button } from "@/components/ui/button";
@@ -36,6 +37,7 @@ interface ImportDataModalProps {
   failureLabelFn?: (fail: Record<string, unknown>) => string;
   extraContent?: React.ReactNode;
   autoCloseDelay?: number;
+  onDownloadTemplate?: () => void;
 }
 
 const ImportDataModal: React.FC<ImportDataModalProps> = ({
@@ -51,6 +53,7 @@ const ImportDataModal: React.FC<ImportDataModalProps> = ({
   failureLabelFn,
   extraContent,
   autoCloseDelay,
+  onDownloadTemplate,
 }) => {
   const [file, setFile] = useState<File | null>(null);
   const [loading, setLoading] = useState(false);
@@ -154,11 +157,25 @@ const ImportDataModal: React.FC<ImportDataModalProps> = ({
         {/* Instructions */}
         {!result && !success && (
           <div className="bg-primary/5 border border-primary/10 rounded-xl p-4 shadow-sm">
-            <div className="flex items-center gap-2 mb-2">
-              <Info className="h-3.5 w-3.5 text-primary" />
-              <h3 className="text-[10px] font-bold uppercase tracking-wider text-primary">
-                Panduan Import:
-              </h3>
+            <div className="flex items-center justify-between mb-2">
+              <div className="flex items-center gap-2">
+                <Info className="h-3.5 w-3.5 text-primary" />
+                <h3 className="text-[10px] font-bold uppercase tracking-wider text-primary">
+                  Panduan Import:
+                </h3>
+              </div>
+              {onDownloadTemplate && (
+                <Button
+                  type="button"
+                  variant="outline"
+                  size="sm"
+                  onClick={onDownloadTemplate}
+                  className="h-7 px-3 text-[9px] font-bold uppercase tracking-wider gap-1.5 border-primary/30 text-primary hover:bg-primary/10"
+                >
+                  <Download className="h-3 w-3" />
+                  Download Template
+                </Button>
+              )}
             </div>
             {instructions}
           </div>

@@ -1,5 +1,6 @@
 import React from "react";
 import ImportDataModal, { ImportResult } from "@/components/ui/ImportDataModal";
+import { downloadCsvTemplate } from "@/lib/downloadTemplate";
 
 interface ImportJadwalMasterModalProps {
   isOpen: boolean;
@@ -62,6 +63,14 @@ const ImportJadwalMasterModal: React.FC<ImportJadwalMasterModalProps> = ({
       title="Import Master Jadwal"
       uploadLabel="Upload Master Jadwal"
       accept=".xlsx, .xls"
+      onDownloadTemplate={() => downloadCsvTemplate(
+        'template_jadwal_master_RuteMingguan.csv',
+        ['nama_per_minggu', '1', '2', '3', '4', '5', '6', '7'],
+        [
+          ['Template Minggu A', 'Rute Senin', 'Rute Selasa', 'Rute Rabu', 'Rute Kamis', 'Rute Jumat', '', ''],
+          ['Template Minggu B', 'Rute Barat', '', 'Rute Timur', '', 'Rute Selatan', '', ''],
+        ]
+      )}
       failureLabelFn={(fail) => {
         const f = fail as { sheet?: string; name?: string };
         return `[${f.sheet}] ${f.name}`;

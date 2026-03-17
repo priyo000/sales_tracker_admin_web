@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from "react";
 import ImportDataModal, { ImportResult } from "@/components/ui/ImportDataModal";
+import { downloadCsvTemplate } from "@/lib/downloadTemplate";
 import {
   Select,
   SelectContent,
@@ -71,7 +72,16 @@ const ImportRouteModal: React.FC<ImportRouteModalProps> = ({
       onImport={handleImport}
       title="Import Database Rute"
       uploadLabel="Upload Data Rute"
-      accept=".xlsx, .xls"
+      accept=".xlsx, .xls, .csv"
+      onDownloadTemplate={() => downloadCsvTemplate(
+        'template_rute.csv',
+        ['nama_rute', 'kode_pelanggan', 'deskripsi'],
+        [
+          ['Rute Senin Barat', 'KP-001', 'Rute area barat'],
+          ['Rute Senin Barat', 'KP-002', ''],
+          ['Rute Selasa Timur', 'KP-003', 'Rute area timur'],
+        ]
+      )}
       failureLabelFn={(fail) =>
         (fail as { nama_rute?: string }).nama_rute || ""
       }

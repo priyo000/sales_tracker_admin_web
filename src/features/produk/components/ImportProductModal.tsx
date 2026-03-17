@@ -1,5 +1,6 @@
 import React from "react";
 import ImportDataModal, { ImportResult } from "@/components/ui/ImportDataModal";
+import { downloadCsvTemplate } from "@/lib/downloadTemplate";
 
 interface ImportProductModalProps {
   isOpen: boolean;
@@ -29,6 +30,14 @@ const ImportProductModal: React.FC<ImportProductModalProps> = ({
     onSuccess={onSuccess}
     title="Import Database Produk"
     uploadLabel="Upload Database Produk"
+    onDownloadTemplate={() => downloadCsvTemplate(
+      'template_produk.csv',
+      ['kode_barang', 'nama_produk', 'sku', 'kategori', 'harga', 'stok_awal', 'satuan'],
+      [
+        ['PRD-001', 'Mie Instan Goreng', 'SKU-001', 'Makanan', '3500', '100', 'pcs'],
+        ['PRD-002', 'Air Mineral 600ml', 'SKU-002', 'Minuman', '3000', '200', 'pcs'],
+      ]
+    )}
     failureLabelFn={(fail) => {
       const f = fail as { nama_produk?: string; nama_toko?: string };
       return f.nama_produk || f.nama_toko || "";
