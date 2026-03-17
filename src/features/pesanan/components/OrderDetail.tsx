@@ -41,10 +41,10 @@ const getStatusColor = (s: string) => {
 
 const JENIS_LABEL: Record<string, string> = { aturan_harga: "Harga Spesial", grosir: "Grosir", hadiah: "Hadiah", hadiah_nota: "Hadiah Nota" };
 const JENIS_COLOR: Record<string, string> = {
-  aturan_harga: "bg-blue-50 text-blue-700 border-blue-200",
-  grosir: "bg-purple-50 text-purple-700 border-purple-200",
-  hadiah: "bg-orange-50 text-orange-700 border-orange-200",
-  hadiah_nota: "bg-teal-50 text-teal-700 border-teal-200",
+  aturan_harga: "bg-blue-50 dark:bg-blue-950/30 text-blue-700 dark:text-blue-400 border-blue-200 dark:border-blue-800/50",
+  grosir: "bg-purple-50 dark:bg-purple-950/30 text-purple-700 dark:text-purple-400 border-purple-200 dark:border-purple-800/50",
+  hadiah: "bg-orange-50 dark:bg-orange-950/30 text-orange-700 dark:text-orange-400 border-orange-200 dark:border-orange-800/50",
+  hadiah_nota: "bg-teal-50 dark:bg-teal-950/30 text-teal-700 dark:text-teal-400 border-teal-200 dark:border-teal-800/50",
 };
 
 const rp = (n: number) => `Rp ${n.toLocaleString("id-ID")}`;
@@ -272,7 +272,7 @@ const OrderDetail: React.FC<OrderDetailProps> = ({ pesanan, onStatusChange, onUp
             )}
           </h4>
           {isEditing && (
-            <Button size="sm" onClick={() => setShowProductSearch(true)} className="h-8 text-[10px] font-bold uppercase tracking-wider bg-indigo-600 hover:bg-indigo-700 text-white gap-1.5 rounded-lg">
+            <Button size="sm" onClick={() => setShowProductSearch(true)} className="h-8 text-[10px] font-bold uppercase tracking-wider gap-1.5 rounded-lg">
               <Plus className="h-3 w-3" /> Tambah Produk
             </Button>
           )}
@@ -281,12 +281,12 @@ const OrderDetail: React.FC<OrderDetailProps> = ({ pesanan, onStatusChange, onUp
         <div className="p-4 space-y-3">
 
         {isEditing && showProductSearch && (
-          <Card className="bg-indigo-50/50 dark:bg-indigo-950/30 border border-indigo-100 dark:border-indigo-800/50 p-3 rounded-xl">
+          <Card className="bg-muted/30 border border-border p-3 rounded-xl">
             <div className="flex items-center gap-2 mb-2">
               <div className="relative flex-1">
-                <Search className="absolute left-2.5 top-1/2 -translate-y-1/2 h-3.5 w-3.5 text-indigo-400" />
+                <Search className="absolute left-2.5 top-1/2 -translate-y-1/2 h-3.5 w-3.5 text-muted-foreground" />
                 <input autoFocus type="text" placeholder="Ketik nama produk..."
-                  className="w-full pl-8 pr-4 py-2 text-xs bg-white dark:bg-slate-900 dark:border-indigo-700 dark:text-foreground border border-indigo-200 rounded-lg focus:ring-1 focus:ring-indigo-500 outline-none font-medium"
+                  className="w-full pl-8 pr-4 py-2 text-xs bg-background text-foreground border border-border rounded-lg focus:ring-1 focus:ring-primary outline-none font-medium"
                   value={productSearch} onChange={e => setProductSearch(e.target.value)} />
               </div>
               <button onClick={() => setShowProductSearch(false)} className="text-muted-foreground hover:text-foreground"><X className="h-4 w-4" /></button>
@@ -294,7 +294,7 @@ const OrderDetail: React.FC<OrderDetailProps> = ({ pesanan, onStatusChange, onUp
             <ScrollArea className="h-36">
               <div className="space-y-1">
                 {produks.map(p => (
-                  <button key={p.id} onClick={() => handleAddProduct(p)} className="w-full text-left px-3 py-2 text-xs hover:bg-white dark:hover:bg-slate-800 hover:shadow-sm flex justify-between rounded-lg transition-all">
+                  <button key={p.id} onClick={() => handleAddProduct(p)} className="w-full text-left px-3 py-2 text-xs hover:bg-background hover:shadow-sm flex justify-between rounded-lg transition-all">
                     <span className="font-semibold">{p.nama_produk}</span>
                     <span className="font-bold text-indigo-600">{rp(Number(p.harga_jual))}</span>
                   </button>
@@ -310,22 +310,22 @@ const OrderDetail: React.FC<OrderDetailProps> = ({ pesanan, onStatusChange, onUp
           if (!selItem) return null;
           const opts = getPromoOptions(selItem.id_produk, selItem.jumlah, selItem.harga_satuan);
           return (
-            <Card className="bg-green-50/50 dark:bg-green-950/20 border border-green-100 dark:border-green-800/50 p-3 rounded-xl">
+            <Card className="bg-muted/20 border border-border p-3 rounded-xl">
               <div className="flex justify-between items-center mb-3">
-                <p className="text-[10px] font-bold text-green-700 uppercase tracking-wider">Pilih Promo &mdash; {selItem.produk?.nama_produk}</p>
+                <p className="text-[10px] font-bold text-primary uppercase tracking-wider">Pilih Promo &mdash; {selItem.produk?.nama_produk}</p>
                 <button onClick={() => setPromoSelectorFor(null)} className="text-muted-foreground hover:text-foreground"><X className="h-4 w-4" /></button>
               </div>
               {promosLoading ? <p className="text-xs text-muted-foreground text-center py-3">Memuat promo...</p> : (
                 <div className="space-y-1.5">
                   <button onClick={() => handleSelectPromo(promoSelectorFor, null)}
-                    className={`w-full text-left px-3 py-2 text-xs rounded-lg border transition-all ${!selItem._promo ? 'bg-white dark:bg-slate-900 border-primary text-primary font-bold' : 'bg-white dark:bg-slate-900 border-border hover:border-primary/50'}`}>
+                    className={`w-full text-left px-3 py-2 text-xs rounded-lg border transition-all ${!selItem._promo ? 'bg-background border-primary text-primary font-bold' : 'bg-background border-border hover:border-primary/50'}`}>
                     Tanpa Promo
                   </button>
                   {opts.length === 0 && <p className="text-xs text-muted-foreground text-center py-2">Tidak ada promo untuk produk ini</p>}
                   {opts.map(opt => (
                     <button key={opt.id_campaign}
                       onClick={() => opt.diskon_amount > 0 && handleSelectPromo(promoSelectorFor, opt)}
-                      className={`w-full text-left px-3 py-2 text-xs rounded-lg border transition-all ${selItem._promo?.id_campaign === opt.id_campaign ? 'bg-white dark:bg-slate-900 border-primary font-bold' : opt.diskon_amount === 0 ? 'bg-muted/30 border-border text-muted-foreground cursor-not-allowed' : 'bg-white dark:bg-slate-900 border-border hover:border-green-400'}`}>
+                      className={`w-full text-left px-3 py-2 text-xs rounded-lg border transition-all ${selItem._promo?.id_campaign === opt.id_campaign ? 'bg-background border-primary font-bold' : opt.diskon_amount === 0 ? 'bg-muted/30 border-border text-muted-foreground cursor-not-allowed' : 'bg-background border-border hover:border-primary/50'}`}>
                       <div className="flex justify-between items-center">
                         <span className="font-semibold">{opt.nama_promo}</span>
                         <span className={`text-[9px] font-bold px-1.5 py-0.5 rounded border ${JENIS_COLOR[opt.jenis]}`}>{JENIS_LABEL[opt.jenis]}</span>
@@ -339,7 +339,7 @@ const OrderDetail: React.FC<OrderDetailProps> = ({ pesanan, onStatusChange, onUp
           );
         })()}
 
-        <div className="rounded-xl border border-border/60 shadow-sm overflow-hidden bg-white dark:bg-slate-900/50">
+        <div className="rounded-xl border border-border/60 shadow-sm overflow-hidden bg-card">
           <Table>
             <TableHeader className="bg-muted/40">
               <TableRow className="hover:bg-transparent">
@@ -381,7 +381,7 @@ const OrderDetail: React.FC<OrderDetailProps> = ({ pesanan, onStatusChange, onUp
                     </TableCell>
                     <TableCell className="px-4 py-2.5 text-right">
                       {isEditing ? (
-                        <input type="number" className="w-24 text-right px-2 py-1 text-[11px] border border-border rounded-md focus:ring-1 focus:ring-primary outline-none font-bold bg-white dark:bg-slate-900 dark:text-foreground"
+                        <input type="number" className="w-24 text-right px-2 py-1 text-[11px] border border-border rounded-md focus:ring-1 focus:ring-primary outline-none font-bold bg-background text-foreground"
                           value={Number(item.harga_satuan)} onChange={e => handleUpdatePrice(item.id_produk, Number(e.target.value))} />
                       ) : <span className="text-xs font-semibold text-foreground/70">{rp(Number(item.harga_satuan))}</span>}
                     </TableCell>
@@ -389,9 +389,9 @@ const OrderDetail: React.FC<OrderDetailProps> = ({ pesanan, onStatusChange, onUp
                     <TableCell className="px-4 py-2.5 text-center bg-primary/5">
                       {isEditing ? (
                         <div className="flex items-center justify-center gap-1.5">
-                          <button onClick={() => handleUpdateQty(item.id_produk, item.jumlah - 1)} className="h-6 w-6 rounded-md border border-primary/20 bg-white flex items-center justify-center hover:bg-primary hover:text-white transition-colors text-primary font-bold">-</button>
+                          <button onClick={() => handleUpdateQty(item.id_produk, item.jumlah - 1)} className="h-6 w-6 rounded-md border border-primary/20 bg-background flex items-center justify-center hover:bg-primary hover:text-white transition-colors text-primary font-bold">-</button>
                           <span className="w-6 text-[11px] font-bold text-primary text-center">{item.jumlah}</span>
-                          <button onClick={() => handleUpdateQty(item.id_produk, item.jumlah + 1)} className="h-6 w-6 rounded-md border border-primary/20 bg-white flex items-center justify-center hover:bg-primary hover:text-white transition-colors text-primary font-bold">+</button>
+                          <button onClick={() => handleUpdateQty(item.id_produk, item.jumlah + 1)} className="h-6 w-6 rounded-md border border-primary/20 bg-background flex items-center justify-center hover:bg-primary hover:text-white transition-colors text-primary font-bold">+</button>
                         </div>
                       ) : <span className="text-[11px] font-bold text-primary">{item.jumlah}</span>}
                     </TableCell>
@@ -434,7 +434,7 @@ const OrderDetail: React.FC<OrderDetailProps> = ({ pesanan, onStatusChange, onUp
                   </TableRow>
                 );
               })}
-              <TableRow className="bg-slate-50/80 hover:bg-slate-50/80">
+              <TableRow className="bg-muted/30 hover:bg-muted/30">
                 {isEditing ? (
                   <>
                     <TableCell colSpan={3} className="text-right px-4 py-2 text-[10px] font-bold uppercase text-muted-foreground tracking-widest">Subtotal</TableCell>
@@ -449,19 +449,19 @@ const OrderDetail: React.FC<OrderDetailProps> = ({ pesanan, onStatusChange, onUp
                 {isEditing && <TableCell />}
               </TableRow>
               {isEditing && diskonEdit > 0 && (
-                <TableRow className="bg-green-50/50 hover:bg-green-50/50">
-                  <TableCell colSpan={3} className="text-right px-4 py-2 text-[10px] font-bold uppercase text-green-700 tracking-widest">Total Diskon Promo</TableCell>
+                <TableRow className="bg-green-50/50 dark:bg-green-950/20 hover:bg-green-50/60 dark:hover:bg-green-950/30">
+                  <TableCell colSpan={3} className="text-right px-4 py-2 text-[10px] font-bold uppercase text-green-700 dark:text-green-400 tracking-widest">Total Diskon Promo</TableCell>
                   <TableCell colSpan={2} className="text-right px-4 py-2 text-xs font-bold text-green-600">- {rp(diskonEdit)}</TableCell>
                   <TableCell />
                 </TableRow>
               )}
               {!isEditing && Number(pesanan.diskon_total) > 0 && (
-                <TableRow className="bg-green-50/50 hover:bg-green-50/50">
-                  <TableCell colSpan={hasBackorder ? 4 : 3} className="text-right px-4 py-2 text-[10px] font-bold uppercase text-green-700 tracking-widest">Total Diskon</TableCell>
+                <TableRow className="bg-green-50/50 dark:bg-green-950/20 hover:bg-green-50/60 dark:hover:bg-green-950/30">
+                  <TableCell colSpan={hasBackorder ? 4 : 3} className="text-right px-4 py-2 text-[10px] font-bold uppercase text-green-700 dark:text-green-400 tracking-widest">Total Diskon</TableCell>
                   <TableCell className="text-right px-4 py-2 text-xs font-bold text-green-600">- {rp(Number(pesanan.diskon_total))}</TableCell>
                 </TableRow>
               )}
-              <TableRow className="bg-slate-50/80 hover:bg-slate-50/80">
+              <TableRow className="bg-muted/30 hover:bg-muted/30">
                 {isEditing ? (
                   <>
                     <TableCell colSpan={3} className="text-right px-4 py-3 text-[10px] font-bold uppercase text-muted-foreground tracking-widest">Grand Total</TableCell>
@@ -488,7 +488,7 @@ const OrderDetail: React.FC<OrderDetailProps> = ({ pesanan, onStatusChange, onUp
       <div className="space-y-1.5 px-1">
         <label className="text-[10px] font-bold text-muted-foreground uppercase tracking-widest">Catatan Pesanan</label>
         {isEditing ? (
-          <textarea className="w-full text-xs font-semibold bg-white dark:bg-slate-900 dark:text-foreground border border-border rounded-xl p-3 h-16 focus:ring-1 focus:ring-primary outline-none shadow-sm"
+          <textarea className="w-full text-xs font-semibold bg-background text-foreground border border-border rounded-xl p-3 h-16 focus:ring-1 focus:ring-primary outline-none shadow-sm"
             value={catatan} onChange={e => setCatatan(e.target.value)} placeholder="Instruksi khusus..." />
         ) : (
           <div className="bg-muted/20 dark:bg-muted/10 p-3 rounded-xl border border-border/50 min-h-10">
