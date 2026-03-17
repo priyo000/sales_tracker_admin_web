@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from "react";
-import { Tag, Plus, Users, Package, Gift, BarChart3, Layers, Calendar } from "lucide-react";
+import { Tag, Plus, Users, Package, Gift, BarChart3, Layers, Calendar, FileUp } from "lucide-react";
 import toast from "react-hot-toast";
 import { Badge } from "@/components/ui/badge";
 import { cn, formatCurrency, formatDate } from "@/lib/utils";
@@ -17,6 +17,7 @@ import { HadiahForm } from "@/features/promo/components/HadiahForm";
 import { ClusterAssignmentModal } from "@/features/promo/components/ClusterAssignmentModal";
 import { PromoCluster, PromoAturanHarga, PromoGrosir, PromoHadiah, PromoCampaign } from "@/features/promo/types";
 import PromoDashboard from "@/features/promo/components/PromoDashboard";
+import ImportPromoModal from "@/features/promo/components/ImportPromoModal";
 
 type PromoTab = "dashboard" | "clusters" | "prices" | "rewards";
 
@@ -69,6 +70,7 @@ const PromoPage: React.FC = () => {
   const [targetDeletePriceRule, setTargetDeletePriceRule] = useState<PromoCampaign | null>(null);
   const [targetDeleteGrosir, setTargetDeleteGrosir] = useState<PromoCampaign | null>(null);
   const [targetDeleteHadiah, setTargetDeleteHadiah] = useState<PromoCampaign | null>(null);
+  const [importPromoType, setImportPromoType] = useState<"cluster" | "aturan_harga" | "grosir" | null>(null);
 
   useEffect(() => {
     fetchClusters();
@@ -139,19 +141,34 @@ const PromoPage: React.FC = () => {
         <div className="flex items-center gap-3">
 
           {activeTab === "clusters" && (
-            <Button onClick={() => handleOpenClusterModal()} className="gap-2 shadow-sm h-9">
-              <Plus className="h-4 w-4" /> Tambah Cluster
-            </Button>
+            <>
+              <Button onClick={() => handleOpenClusterModal()} className="gap-2 shadow-sm h-9">
+                <Plus className="h-4 w-4" /> Tambah Cluster
+              </Button>
+              <Button variant="outline" onClick={() => setImportPromoType("cluster")} className="gap-2 shadow-sm h-9">
+                <FileUp className="h-4 w-4" /> Import Cluster
+              </Button>
+            </>
           )}
           {activeTab === "prices" && (
             priceSubTab === "standard" ? (
-              <Button onClick={() => { setSelectedPriceRule(undefined); setIsPriceModalOpen(true); }} className="gap-2 shadow-sm h-9">
-                <Plus className="h-4 w-4" /> Buat Aturan Harga
-              </Button>
-            ) : (
-                <Button onClick={() => { setSelectedGrosirRule(undefined); setIsGrosirModalOpen(true); }} className="gap-2 shadow-sm h-9 bg-orange-600 hover:bg-orange-700">
-                    <Layers className="h-4 w-4" /> Buat Harga Grosir
+              <>
+                <Button onClick={() => { setSelectedPriceRule(undefined); setIsPriceModalOpen(true); }} className="gap-2 shadow-sm h-9">
+                  <Plus className="h-4 w-4" /> Buat Aturan Harga
                 </Button>
+                <Button variant="outline" onClick={() => setImportPromoType("aturan_harga")} className="gap-2 shadow-sm h-9">
+                  <FileUp className="h-4 w-4" /> Import Harga
+                </Button>
+              </>
+            ) : (
+              <>
+                <Button onClick={() => { setSelectedGrosirRule(undefined); setIsGrosirModalOpen(true); }} className="gap-2 shadow-sm h-9 bg-orange-600 hover:bg-orange-700">
+                  <Layers className="h-4 w-4" /> Buat Harga Grosir
+                </Button>
+                <Button variant="outline" onClick={() => setImportPromoType("grosir")} className="gap-2 shadow-sm h-9">
+                  <FileUp className="h-4 w-4" /> Import Grosir
+                </Button>
+              </>
             )
           )}
           {activeTab === "rewards" && (
@@ -539,6 +556,18 @@ const PromoPage: React.FC = () => {
         </div>
       </Modal>
 
+      {importPromoType && (
+        <ImportPromoModal
+          isOpen={!!importPromoType}
+          onClose={() => setImportPromoType(null)}
+          importType={importPromoType}
+          onSuccess={() => {
+            if (importPromoType === "cluster") fetchClusters();
+            else if (importPromoType === "aturan_harga") fetchPriceRules(true);
+            else if (importPromoType === "grosir") fetchGrosirRules(true);
+          }}
+        />
+      )}
     </div>
   );
 };
