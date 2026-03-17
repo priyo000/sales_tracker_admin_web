@@ -3,7 +3,7 @@ import { createContext } from "react";
 export interface User {
   id: number;
   username: string;
-  peran: "super_admin" | "admin_perusahaan" | "admin_divisi" | "sales";
+  peran: "super_admin" | "admin_perusahaan" | "admin_divisi" | "sales" | "manager" | "gudang";
   id_perusahaan: number;
   perusahaan?: {
     id: number;

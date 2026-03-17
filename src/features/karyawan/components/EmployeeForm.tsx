@@ -31,6 +31,7 @@ import { FormField } from "@/components/ui/FormField";
 interface EmployeeFormProps {
   initialData?: Karyawan | null;
   divisiOptions: { id: number; nama_divisi: string }[];
+  lockDivisi?: boolean;
   onSubmit: (data: KaryawanFormData) => void;
   onCancel: () => void;
   loading?: boolean;
@@ -39,6 +40,7 @@ interface EmployeeFormProps {
 const EmployeeForm: React.FC<EmployeeFormProps> = ({
   initialData,
   divisiOptions,
+  lockDivisi = false,
   onSubmit,
   onCancel,
   loading,
@@ -116,8 +118,9 @@ const EmployeeForm: React.FC<EmployeeFormProps> = ({
           <FormField label="Divisi Kerja" icon={Building2} required>
             <Select
               value={formData.id_divisi}
-              onValueChange={(val) => handleChange("id_divisi", val)}
+              onValueChange={(val) => !lockDivisi && handleChange("id_divisi", val)}
               required
+              disabled={lockDivisi}
             >
               <SelectTrigger className="h-9 bg-card border-border shadow-sm font-semibold rounded-lg">
                 <SelectValue placeholder="Pilih Divisi" />

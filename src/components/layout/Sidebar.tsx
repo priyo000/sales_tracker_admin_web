@@ -47,6 +47,11 @@ const Sidebar = () => {
 
   const toggleSidebar = () => setIsCollapsed(!isCollapsed);
 
+  const isSuperAdmin = user?.peran === 'super_admin';
+  const isAdminPerusahaan = user?.peran === 'admin_perusahaan';
+  const isAdminDivisi = user?.peran === 'admin_divisi';
+  const isWebAdmin = isSuperAdmin || isAdminPerusahaan || isAdminDivisi;
+
   const navGroups: NavGroup[] = [
     {
       label: "Utama",
@@ -76,15 +81,20 @@ const Sidebar = () => {
     {
       label: "Manajemen",
       items: [
-        { icon: Users, label: "Karyawan", to: "/karyawan" },
-        { icon: LayoutGrid, label: "Divisi", to: "/divisi" },
-        { icon: UserCog, label: "Pengguna", to: "/users" },
-        ...(user?.peran === "super_admin"
-          ? [
-              { icon: Building2, label: "Perusahaan", to: "/perusahaan" },
-              { icon: Smartphone, label: "Update App", to: "/app-update" },
-            ]
-          : []),
+        // Karyawan & Divisi: semua web admin bisa akses
+        ...(isWebAdmin ? [
+          { icon: Users, label: "Karyawan", to: "/karyawan" },
+          { icon: LayoutGrid, label: "Divisi", to: "/divisi" },
+        ] : []),
+        // Users: semua web admin bisa akses (data di-scope by backend)
+        ...(isWebAdmin ? [
+          { icon: UserCog, label: "Pengguna", to: "/users" },
+        ] : []),
+        // Perusahaan & App Update: hanya super_admin
+        ...(isSuperAdmin ? [
+          { icon: Building2, label: "Perusahaan", to: "/perusahaan" },
+          { icon: Smartphone, label: "Update App", to: "/app-update" },
+        ] : []),
       ],
     },
   ].filter((g) => g.items.length > 0);

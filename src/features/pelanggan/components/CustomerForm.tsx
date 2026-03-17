@@ -54,12 +54,12 @@ const CustomerForm: React.FC<CustomerFormProps> = ({
   const [formData, setFormData] = useState<PelangganFormData>({
     nama_toko: initialData?.nama_toko || "",
     nama_pemilik: initialData?.nama_pemilik || "",
-    id_divisi: initialData?.id_divisi || 0,
+    id_divisi: initialData?.id_divisi || user?.karyawan?.id_divisi || 0,
     no_hp_pribadi: initialData?.no_hp_pribadi || "",
     alamat_usaha: initialData?.alamat_usaha || "",
     latitude: initialData?.latitude || -7.4244,
     longitude: initialData?.longitude || 109.2302,
-    cara_pembayaran: initialData?.cara_pembayaran || "Cash",
+    cara_pembayaran: initialData?.cara_pembayaran || "Tunai",
     sistem_pembayaran: initialData?.sistem_pembayaran || "Cash",
     limit_kredit_awal: initialData?.limit_kredit_awal || 0,
     top_hari: initialData?.top_hari || 0,
@@ -74,6 +74,7 @@ const CustomerForm: React.FC<CustomerFormProps> = ({
     kota_usaha: initialData?.kota_usaha || "",
     kecamatan_usaha: initialData?.kecamatan_usaha || "",
     klasifikasi_outlet: initialData?.klasifikasi_outlet || "",
+    kode_pelanggan: initialData?.kode_pelanggan || "",
   });
 
   const [files, setFiles] = useState<{
@@ -216,6 +217,7 @@ const CustomerForm: React.FC<CustomerFormProps> = ({
               onClearFile={clearFile}
               filterOptions={filterOptions}
               onSalesChange={handleSalesChange}
+              isEdit={isEdit}
             />
           </TabsContent>
         </div>

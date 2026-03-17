@@ -23,23 +23,47 @@ import {
 interface UserFormProps {
   initialData?: User | null;
   availableEmployees: Karyawan[];
+  currentUserRole?: string;
   onSubmit: (data: UserFormData) => void;
   onCancel: () => void;
   loading?: boolean;
 }
 
+// Roles yang bisa di-assign oleh masing-masing role admin
+const ASSIGNABLE_ROLES: Record<string, { value: string; label: string }[]> = {
+  super_admin: [
+    { value: 'admin_perusahaan', label: 'Admin Perusahaan' },
+    { value: 'admin_divisi', label: 'Admin Divisi' },
+    { value: 'sales', label: 'Sales (App)' },
+  ],
+  admin_perusahaan: [
+    { value: 'admin_divisi', label: 'Admin Divisi' },
+    { value: 'sales', label: 'Sales (App)' },
+  ],
+  admin_divisi: [
+    { value: 'sales', label: 'Sales (App)' },
+  ],
+};
+
 const UserForm: React.FC<UserFormProps> = ({
   initialData,
   availableEmployees,
+  currentUserRole,
   onSubmit,
   onCancel,
   loading,
 }) => {
+  const roleOptions = ASSIGNABLE_ROLES[currentUserRole ?? ''] ?? [
+    { value: 'sales', label: 'Sales (App)' },
+  ];
+
+  const defaultRole = (roleOptions[0]?.value ?? 'sales') as UserFormData['peran'];
+
   const [formData, setFormData] = useState<UserFormData>({
     id_karyawan: initialData?.id_karyawan || 0,
     username: initialData?.username || "",
     password: "",
-    peran: initialData?.peran || "sales",
+    peran: initialData?.peran || defaultRole,
   });
 
   const isEdit = !!initialData;
@@ -147,7 +171,7 @@ const UserForm: React.FC<UserFormProps> = ({
                 onValueChange={(val) =>
                   setFormData((prev) => ({
                     ...prev,
-                    peran: val as "sales" | "admin_perusahaan" | "admin_divisi" | "manager",
+                    peran: val as UserFormData['peran'],
                   }))
                 }
                 required
@@ -159,10 +183,11 @@ const UserForm: React.FC<UserFormProps> = ({
                   <SelectValue placeholder="Role" />
                 </SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="sales">Sales (App)</SelectItem>
-                  <SelectItem value="admin_perusahaan">Admin Co</SelectItem>
-                  <SelectItem value="admin_divisi">Admin Div</SelectItem>
-                  <SelectItem value="manager">Manager</SelectItem>
+                  {roleOptions.map((r) => (
+                    <SelectItem key={r.value} value={r.value}>
+                      {r.label}
+                    </SelectItem>
+                  ))}
                 </SelectContent>
               </Select>
             </FormField>

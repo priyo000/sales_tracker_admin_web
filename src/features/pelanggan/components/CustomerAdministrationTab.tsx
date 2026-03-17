@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useState } from "react";
 import {
   X,
   User,
@@ -9,6 +9,9 @@ import {
   Clock,
   Landmark,
   Image as LucideImage,
+  Lock,
+  Unlock,
+  Hash,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -43,6 +46,7 @@ interface CustomerAdministrationTabProps {
   onClearFile: (type: "foto_toko" | "foto_ktp") => void;
   filterOptions: FilterOption[];
   onSalesChange: (val: string) => void;
+  isEdit?: boolean;
 }
 
 export const CustomerAdministrationTab: React.FC<
@@ -55,7 +59,11 @@ export const CustomerAdministrationTab: React.FC<
   onClearFile,
   filterOptions,
   onSalesChange,
-}) => (
+  isEdit = false,
+}) => {
+  const [isKodeLocked, setIsKodeLocked] = useState(isEdit);
+
+  return (
   <div className="grid grid-cols-1 xl:grid-cols-2 gap-10">
     <div className="space-y-10">
       {/* Payment Settings Card */}
@@ -77,7 +85,7 @@ export const CustomerAdministrationTab: React.FC<
                   <SelectValue placeholder="Pilih Cara" />
                 </SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="Cash">Cash / Tunai</SelectItem>
+                  <SelectItem value="Tunai">Cash / Tunai</SelectItem>
                   <SelectItem value="Transfer">Transfer Bank</SelectItem>
                   <SelectItem value="Giro">Giro / Cek</SelectItem>
                 </SelectContent>
@@ -203,7 +211,49 @@ export const CustomerAdministrationTab: React.FC<
             description="Tentukan sales person utama"
           />
 
-          <div className="pt-1">
+          <div className="pt-1 space-y-4">
+            <FormField label="Kode Pelanggan" icon={Hash}>
+              <div className="flex gap-2">
+                <Input
+                  placeholder={isEdit ? "(Auto-generate)" : "Isi manual atau kosongkan untuk auto-generate"}
+                  value={formData.kode_pelanggan || ""}
+                  onChange={(e) => onChange("kode_pelanggan", e.target.value)}
+                  disabled={isKodeLocked}
+                  className={`h-9 flex-1 text-sm font-mono font-semibold shadow-sm transition-colors ${
+                    isKodeLocked
+                      ? "bg-muted/50 border-border/30 text-muted-foreground cursor-not-allowed"
+                      : "bg-muted/30 border-primary/40 focus-visible:ring-primary"
+                  }`}
+                />
+                {isEdit && (
+                  <Button
+                    type="button"
+                    variant="outline"
+                    size="icon"
+                    onClick={() => setIsKodeLocked((prev) => !prev)}
+                    className={`h-9 w-9 shrink-0 transition-colors ${
+                      isKodeLocked
+                        ? "border-border/50 text-muted-foreground hover:text-foreground"
+                        : "border-primary/40 text-primary bg-primary/5 hover:bg-primary/10"
+                    }`}
+                    title={isKodeLocked ? "Buka kunci untuk edit" : "Kunci kode pelanggan"}
+                  >
+                    {isKodeLocked ? <Lock className="h-4 w-4" /> : <Unlock className="h-4 w-4" />}
+                  </Button>
+                )}
+              </div>
+              {!isEdit && (
+                <p className="text-[10px] text-muted-foreground mt-1">
+                  Kosongkan untuk generate otomatis.
+                </p>
+              )}
+              {isEdit && isKodeLocked && (
+                <p className="text-[10px] text-muted-foreground mt-1">
+                  Klik ikon kunci untuk mengubah kode pelanggan.
+                </p>
+              )}
+            </FormField>
+
             <FormField
               label="Penanggung Jawab (Sales)"
               icon={User}
@@ -316,6 +366,7 @@ export const CustomerAdministrationTab: React.FC<
       </FormField>
     </div>
   </div>
-);
+  );
+};
 
 export default CustomerAdministrationTab;

@@ -7,8 +7,11 @@ import DivisionForm from "../features/divisi/components/DivisionForm";
 import { Modal, ConfirmModal } from "../components/ui/Modal";
 import { Divisi, DivisiFormData } from "../features/divisi/types";
 import { Button } from "@/components/ui/button";
+import { useAuth } from "@/hooks/useAuth";
 
 const DivisiPage: React.FC = () => {
+  const { user: currentUser } = useAuth();
+  const isAdminDivisi = currentUser?.peran === 'admin_divisi';
   const {
     divisis,
     loading,
@@ -115,6 +118,7 @@ const DivisiPage: React.FC = () => {
         loading={loading}
         onEdit={handleEditDivisi}
         onDelete={handleDeleteDivisi}
+        canDelete={!isAdminDivisi}
         onSearchChange={(val) => {
           setSearchTerm(val);
           setPage(1);
@@ -123,9 +127,11 @@ const DivisiPage: React.FC = () => {
         onPageChange={handlePageChange}
         onPerPageChange={handlePerPageChange}
         toolbar={
-          <Button onClick={handleOpenModal} className="gap-2 shadow-md h-9">
-            <Plus className="h-4 w-4" /> Tambah Divisi
-          </Button>
+          !isAdminDivisi ? (
+            <Button onClick={handleOpenModal} className="gap-2 shadow-md h-9">
+              <Plus className="h-4 w-4" /> Tambah Divisi
+            </Button>
+          ) : undefined
         }
       />
 

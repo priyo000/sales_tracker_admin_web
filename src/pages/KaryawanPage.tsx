@@ -9,8 +9,11 @@ import ImportKaryawanModal from "../features/karyawan/components/ImportEmployeeM
 import { Modal, ConfirmModal } from "../components/ui/Modal";
 import { Karyawan, KaryawanFormData } from "../features/karyawan/types";
 import { Button } from "@/components/ui/button";
+import { useAuth } from "@/hooks/useAuth";
 
 const KaryawanPage: React.FC = () => {
+  const { user: currentUser } = useAuth();
+  const isAdminDivisi = currentUser?.peran === 'admin_divisi';
   const {
     karyawans,
     loading,
@@ -178,6 +181,7 @@ const KaryawanPage: React.FC = () => {
         <EmployeeForm
           initialData={editingEmployee || undefined}
           divisiOptions={divisis}
+          lockDivisi={isAdminDivisi}
           onSubmit={handleCreateOrUpdateEmployee}
           onCancel={() => setIsModalOpen(false)}
           loading={loading}

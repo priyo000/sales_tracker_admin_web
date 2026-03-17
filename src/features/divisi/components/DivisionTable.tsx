@@ -28,6 +28,7 @@ const DivisionTable: React.FC<DivisionTableProps> = ({
   loading,
   onDelete,
   onEdit,
+  canDelete = true,
   toolbar,
   onSearchChange,
   pagination,
@@ -108,14 +109,16 @@ const DivisionTable: React.FC<DivisionTableProps> = ({
           >
             <Edit className="h-4 w-4" />
           </Button>
-          <Button
-            variant="ghost"
-            size="icon"
-            className="h-8 w-8 text-destructive hover:text-destructive hover:bg-destructive/10"
-            onClick={() => onDelete(row.id)}
-          >
-            <Trash className="h-4 w-4" />
-          </Button>
+          {canDelete && (
+            <Button
+              variant="ghost"
+              size="icon"
+              className="h-8 w-8 text-destructive hover:text-destructive hover:bg-destructive/10"
+              onClick={() => onDelete(row.id)}
+            >
+              <Trash className="h-4 w-4" />
+            </Button>
+          )}
         </div>
       ),
     },

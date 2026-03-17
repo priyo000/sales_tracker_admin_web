@@ -37,6 +37,8 @@ const ROLE_VARIANT: Record<
   admin_perusahaan: "success",
   admin_divisi: "info",
   sales: "warning",
+  manager: "secondary",
+  gudang: "secondary",
 };
 
 const UserTable: React.FC<UserTableProps> = ({

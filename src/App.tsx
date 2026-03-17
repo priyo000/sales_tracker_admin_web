@@ -78,6 +78,7 @@ const SuperAdminRoute = ({ children }: { children: React.ReactNode }) => {
   return children;
 };
 
+
 function App() {
   return (
     <ThemeProvider>

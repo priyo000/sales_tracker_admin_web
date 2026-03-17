@@ -1,6 +1,6 @@
 import { Karyawan } from '../karyawan/types';
 
-export type UserRole = 'admin_perusahaan' | 'admin_divisi' | 'sales' | 'manager';
+export type UserRole = 'super_admin' | 'admin_perusahaan' | 'admin_divisi' | 'sales';
 
 export interface User {
     id: number;

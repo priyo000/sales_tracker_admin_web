@@ -179,6 +179,7 @@ const UserPage: React.FC = () => {
         <UserForm
           initialData={editingUser}
           availableEmployees={availableEmployees}
+          currentUserRole={currentUser?.peran}
           onSubmit={handleCreateOrUpdateUser}
           onCancel={() => setIsModalOpen(false)}
           loading={loading}
