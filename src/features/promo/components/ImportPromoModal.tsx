@@ -32,10 +32,17 @@ const IMPORT_CONFIG: Record<
   cluster: {
     title: "Import Promo Cluster",
     endpoint: "/promo-cluster/import",
-    columns: ["nama_cluster (wajib)", "deskripsi", "is_aktif (true/false)"],
+    columns: [
+      "nama_cluster (wajib)",
+      "kode_pelanggan (wajib - satu baris per pelanggan)",
+      "deskripsi (opsional, cukup isi di baris pertama cluster)",
+      "is_aktif (opsional - true/false, default: true)",
+    ],
     notes: [
-      "Jika nama_cluster sudah ada, data akan diperbarui.",
-      "is_aktif diisi true atau false (default: true).",
+      "Satu baris = satu pelanggan. Untuk cluster dengan banyak anggota, tulis nama_cluster yang sama di setiap baris.",
+      "Jika nama_cluster sudah ada, cluster diperbarui dan pelanggan ditambahkan.",
+      "Pelanggan yang sudah ada di cluster tidak akan diduplikasi.",
+      "kode_pelanggan dicocokkan ke kode pelanggan yang sudah terdaftar.",
     ],
   },
   aturan_harga: {
