@@ -78,7 +78,8 @@ const RouteForm: React.FC<RouteFormProps> = ({
   const [namaRute, setNamaRute] = useState(initialData?.nama_rute || "");
   const [deskripsi, setDeskripsi] = useState(initialData?.deskripsi || "");
   const [idDivisi, setIdDivisi] = useState<string>(
-    initialData?.id_divisi?.toString() || "",
+    initialData?.id_divisi?.toString() ||
+    (user?.peran === 'admin_divisi' ? user.karyawan?.id_divisi?.toString() ?? "" : "")
   );
 
   // Fetch sales filter options and divisis

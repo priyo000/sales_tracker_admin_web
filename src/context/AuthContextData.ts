@@ -5,6 +5,7 @@ export interface User {
   username: string;
   peran: "super_admin" | "admin_perusahaan" | "admin_divisi" | "sales" | "manager" | "gudang";
   id_perusahaan: number;
+  id_karyawan?: number;
   perusahaan?: {
     id: number;
     nama_perusahaan: string;
@@ -13,6 +14,10 @@ export interface User {
     id: number;
     id_divisi: number;
     nama_lengkap: string;
+    divisi?: {
+      id: number;
+      nama_divisi: string;
+    };
   };
 }
 
