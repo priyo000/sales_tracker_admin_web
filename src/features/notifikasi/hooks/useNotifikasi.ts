@@ -46,7 +46,7 @@ export const useNotifikasi = () => {
     try {
       await api.post("/admin/notifikasi", data);
       toast.success("Notifikasi berhasil dikirim");
-      fetchNotifikasies();
+      await fetchNotifikasies();
       return true;
     } catch (error: unknown) {
       const axiosError = error as AxiosError<{ message: string }>;
