@@ -1,6 +1,8 @@
 import { Karyawan } from '../karyawan/types';
 
-export type UserRole = 'super_admin' | 'admin_perusahaan' | 'admin_divisi' | 'sales';
+export type UserRole = 'super_admin' | 'admin_perusahaan' | 'admin_divisi' | 'spv' | 'sales';
+
+export type ViewScope = 'SELF' | 'DIVISION' | 'COMPANY';
 
 export interface User {
     id: number;
@@ -8,6 +10,7 @@ export interface User {
     id_perusahaan: number;
     username: string;
     peran: UserRole;
+    view_scope?: ViewScope;
     fcm_token?: string;
     created_at: string;
     karyawan?: Karyawan;
@@ -18,4 +21,5 @@ export interface UserFormData {
     username: string;
     password?: string;
     peran: UserRole;
+    view_scope?: ViewScope;
 }

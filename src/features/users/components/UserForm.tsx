@@ -1,5 +1,5 @@
 import React, { useState } from "react";
-import { User, UserFormData } from "../types";
+import { User, UserFormData, ViewScope } from "../types";
 import { Karyawan } from "../../karyawan/types";
 import {
   Key,
@@ -34,13 +34,16 @@ const ASSIGNABLE_ROLES: Record<string, { value: string; label: string }[]> = {
   super_admin: [
     { value: 'admin_perusahaan', label: 'Admin Perusahaan' },
     { value: 'admin_divisi', label: 'Admin Divisi' },
+    { value: 'spv', label: 'Supervisor (App)' },
     { value: 'sales', label: 'Sales (App)' },
   ],
   admin_perusahaan: [
     { value: 'admin_divisi', label: 'Admin Divisi' },
+    { value: 'spv', label: 'Supervisor (App)' },
     { value: 'sales', label: 'Sales (App)' },
   ],
   admin_divisi: [
+    { value: 'spv', label: 'Supervisor (App)' },
     { value: 'sales', label: 'Sales (App)' },
   ],
 };
@@ -64,6 +67,7 @@ const UserForm: React.FC<UserFormProps> = ({
     username: initialData?.username || "",
     password: "",
     peran: initialData?.peran || defaultRole,
+    view_scope: initialData?.view_scope || "DIVISION",
   });
 
   const isEdit = !!initialData;
@@ -193,6 +197,34 @@ const UserForm: React.FC<UserFormProps> = ({
             </FormField>
           </div>
         </div>
+
+        {formData.peran === 'spv' && (
+          <FormField
+            label="Cakupan Data Pelanggan"
+            icon={Shield}
+            required
+            description="Pengaturan berapa jauh data pelanggan yang bisa dilihat oleh Supervisor."
+          >
+            <Select
+              value={formData.view_scope}
+              onValueChange={(val) =>
+                setFormData((prev) => ({
+                  ...prev,
+                  view_scope: val as ViewScope,
+                }))
+              }
+            >
+              <SelectTrigger className="h-9 bg-card border-border shadow-sm font-semibold rounded-lg">
+                <SelectValue />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="SELF">Data Sendiri</SelectItem>
+                <SelectItem value="DIVISION">Satu Divisi</SelectItem>
+                <SelectItem value="COMPANY">Seluruh Perusahaan</SelectItem>
+              </SelectContent>
+            </Select>
+          </FormField>
+        )}
 
         <FormField 
           label="Password Akses Keamanan" 
