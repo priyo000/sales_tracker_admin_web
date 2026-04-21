@@ -86,7 +86,7 @@ export const usePesanan = () => {
   }, []);
 
   const updateStatus = async (id: number, status: string) => {
-    setLoading(true);
+    setDetailLoading(true);
     setError(null);
     try {
       await api.put(`/pesanan/${id}/status`, { status });
@@ -100,12 +100,12 @@ export const usePesanan = () => {
       setError(msg);
       return { success: false, message: msg };
     } finally {
-      setLoading(false);
+      setDetailLoading(false);
     }
   };
 
   const updatePesanan = async (id: number, data: UpdatePesananData) => {
-    setLoading(true);
+    setDetailLoading(true);
     setError(null);
     try {
       const response = await api.put(`/pesanan/${id}`, data);
@@ -117,7 +117,7 @@ export const usePesanan = () => {
       setError(msg);
       return { success: false, message: msg };
     } finally {
-      setLoading(false);
+      setDetailLoading(false);
     }
   };
 
