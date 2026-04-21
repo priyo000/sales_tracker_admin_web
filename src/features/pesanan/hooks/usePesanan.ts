@@ -1,4 +1,4 @@
-import { useState, useCallback } from "react";
+import { useState, useCallback, useRef } from "react";
 import api from "../../../services/api";
 import { Pesanan, UpdatePesananData } from "../types";
 import { AxiosError } from "axios";
@@ -20,6 +20,16 @@ export const usePesanan = () => {
     perPage: 20,
   });
 
+  const lastFetchParams = useRef<{
+    search?: string;
+    status?: string;
+    start_date?: string;
+    end_date?: string;
+    id_divisi?: string;
+    page?: number;
+    per_page?: number;
+  }>(undefined);
+
   const fetchPesanans = useCallback(
     async (params?: {
       search?: string;
@@ -30,6 +40,7 @@ export const usePesanan = () => {
       page?: number;
       per_page?: number;
     }) => {
+      if (params) lastFetchParams.current = params;
       setLoading(true);
       setError(null);
       try {
@@ -79,7 +90,7 @@ export const usePesanan = () => {
     setError(null);
     try {
       await api.put(`/pesanan/${id}/status`, { status });
-      await fetchPesanans(); // Refresh list
+      await fetchPesanans(lastFetchParams.current); // Refresh list
       return { success: true };
     } catch (err) {
       const error = err as AxiosError<{ message: string }>;
@@ -98,7 +109,7 @@ export const usePesanan = () => {
     setError(null);
     try {
       const response = await api.put(`/pesanan/${id}`, data);
-      await fetchPesanans(); // Refresh list
+      await fetchPesanans(lastFetchParams.current); // Refresh list
       return { success: true, data: response.data as Pesanan };
     } catch (err) {
       const error = err as AxiosError<{ message: string }>;
