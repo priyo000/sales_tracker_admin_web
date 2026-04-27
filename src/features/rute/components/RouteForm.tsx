@@ -13,6 +13,7 @@ import {
   FileText,
 } from "lucide-react";
 import api from "../../../services/api";
+import toast from "react-hot-toast";
 import { cn } from "@/lib/utils";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
@@ -25,7 +26,7 @@ import {
 } from "@/components/ui/select";
 import { FormField } from "@/components/ui/FormField";
 
-type RuteFilterStatus = "all" | "unassigned" | "in_this_route";
+type RuteFilterStatus = "all" | "in_this_route";
 
 interface RouteFormProps {
   initialData?: Rute | null;
@@ -68,6 +69,7 @@ const RouteForm: React.FC<RouteFormProps> = ({
     timestamp: number;
   } | null>(null);
   const [ruteFilterStatus, setRuteFilterStatus] = useState<RuteFilterStatus>("all");
+  const isMounted = React.useRef(false);
 
   const [formData, setFormData] = useState<RuteFormData>({
     nama_rute: initialData?.nama_rute || "",
@@ -118,10 +120,14 @@ const RouteForm: React.FC<RouteFormProps> = ({
     fetchPelanggans(params);
   }, [fetchPelanggans, selectedKaryawanId, ruteFilterStatus, initialData?.id]);
 
-  // Auto-load customers on mount and when filter changes
+  // Auto-load customers when filters change
   useEffect(() => {
-    loadCustomers();
-  }, [loadCustomers]);
+    if (isMounted.current) {
+      loadCustomers();
+    } else {
+      isMounted.current = true;
+    }
+  }, [ruteFilterStatus, selectedKaryawanId, loadCustomers]);
 
   // Fetch existing route details if editing
   useEffect(() => {
@@ -158,21 +164,30 @@ const RouteForm: React.FC<RouteFormProps> = ({
 
   const toggleCustomer = useCallback(
     (id: number, fromList: boolean = false) => {
+      const currentIds = formData.customer_ids || [];
+      const isCurrentlySelected = currentIds.includes(id);
+
+      // Show warning if selecting customer that already has another route
+      const customer = pelanggans.find((p) => p.id === id);
+      const existingRutes = customer?.details_rute?.map(dr => dr.rute?.nama_rute).filter(Boolean) || [];
+      const hasExistingRute = existingRutes.length > 0;
+
+      if (!isCurrentlySelected && hasExistingRute) {
+        toast(`${customer?.nama_toko} sudah ada di rute: ${existingRutes.join(', ')}`, { icon: '⚠️' });
+      }
+
       setFormData((prev) => {
-        const currentIds = prev.customer_ids || [];
-        if (currentIds.includes(id)) {
+        const ids = prev.customer_ids || [];
+        if (isCurrentlySelected) {
           return {
             ...prev,
-            customer_ids: currentIds.filter((cid) => cid !== id),
+            customer_ids: ids.filter((cid) => cid !== id),
           };
         } else {
-          return { ...prev, customer_ids: [...currentIds, id] };
+          return { ...prev, customer_ids: [...ids, id] };
         }
       });
 
-      // Always scroll to list item (regardless of click source)
-      const customer = pelanggans.find((p) => p.id === id);
-      
       // Only focus map if clicked from list
       if (fromList && customer?.latitude && customer?.longitude) {
         setFocusLocation({
@@ -204,7 +219,7 @@ const RouteForm: React.FC<RouteFormProps> = ({
         }
       }, 100);
     },
-    [pelanggans],
+    [pelanggans, formData.customer_ids],
   );
 
   const handleSubmit = (e: React.FormEvent) => {
@@ -226,11 +241,7 @@ const RouteForm: React.FC<RouteFormProps> = ({
     );
 
     // Filter by route status
-    if (ruteFilterStatus === "unassigned") {
-      filtered = filtered.filter(
-        (p) => !p.details_rute || p.details_rute.length === 0,
-      );
-    }
+    // Note: "unassigned" filter was removed - pelanggan boleh di banyak rute
 
     return filtered;
   }, [pelanggans, searchQuery, ruteFilterStatus]);
@@ -307,7 +318,6 @@ const RouteForm: React.FC<RouteFormProps> = ({
                 </SelectTrigger>
                 <SelectContent>
                   <SelectItem value="all">Semua</SelectItem>
-                  <SelectItem value="unassigned">Belum Masuk Rute</SelectItem>
                   <SelectItem value="in_this_route">Sudah Di Rute Ini</SelectItem>
                 </SelectContent>
               </Select>

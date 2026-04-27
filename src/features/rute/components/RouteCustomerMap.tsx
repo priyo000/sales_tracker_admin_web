@@ -6,6 +6,7 @@ import { Pelanggan } from '../../pelanggan/types';
 import MarkerClusterGroup from 'react-leaflet-cluster';
 import 'leaflet.markercluster/dist/MarkerCluster.css';
 import 'leaflet.markercluster/dist/MarkerCluster.Default.css';
+import toast from 'react-hot-toast';
 
 interface RouteCustomerMapProps {
     customers: Pelanggan[];
@@ -120,13 +121,20 @@ const RouteCustomerMap: React.FC<RouteCustomerMapProps> = ({ customers, selected
                         const existingRutes = customer.details_rute?.map(dr => dr.rute?.nama_rute).filter(Boolean) || [];
                         const hasExistingRute = existingRutes.length > 0;
 
+                        const handleClick = () => {
+                            if (!isSelected && hasExistingRute) {
+                                toast(`${customer.nama_toko} sudah ada di rute: ${existingRutes.join(', ')}`, { icon: '⚠️' });
+                            }
+                            onToggle(customer.id);
+                        };
+
                         return (
                             <Marker 
                             key={customer.id} 
                             position={[customer.latitude!, customer.longitude!]}
                             icon={createCustomIcon(isSelected, hasExistingRute)}
                             eventHandlers={{
-                                click: () => onToggle(customer.id)
+                                click: handleClick
                             }}
                         >
                             <Tooltip direction="top" offset={[0, -32]} opacity={1}>
