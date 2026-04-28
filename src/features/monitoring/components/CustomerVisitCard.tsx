@@ -74,8 +74,8 @@ export const CustomerVisitCard = ({
       onClick={onClick}
       className="group bg-card border border-border rounded-xl p-4 hover:shadow-lg transition-all mb-3 last:mb-0 cursor-pointer ring-offset-2 hover:ring-2 hover:ring-primary/20"
     >
-      <div className="flex justify-between items-start mb-3">
-        <div className="min-w-0">
+      <div className="flex justify-between items-start mb-2">
+        <div className="min-w-0 flex-1">
           <div className="flex items-center gap-2 mb-1">
             <span className="text-[10px] bg-muted text-muted-foreground px-1.5 py-0.5 rounded border border-border font-mono tracking-tight font-bold">
               {pelanggan.kode_pelanggan || "-"}
@@ -88,8 +88,8 @@ export const CustomerVisitCard = ({
             {pelanggan.alamat}
           </p>
         </div>
-        <div className="shrink-0 ml-2">{statusBadge}</div>
       </div>
+      <div className="mb-3">{statusBadge}</div>
 
       <div className="space-y-4 mt-3 pt-3 border-t border-border/50">
         <div className="flex flex-col gap-3">
