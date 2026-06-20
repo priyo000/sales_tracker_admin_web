@@ -194,10 +194,10 @@ const PelangganPage: React.FC = () => {
                 </SelectTrigger>
                 <SelectContent>
                   <SelectItem value="all">Semua Status</SelectItem>
-                  <SelectItem value="pending">Pending</SelectItem>
-                  <SelectItem value="active">Active</SelectItem>
-                  <SelectItem value="nonactive">Non-Active</SelectItem>
-                  <SelectItem value="rejected">Rejected</SelectItem>
+                  <SelectItem value="pending">PENDING</SelectItem>
+                  <SelectItem value="active">ACTIVE</SelectItem>
+                  <SelectItem value="nonactive">NON-ACTIVE</SelectItem>
+                  <SelectItem value="rejected">REJECTED</SelectItem>
                 </SelectContent>
               </Select>
             </div>

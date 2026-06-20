@@ -137,7 +137,7 @@ const CustomerTable: React.FC<CustomerTableProps> = ({
       cell: (row) => (
         <Badge variant={STATUS_VARIANT[row.status ?? ""] ?? "outline"}>
           <span className="mr-1.5 h-1.5 w-1.5 rounded-full inline-block bg-current opacity-70" />
-          {row.status === "nonactive" ? "Non-Active" : row.status}
+          {row.status === "nonactive" ? "NON-ACTIVE" : (row.status ?? "").toUpperCase()}
         </Badge>
       ),
     },

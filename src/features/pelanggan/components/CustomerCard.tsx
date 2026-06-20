@@ -32,7 +32,7 @@ const CustomerCard: React.FC<CustomerCardProps> = ({ pelanggan, onApprove, onRej
                     pelanggan.status === 'active' ? 'bg-green-500' :
                     pelanggan.status === 'rejected' ? 'bg-red-500' : 'bg-yellow-500'
                 }`}>
-                    {pelanggan.status}
+                    {pelanggan.status === 'nonactive' ? 'NON-ACTIVE' : pelanggan.status}
                 </div>
             </div>
             

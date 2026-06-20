@@ -12,10 +12,10 @@ interface ExportCustomerModalProps {
 }
 
 const STATUS_OPTIONS = [
-  { id: "pending", label: "Pending" },
-  { id: "active", label: "Active" },
-  { id: "rejected", label: "Rejected" },
-  { id: "nonactive", label: "Non-Active" },
+  { id: "pending", label: "PENDING" },
+  { id: "active", label: "ACTIVE" },
+  { id: "rejected", label: "REJECTED" },
+  { id: "nonactive", label: "NON-ACTIVE" },
 ];
 
 export const ExportCustomerModal: React.FC<ExportCustomerModalProps> = ({

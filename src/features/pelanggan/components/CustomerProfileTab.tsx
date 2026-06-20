@@ -155,11 +155,11 @@ export const CustomerProfileTab: React.FC<CustomerProfileTabProps> = ({
                   <SelectValue />
                 </SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="active">🟢 Active</SelectItem>
-                  <SelectItem value="pending">🟡 Pending</SelectItem>
-                  <SelectItem value="nonactive">🔴 Inactive</SelectItem>
-                  <SelectItem value="rejected">⚫ Rejected</SelectItem>
-                  <SelectItem value="prospect">🔵 Prospect</SelectItem>
+                  <SelectItem value="active">🟢 ACTIVE</SelectItem>
+                  <SelectItem value="pending">🟡 PENDING</SelectItem>
+                  <SelectItem value="nonactive">🔴 NON-ACTIVE</SelectItem>
+                  <SelectItem value="rejected">⚫ REJECTED</SelectItem>
+                  <SelectItem value="prospect">🔵 PROSPECT</SelectItem>
                 </SelectContent>
               </Select>
             </FormField>

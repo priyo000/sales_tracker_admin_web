@@ -78,7 +78,7 @@ const CustomerDetail: React.FC<CustomerDetailProps> = ({ data }) => {
           <div className="absolute top-2 right-2">
             <Badge variant={STATUS_VARIANT[data.status] || "secondary"}>
               <span className="mr-1.5 h-1.5 w-1.5 rounded-full inline-block bg-current opacity-70" />
-              {data.status.toUpperCase()}
+              {data.status === "nonactive" ? "NON-ACTIVE" : data.status.toUpperCase()}
             </Badge>
           </div>
         </div>
