@@ -28,11 +28,39 @@ export const usePelanggan = () => {
     }
   };
 
+  const toPelangganPayload = (data: PelangganFormData) => {
+    const payload: Record<string, unknown> = { ...data };
+
+    // Never send empty string for nullable unique fields.
+    if (!payload.kode_pelanggan) {
+      delete payload.kode_pelanggan;
+    }
+
+    // Company-owned customers use null, not 0.
+    if (
+      payload.id_sales_pembuat === 0 ||
+      payload.id_sales_pembuat === "0" ||
+      payload.id_sales_pembuat === ""
+    ) {
+      payload.id_sales_pembuat = null;
+    }
+
+    if (payload.id_divisi === 0 || payload.id_divisi === "0") {
+      delete payload.id_divisi;
+    }
+
+    // Drop file fields when no new upload is selected.
+    if (!payload.foto_toko) delete payload.foto_toko;
+    if (!payload.foto_ktp) delete payload.foto_ktp;
+
+    return payload;
+  };
+
   const createPelanggan = async (data: PelangganFormData) => {
     crud.setLoading(true);
     crud.setError(null);
     try {
-      const response = await api.post("/pelanggan", data);
+      const response = await api.post("/pelanggan", toPelangganPayload(data));
       return { success: true as const, data: response.data };
     } catch (err) {
       const result = handleApiError(err, "Gagal menambahkan pelanggan.");
@@ -47,7 +75,10 @@ export const usePelanggan = () => {
     crud.setLoading(true);
     crud.setError(null);
     try {
-      const response = await api.put(`/pelanggan/${id}`, data);
+      const response = await api.put(
+        `/pelanggan/${id}`,
+        toPelangganPayload(data),
+      );
       return { success: true as const, data: response.data };
     } catch (err) {
       const result = handleApiError(err, "Gagal memperbarui pelanggan.");

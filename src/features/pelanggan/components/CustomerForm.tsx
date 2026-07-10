@@ -68,7 +68,9 @@ const CustomerForm: React.FC<CustomerFormProps> = ({
     atas_nama_rekening: initialData?.atas_nama_rekening || "",
     cabang_bank: initialData?.cabang_bank || "",
     catatan_lain: initialData?.catatan_lain || "",
-    id_sales_pembuat: initialData?.id_sales_pembuat || 0,
+    // Keep null for company-owned customers. Do not coerce to 0 — backend
+    // treats 0 as an invalid karyawan FK and rejects the whole update.
+    id_sales_pembuat: initialData?.id_sales_pembuat ?? null,
     status: initialData?.status || "active",
     provinsi_usaha: initialData?.provinsi_usaha || "",
     kota_usaha: initialData?.kota_usaha || "",
@@ -161,6 +163,17 @@ const CustomerForm: React.FC<CustomerFormProps> = ({
     e.preventDefault();
     const finalData: PelangganFormData = {
       ...formData,
+      // Empty string is not null — unique/nullable rules treat it as a real value.
+      kode_pelanggan: formData.kode_pelanggan?.trim() || undefined,
+      id_sales_pembuat:
+        formData.id_sales_pembuat && formData.id_sales_pembuat > 0
+          ? formData.id_sales_pembuat
+          : null,
+      id_divisi:
+        formData.id_divisi && formData.id_divisi > 0
+          ? formData.id_divisi
+          : (user?.karyawan?.id_divisi || formData.id_divisi),
+      status: formData.status,
       foto_toko: files.foto_toko,
       foto_ktp: files.foto_ktp,
     };

@@ -53,7 +53,28 @@ export function handleApiError(
   err: unknown,
   fallbackMsg: string,
 ): { success: false; message: string } {
-  const error = err as AxiosError<{ message?: string; error?: string }>;
+  const error = err as AxiosError<{
+    message?: string;
+    error?: string;
+    errors?: Record<string, string[] | string>;
+  }>;
+
+  const fieldErrors = error.response?.data?.errors;
+  if (fieldErrors && typeof fieldErrors === "object") {
+    const details = Object.entries(fieldErrors)
+      .flatMap(([field, messages]) => {
+        const list = Array.isArray(messages) ? messages : [messages];
+        return list
+          .filter(Boolean)
+          .map((message) => `${field}: ${message}`);
+      })
+      .filter(Boolean);
+
+    if (details.length > 0) {
+      return { success: false, message: details.join(" | ") };
+    }
+  }
+
   const msg =
     error.response?.data?.message ||
     error.response?.data?.error ||
