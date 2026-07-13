@@ -1,5 +1,13 @@
 import React, { useEffect, useState } from "react";
-import { Plus, Upload, Store, SlidersHorizontal, Download } from "lucide-react";
+import {
+  Plus,
+  Upload,
+  Store,
+  SlidersHorizontal,
+  Download,
+  X,
+  RefreshCw,
+} from "lucide-react";
 import toast from "react-hot-toast";
 import { usePelanggan } from "../features/pelanggan/hooks/usePelanggan";
 import CustomerTable from "../features/pelanggan/components/CustomerTable";
@@ -22,6 +30,8 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 
+type BulkTargetStatus = "active" | "nonactive";
+
 const PelangganPage: React.FC = () => {
   const {
     pelanggans,
@@ -29,6 +39,7 @@ const PelangganPage: React.FC = () => {
     error,
     fetchPelanggans,
     updateStatus,
+    bulkUpdateStatus,
     createPelanggan,
     updatePelanggan,
     importPelanggan,
@@ -52,6 +63,11 @@ const PelangganPage: React.FC = () => {
   const [isExportModalOpen, setIsExportModalOpen] = useState(false);
   const [perPage, setPerPage] = useState(20);
   const [page, setPage] = useState(1);
+  const [selectedIds, setSelectedIds] = useState<number[]>([]);
+  const [bulkTargetStatus, setBulkTargetStatus] =
+    useState<BulkTargetStatus>("nonactive");
+  const [pendingBulkStatus, setPendingBulkStatus] =
+    useState<BulkTargetStatus | null>(null);
 
   const [confirmAction, setConfirmAction] = useState<{
     id: number;
@@ -70,6 +86,11 @@ const PelangganPage: React.FC = () => {
     return () => clearTimeout(timer);
   }, [search, filterStatus, fetchPelanggans, page, perPage]);
 
+  // Selection is page-scoped — clear when list context changes.
+  useEffect(() => {
+    setSelectedIds([]);
+  }, [search, filterStatus, page, perPage]);
+
   const handlePageChange = (newPage: number) => {
     setPage(newPage);
   };
@@ -87,10 +108,37 @@ const PelangganPage: React.FC = () => {
       toast.success(
         `Pelanggan berhasil ${confirmAction.type === "approve" ? "disetujui" : "ditolak"}`,
       );
-      fetchPelanggans({ search, status: filterStatus });
+      fetchPelanggans({ search, status: filterStatus, page, per_page: perPage });
       setConfirmAction(null);
     } else {
       toast.error(result.message || "Gagal memproses pelanggan");
+    }
+  };
+
+  const handleBulkStatusConfirm = async () => {
+    if (!pendingBulkStatus || selectedIds.length === 0) return;
+
+    setIsSubmitting(true);
+    const result = await bulkUpdateStatus(selectedIds, pendingBulkStatus);
+    setIsSubmitting(false);
+
+    if (result.success) {
+      const label =
+        pendingBulkStatus === "active" ? "ACTIVE" : "NON-ACTIVE";
+      toast.success(
+        result.message ||
+          `Status ${selectedIds.length} pelanggan diubah ke ${label}`,
+      );
+      setSelectedIds([]);
+      setPendingBulkStatus(null);
+      fetchPelanggans({
+        search,
+        status: filterStatus,
+        page,
+        per_page: perPage,
+      });
+    } else {
+      toast.error(result.message || "Gagal mengubah status pelanggan");
     }
   };
 
@@ -160,6 +208,51 @@ const PelangganPage: React.FC = () => {
         </div>
       )}
 
+      {selectedIds.length > 0 && (
+        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 rounded-xl border border-primary/20 bg-primary/5 px-4 py-3 shadow-sm">
+          <div className="text-sm font-semibold text-primary">
+            {selectedIds.length} pelanggan dipilih
+            <span className="ml-2 text-xs font-medium text-muted-foreground">
+              (halaman ini)
+            </span>
+          </div>
+          <div className="flex flex-wrap items-center gap-2">
+            <Select
+              value={bulkTargetStatus}
+              onValueChange={(val) =>
+                setBulkTargetStatus(val as BulkTargetStatus)
+              }
+            >
+              <SelectTrigger className="w-[160px] h-9 bg-background shadow-sm">
+                <SelectValue placeholder="Status baru" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="active">ACTIVE</SelectItem>
+                <SelectItem value="nonactive">NON-ACTIVE</SelectItem>
+              </SelectContent>
+            </Select>
+            <Button
+              size="sm"
+              className="h-9 gap-2 shadow-sm"
+              disabled={isSubmitting || loadingData}
+              onClick={() => setPendingBulkStatus(bulkTargetStatus)}
+            >
+              <RefreshCw className="h-4 w-4" />
+              Ubah Status
+            </Button>
+            <Button
+              variant="ghost"
+              size="sm"
+              className="h-9 gap-1 text-muted-foreground"
+              onClick={() => setSelectedIds([])}
+            >
+              <X className="h-4 w-4" />
+              Batal
+            </Button>
+          </div>
+        </div>
+      )}
+
       <CustomerTable
         data={pelanggans}
         loading={loadingData}
@@ -170,6 +263,8 @@ const PelangganPage: React.FC = () => {
         pagination={pagination}
         onPageChange={handlePageChange}
         onPerPageChange={handlePerPageChange}
+        selectedIds={selectedIds}
+        onSelectionChange={setSelectedIds}
         onSearchChange={(val) => {
           setSearch(val);
           setPage(1);
@@ -285,6 +380,21 @@ const PelangganPage: React.FC = () => {
         message={`Apakah Anda yakin ingin ${confirmAction?.type === "approve" ? "menyetujui" : "menolak"} pendaftaran pelanggan ini?`}
         type={confirmAction?.type === "approve" ? "warning" : "danger"}
         confirmText={confirmAction?.type === "approve" ? "Approve" : "Reject"}
+      />
+
+      {/* Bulk status confirmation */}
+      <ConfirmModal
+        isOpen={!!pendingBulkStatus}
+        onClose={() => setPendingBulkStatus(null)}
+        onConfirm={handleBulkStatusConfirm}
+        title="Ubah Status Massal"
+        message={
+          pendingBulkStatus === "nonactive"
+            ? `Ubah status ${selectedIds.length} pelanggan menjadi NON-ACTIVE? Pelanggan non-aktif akan otomatis dilepas dari semua rute.`
+            : `Ubah status ${selectedIds.length} pelanggan menjadi ACTIVE?`
+        }
+        type={pendingBulkStatus === "nonactive" ? "danger" : "warning"}
+        confirmText="Ya, Ubah Status"
       />
 
       {/* Import Modal */}

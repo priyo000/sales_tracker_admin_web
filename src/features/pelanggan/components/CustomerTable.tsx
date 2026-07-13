@@ -23,6 +23,8 @@ interface CustomerTableProps {
   onPerPageChange?: (perPage: number) => void;
   toolbar?: React.ReactNode;
   onSearchChange?: (value: string) => void;
+  selectedIds?: number[];
+  onSelectionChange?: (ids: number[]) => void;
 }
 
 const STATUS_VARIANT: Record<
@@ -48,6 +50,8 @@ const CustomerTable: React.FC<CustomerTableProps> = ({
   onPerPageChange,
   toolbar,
   onSearchChange,
+  selectedIds = [],
+  onSelectionChange,
 }) => {
   const columns: ColumnDef<Pelanggan>[] = [
     {
@@ -210,6 +214,15 @@ const CustomerTable: React.FC<CustomerTableProps> = ({
       serverPagination={serverPagination}
       toolbar={toolbar}
       onSearchChange={onSearchChange}
+      selectable
+      selectedKeys={selectedIds}
+      onSelectionChange={(keys) =>
+        onSelectionChange?.(
+          keys
+            .map((k) => Number(k))
+            .filter((id) => Number.isFinite(id) && id > 0),
+        )
+      }
     />
   );
 };

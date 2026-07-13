@@ -28,6 +28,31 @@ export const usePelanggan = () => {
     }
   };
 
+  const bulkUpdateStatus = async (
+    ids: number[],
+    status: "active" | "nonactive",
+  ) => {
+    crud.setLoading(true);
+    crud.setError(null);
+    try {
+      const response = await api.post("/pelanggan/bulk-status", { ids, status });
+      return {
+        success: true as const,
+        data: response.data,
+        message: response.data?.message as string | undefined,
+      };
+    } catch (err) {
+      const result = handleApiError(
+        err,
+        "Gagal mengubah status pelanggan terpilih.",
+      );
+      crud.setError(result.message);
+      return result;
+    } finally {
+      crud.setLoading(false);
+    }
+  };
+
   const toPelangganPayload = (data: PelangganFormData) => {
     const payload: Record<string, unknown> = { ...data };
 
@@ -140,6 +165,7 @@ export const usePelanggan = () => {
     error: crud.error,
     fetchPelanggans: crud.fetchItems,
     updateStatus,
+    bulkUpdateStatus,
     createPelanggan,
     updatePelanggan,
     importPelanggan: (file: File) => crud.importItems(file),

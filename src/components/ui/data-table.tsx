@@ -9,6 +9,7 @@ import {
 } from "lucide-react";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
+import { Checkbox } from "@/components/ui/checkbox";
 import {
   Table,
   TableHeader,
@@ -56,6 +57,10 @@ interface DataTableProps<T> {
     onPageChange: (page: number) => void;
     onPerPageChange?: (perPage: number) => void;
   };
+  // Optional row selection (current page / visible rows only)
+  selectable?: boolean;
+  selectedKeys?: Array<string | number>;
+  onSelectionChange?: (keys: Array<string | number>) => void;
 }
 
 type SortDirection = "asc" | "desc" | null;
@@ -80,6 +85,9 @@ export function DataTable<T>({
   onSearchChange,
   onSortChange,
   serverPagination,
+  selectable = false,
+  selectedKeys = [],
+  onSelectionChange,
 }: DataTableProps<T>) {
   const [sortKey, setSortKey] = useState<string | null>(null);
   const [sortDir, setSortDir] = useState<SortDirection>(null);
@@ -88,6 +96,9 @@ export function DataTable<T>({
   const [perPage, setPerPage] = useState(
     serverPagination ? serverPagination.perPage : 10,
   );
+
+  const getRowKey = (row: T, index: number): string | number =>
+    rowKey ? rowKey(row) : index;
 
   const handleSort = (key: string) => {
     let newDir: SortDirection = "asc";
@@ -175,6 +186,55 @@ export function DataTable<T>({
     ? processed
     : processed.slice((page - 1) * perPage, page * perPage);
 
+  const visibleKeys = useMemo(
+    () => visible.map((row, i) => getRowKey(row, i)),
+    // getRowKey is stable for a given rowKey prop; visible is the dependency that matters
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+    [visible, rowKey],
+  );
+
+  const selectedKeySet = useMemo(
+    () => new Set(selectedKeys.map((k) => String(k))),
+    [selectedKeys],
+  );
+
+  const selectedVisibleCount = visibleKeys.filter((k) =>
+    selectedKeySet.has(String(k)),
+  ).length;
+  const allVisibleSelected =
+    visibleKeys.length > 0 && selectedVisibleCount === visibleKeys.length;
+  const someVisibleSelected =
+    selectedVisibleCount > 0 && selectedVisibleCount < visibleKeys.length;
+
+  const toggleRowSelection = (key: string | number, checked: boolean) => {
+    if (!onSelectionChange) return;
+    const keyStr = String(key);
+    if (checked) {
+      if (selectedKeySet.has(keyStr)) return;
+      onSelectionChange([...selectedKeys, key]);
+      return;
+    }
+    onSelectionChange(selectedKeys.filter((k) => String(k) !== keyStr));
+  };
+
+  const toggleSelectAllVisible = (checked: boolean) => {
+    if (!onSelectionChange) return;
+    if (checked) {
+      const next = new Set(selectedKeys.map((k) => String(k)));
+      const merged = [...selectedKeys];
+      visibleKeys.forEach((k) => {
+        if (!next.has(String(k))) {
+          merged.push(k);
+          next.add(String(k));
+        }
+      });
+      onSelectionChange(merged);
+      return;
+    }
+    const visibleSet = new Set(visibleKeys.map((k) => String(k)));
+    onSelectionChange(selectedKeys.filter((k) => !visibleSet.has(String(k))));
+  };
+
   const handlePageChange = (p: number) => {
     if (serverPagination) {
       serverPagination.onPageChange(p);
@@ -236,6 +296,24 @@ export function DataTable<T>({
         <Table>
           <TableHeader>
             <TableRow className="hover:bg-transparent">
+              {selectable && (
+                <TableHead className="h-12 w-12 bg-muted/40 px-3">
+                  <Checkbox
+                    checked={
+                      allVisibleSelected
+                        ? true
+                        : someVisibleSelected
+                          ? "indeterminate"
+                          : false
+                    }
+                    onCheckedChange={(value) =>
+                      toggleSelectAllVisible(value === true)
+                    }
+                    disabled={loading || visibleKeys.length === 0}
+                    aria-label="Pilih semua di halaman ini"
+                  />
+                </TableHead>
+              )}
               {columns.map((col) => (
                 <TableHead
                   key={col.key as string}
@@ -263,6 +341,11 @@ export function DataTable<T>({
             {loading ? (
               Array.from({ length: 5 }).map((_, i) => (
                 <TableRow key={i}>
+                  {selectable && (
+                    <TableCell className="w-12 px-3">
+                      <div className="h-4 w-4 rounded bg-muted/60 animate-pulse" />
+                    </TableCell>
+                  )}
                   {columns.map((col) => (
                     <TableCell key={col.key as string}>
                       <div className="h-5 rounded bg-muted/60 animate-pulse w-full" />
@@ -273,7 +356,7 @@ export function DataTable<T>({
             ) : visible.length === 0 ? (
               <TableRow>
                 <TableCell
-                  colSpan={columns.length}
+                  colSpan={columns.length + (selectable ? 1 : 0)}
                   className="h-40 text-center text-muted-foreground"
                 >
                   <div className="flex flex-col items-center justify-center gap-2">
@@ -283,23 +366,42 @@ export function DataTable<T>({
                 </TableCell>
               </TableRow>
             ) : (
-              visible.map((row, i) => (
-                <TableRow
-                  key={rowKey ? rowKey(row) : i}
-                  className="group hover:bg-muted/30 transition-colors"
-                >
-                  {columns.map((col) => (
-                    <TableCell
-                      key={col.key as string}
-                      className={cn("py-3", col.className)}
-                    >
-                      {col.cell
-                        ? col.cell(row, i)
-                        : String(getValue(row, col.key as string) ?? "-")}
-                    </TableCell>
-                  ))}
-                </TableRow>
-              ))
+              visible.map((row, i) => {
+                const key = getRowKey(row, i);
+                const isSelected = selectedKeySet.has(String(key));
+                return (
+                  <TableRow
+                    key={key}
+                    className={cn(
+                      "group hover:bg-muted/30 transition-colors",
+                      isSelected && "bg-primary/5",
+                    )}
+                    data-state={isSelected ? "selected" : undefined}
+                  >
+                    {selectable && (
+                      <TableCell className="w-12 px-3">
+                        <Checkbox
+                          checked={isSelected}
+                          onCheckedChange={(value) =>
+                            toggleRowSelection(key, value === true)
+                          }
+                          aria-label={`Pilih baris ${key}`}
+                        />
+                      </TableCell>
+                    )}
+                    {columns.map((col) => (
+                      <TableCell
+                        key={col.key as string}
+                        className={cn("py-3", col.className)}
+                      >
+                        {col.cell
+                          ? col.cell(row, i)
+                          : String(getValue(row, col.key as string) ?? "-")}
+                      </TableCell>
+                    ))}
+                  </TableRow>
+                );
+              })
             )}
           </TableBody>
         </Table>
