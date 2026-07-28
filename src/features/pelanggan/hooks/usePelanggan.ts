@@ -81,11 +81,29 @@ export const usePelanggan = () => {
     return payload;
   };
 
+  // The API expects file uploads as multipart/form-data. A plain JSON body
+  // serializes File objects to "{}", which fails the image|mimes validation.
+  const toFormData = (payload: Record<string, unknown>): FormData => {
+    const formData = new FormData();
+    for (const [key, value] of Object.entries(payload)) {
+      if (value === undefined || value === null) continue;
+      if (value instanceof File) {
+        formData.append(key, value);
+      } else {
+        formData.append(key, String(value));
+      }
+    }
+    return formData;
+  };
+
   const createPelanggan = async (data: PelangganFormData) => {
     crud.setLoading(true);
     crud.setError(null);
     try {
-      const response = await api.post("/pelanggan", toPelangganPayload(data));
+      const response = await api.post(
+        "/pelanggan",
+        toFormData(toPelangganPayload(data)),
+      );
       return { success: true as const, data: response.data };
     } catch (err) {
       const result = handleApiError(err, "Gagal menambahkan pelanggan.");
@@ -100,10 +118,10 @@ export const usePelanggan = () => {
     crud.setLoading(true);
     crud.setError(null);
     try {
-      const response = await api.put(
-        `/pelanggan/${id}`,
-        toPelangganPayload(data),
-      );
+      // POST + _method=PUT: Laravel method spoofing, required for multipart uploads.
+      const formData = toFormData(toPelangganPayload(data));
+      formData.append("_method", "PUT");
+      const response = await api.post(`/pelanggan/${id}`, formData);
       return { success: true as const, data: response.data };
     } catch (err) {
       const result = handleApiError(err, "Gagal memperbarui pelanggan.");
