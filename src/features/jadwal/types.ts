@@ -61,8 +61,6 @@ export interface WeekContext {
     panjang_siklus: number;
     hari: number;
     nama_hari: string;
-    /** 'kalender_kerja' = dari tabel kalender kerja | 'terhitung' = fallback */
-    sumber: 'kalender_kerja' | 'terhitung';
     rentang_minggu: { mulai: string; akhir: string };
     /**
      * Sebaran siklus antar sales aktif, mis. { "2": 16, "4": 17 }.

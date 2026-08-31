@@ -436,14 +436,6 @@ const MasterSchedule: React.FC<MasterScheduleProps> = ({
             {weekContext.rentang_minggu.akhir}
           </span>
 
-          {weekContext.sumber === "terhitung" && (
-            <span
-              className="text-[10px] font-bold text-amber-600 dark:text-amber-500"
-              title="Periode ini belum didefinisikan di Kalender Kerja, jadi minggu dihitung otomatis (Senin ke-berapa dalam bulan). Isi Kalender Kerja agar jadwal dan laporan memakai definisi yang sama."
-            >
-              &#9888; kalender kerja belum diisi
-            </span>
-          )}
         </div>
       )}
 
