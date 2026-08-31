@@ -46,6 +46,25 @@ export interface JadwalRecurring {
     rute?: RuteOption;
 }
 
+/**
+ * Konteks minggu berjalan dari backend (GET /jadwal-recurring/week-context).
+ *
+ * Ditampilkan di UI supaya admin tahu pola mana yang aktif hari ini. Sebelum
+ * ada ini, admin mengisi tab "MINGGU 1..4" tanpa cara memverifikasi minggu
+ * berjalan — itulah sebabnya bug parity minggu lama tidak terlihat.
+ */
+export interface WeekContext {
+    tanggal: string;
+    minggu_ke: number;
+    slot_pola: number;
+    panjang_siklus: number;
+    hari: number;
+    nama_hari: string;
+    /** 'kalender_kerja' = dari tabel kalender kerja | 'terhitung' = fallback */
+    sumber: 'kalender_kerja' | 'terhitung';
+    rentang_minggu: { mulai: string; akhir: string };
+}
+
 export interface RecurringBulkData {
     id_karyawan: number;
     patterns: {

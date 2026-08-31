@@ -8,6 +8,8 @@ import {
   Trash2,
   Edit,
   FileUp,
+  RefreshCw,
+  CalendarCheck,
 } from "lucide-react";
 import {
   KaryawanOption,
@@ -64,6 +66,10 @@ const MasterSchedule: React.FC<MasterScheduleProps> = ({
     assignedGroups,
     setAssignedGroups,
     importMasterJadwal,
+    weekContext,
+    fetchWeekContext,
+    regenerate,
+    regenerating,
   } = useJadwalRecurring();
   const {
     groups,
@@ -94,7 +100,23 @@ const MasterSchedule: React.FC<MasterScheduleProps> = ({
     };
     load();
     fetchGroups();
-  }, [fetchPatterns, fetchGroups]);
+    // Buka langsung di slot pola yang sedang berjalan, bukan selalu minggu 1.
+    // Di-set dari hasil fetch (bukan effect terpisah yang mengamati weekContext)
+    // agar tidak memicu cascading render.
+    fetchWeekContext().then((ctx) => {
+      if (ctx) setSelectedWeek(ctx.slot_pola);
+    });
+  }, [fetchPatterns, fetchGroups, fetchWeekContext]);
+
+  const handleRegenerate = async () => {
+    const res = await regenerate();
+    if (res.success) {
+      toast.success(res.message || "Jadwal berhasil di-generate ulang");
+      fetchWeekContext();
+    } else {
+      toast.error(res.message);
+    }
+  };
 
   // Construct grid from localPatterns and karyawanOptions
   const grid = useMemo(() => {
@@ -355,6 +377,20 @@ const MasterSchedule: React.FC<MasterScheduleProps> = ({
           </Button>
 
           <Button
+            variant="outline"
+            size="sm"
+            onClick={handleRegenerate}
+            disabled={regenerating}
+            className="h-9 gap-2 font-bold"
+            title="Terapkan perubahan master ke jadwal harian sekarang, tanpa menunggu proses tengah malam"
+          >
+            <RefreshCw
+              className={cn("h-3.5 w-3.5", regenerating && "animate-spin")}
+            />
+            {regenerating ? "Memproses..." : "Generate Sekarang"}
+          </Button>
+
+          <Button
             variant="default"
             size="sm"
             onClick={() => setIsImportModalOpen(true)}
@@ -365,26 +401,99 @@ const MasterSchedule: React.FC<MasterScheduleProps> = ({
         </div>
       </div>
 
+      {/* Indikator minggu berjalan — tanpa ini admin harus menebak pola mana
+          yang aktif, dan salah-parity tidak terlihat sampai sales komplain. */}
+      {weekContext && (
+        <div className="flex flex-wrap items-center gap-x-6 gap-y-2 rounded-xl border border-primary/20 bg-primary/5 px-4 py-3">
+          <div className="flex items-center gap-2 text-primary">
+            <CalendarCheck className="h-4 w-4 shrink-0" />
+            <span className="text-xs font-bold uppercase tracking-tight">
+              Minggu Berjalan
+            </span>
+          </div>
+
+          <div className="text-[11px] font-medium text-foreground/80">
+            {weekContext.nama_hari}, {weekContext.tanggal} &middot; minggu ke-
+            <span className="font-bold text-foreground">
+              {weekContext.minggu_ke}
+            </span>{" "}
+            bulan ini ({weekContext.minggu_ke % 2 === 1 ? "ganjil" : "genap"})
+          </div>
+
+          <Badge className="text-[10px] font-bold py-0 h-5 px-2">
+            AKTIF: MINGGU {weekContext.slot_pola}
+          </Badge>
+
+          <span className="text-[10px] text-muted-foreground">
+            siklus {weekContext.panjang_siklus} minggu &middot;{" "}
+            {weekContext.rentang_minggu.mulai} s/d{" "}
+            {weekContext.rentang_minggu.akhir}
+          </span>
+
+          {weekContext.sumber === "terhitung" && (
+            <span
+              className="text-[10px] font-bold text-amber-600 dark:text-amber-500"
+              title="Periode ini belum didefinisikan di Kalender Kerja, jadi minggu dihitung otomatis (Senin ke-berapa dalam bulan). Isi Kalender Kerja agar jadwal dan laporan memakai definisi yang sama."
+            >
+              &#9888; kalender kerja belum diisi
+            </span>
+          )}
+        </div>
+      )}
+
       {/* Toolbar & Filters */}
       <Card className="border-none shadow-sm bg-card/50 backdrop-blur-sm overflow-hidden">
         <CardContent className="p-4">
           <div className="flex flex-col md:flex-row md:items-center justify-between gap-6">
             {/* Tab-like Week Selection */}
-            <div className="flex items-center p-1 bg-muted/50 rounded-xl border border-border/50 w-fit">
-              {WEEKS.map((w) => (
-                <button
-                  key={w}
-                  onClick={() => setSelectedWeek(w)}
-                  className={cn(
-                    "px-5 py-2 text-xs font-bold transition-all rounded-lg whitespace-nowrap",
-                    selectedWeek === w
-                      ? "bg-primary text-white shadow-lg shadow-primary/30"
-                      : "text-muted-foreground hover:text-foreground hover:bg-muted",
-                  )}
-                >
-                  MINGGU {w}
-                </button>
-              ))}
+            <div className="flex flex-col gap-1.5">
+              <div className="flex items-center p-1 bg-muted/50 rounded-xl border border-border/50 w-fit">
+                {WEEKS.map((w) => {
+                  // Slot di luar panjang siklus tidak akan pernah dipakai
+                  // generator — tandai agar admin tidak mengisinya sia-sia.
+                  const diLuarSiklus =
+                    !!weekContext && w > weekContext.panjang_siklus;
+                  const sedangBerjalan = weekContext?.slot_pola === w;
+
+                  return (
+                    <button
+                      key={w}
+                      onClick={() => setSelectedWeek(w)}
+                      title={
+                        diLuarSiklus
+                          ? `Siklus saat ini ${weekContext?.panjang_siklus} minggu, jadi MINGGU ${w} tidak dipakai. Ubah JADWAL_CYCLE_WEEKS bila ingin memakainya.`
+                          : sedangBerjalan
+                            ? "Pola yang sedang berjalan minggu ini"
+                            : undefined
+                      }
+                      className={cn(
+                        "relative px-5 py-2 text-xs font-bold transition-all rounded-lg whitespace-nowrap",
+                        selectedWeek === w
+                          ? "bg-primary text-white shadow-lg shadow-primary/30"
+                          : "text-muted-foreground hover:text-foreground hover:bg-muted",
+                        diLuarSiklus && selectedWeek !== w && "opacity-40",
+                      )}
+                    >
+                      MINGGU {w}
+                      {sedangBerjalan && (
+                        <span
+                          className={cn(
+                            "absolute top-1 right-1.5 h-1.5 w-1.5 rounded-full",
+                            selectedWeek === w ? "bg-white" : "bg-primary",
+                          )}
+                        />
+                      )}
+                    </button>
+                  );
+                })}
+              </div>
+
+              {weekContext && selectedWeek > weekContext.panjang_siklus && (
+                <p className="text-[10px] font-medium text-amber-600 dark:text-amber-500 pl-1">
+                  Siklus aktif {weekContext.panjang_siklus} minggu — pola MINGGU{" "}
+                  {selectedWeek} tidak akan dipakai.
+                </p>
+              )}
             </div>
 
             {/* Search & Meta */}
