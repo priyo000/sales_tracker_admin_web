@@ -420,12 +420,18 @@ const MasterSchedule: React.FC<MasterScheduleProps> = ({
             bulan ini ({weekContext.minggu_ke % 2 === 1 ? "ganjil" : "genap"})
           </div>
 
-          <Badge className="text-[10px] font-bold py-0 h-5 px-2">
+          <Badge
+            className="text-[10px] font-bold py-0 h-5 px-2"
+            title={`Untuk sales bersiklus ${weekContext.panjang_siklus} minggu. Sales dengan siklus lain bisa berada di slot berbeda.`}
+          >
             AKTIF: MINGGU {weekContext.slot_pola}
+            {weekContext.sebaran_siklus &&
+            Object.keys(weekContext.sebaran_siklus).length > 1
+              ? ` (siklus ${weekContext.panjang_siklus})`
+              : ""}
           </Badge>
 
           <span className="text-[10px] text-muted-foreground">
-            siklus {weekContext.panjang_siklus} minggu &middot;{" "}
             {weekContext.rentang_minggu.mulai} s/d{" "}
             {weekContext.rentang_minggu.akhir}
           </span>
@@ -449,10 +455,15 @@ const MasterSchedule: React.FC<MasterScheduleProps> = ({
             <div className="flex flex-col gap-1.5">
               <div className="flex items-center p-1 bg-muted/50 rounded-xl border border-border/50 w-fit">
                 {WEEKS.map((w) => {
-                  // Slot di luar panjang siklus tidak akan pernah dipakai
-                  // generator — tandai agar admin tidak mengisinya sia-sia.
-                  const diLuarSiklus =
-                    !!weekContext && w > weekContext.panjang_siklus;
+                  // Siklus berbeda per sales secara sengaja, jadi tab tidak
+                  // boleh diredupkan berdasarkan satu angka global. Yang
+                  // ditampilkan: berapa sales yang benar-benar memakai slot ini.
+                  const salesPakaiSlot = weekContext?.sebaran_siklus
+                    ? Object.entries(weekContext.sebaran_siklus)
+                        .filter(([siklus]) => Number(siklus) >= w)
+                        .reduce((n, [, jml]) => n + jml, 0)
+                    : null;
+
                   const sedangBerjalan = weekContext?.slot_pola === w;
 
                   return (
@@ -460,18 +471,19 @@ const MasterSchedule: React.FC<MasterScheduleProps> = ({
                       key={w}
                       onClick={() => setSelectedWeek(w)}
                       title={
-                        diLuarSiklus
-                          ? `Siklus saat ini ${weekContext?.panjang_siklus} minggu, jadi MINGGU ${w} tidak dipakai. Ubah JADWAL_CYCLE_WEEKS bila ingin memakainya.`
-                          : sedangBerjalan
-                            ? "Pola yang sedang berjalan minggu ini"
-                            : undefined
+                        salesPakaiSlot !== null
+                          ? `${salesPakaiSlot} sales memakai slot MINGGU ${w}` +
+                            (sedangBerjalan
+                              ? " — dan ini pola yang sedang berjalan"
+                              : "")
+                          : undefined
                       }
                       className={cn(
                         "relative px-5 py-2 text-xs font-bold transition-all rounded-lg whitespace-nowrap",
                         selectedWeek === w
                           ? "bg-primary text-white shadow-lg shadow-primary/30"
                           : "text-muted-foreground hover:text-foreground hover:bg-muted",
-                        diLuarSiklus && selectedWeek !== w && "opacity-40",
+                        salesPakaiSlot === 0 && selectedWeek !== w && "opacity-40",
                       )}
                     >
                       MINGGU {w}
@@ -488,12 +500,15 @@ const MasterSchedule: React.FC<MasterScheduleProps> = ({
                 })}
               </div>
 
-              {weekContext && selectedWeek > weekContext.panjang_siklus && (
-                <p className="text-[10px] font-medium text-amber-600 dark:text-amber-500 pl-1">
-                  Siklus aktif {weekContext.panjang_siklus} minggu — pola MINGGU{" "}
-                  {selectedWeek} tidak akan dipakai.
-                </p>
-              )}
+              {weekContext?.sebaran_siklus &&
+                Object.keys(weekContext.sebaran_siklus).length > 1 && (
+                  <p className="text-[10px] font-medium text-muted-foreground pl-1">
+                    Siklus berbeda antar sales:{" "}
+                    {Object.entries(weekContext.sebaran_siklus)
+                      .map(([s, n]) => `${n} sales ${s} minggu`)
+                      .join(" · ")}
+                  </p>
+                )}
             </div>
 
             {/* Search & Meta */}

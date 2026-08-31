@@ -57,12 +57,21 @@ export interface WeekContext {
     tanggal: string;
     minggu_ke: number;
     slot_pola: number;
+    /** Siklus karyawan yang diminta, atau default bila tanpa id_karyawan. */
     panjang_siklus: number;
     hari: number;
     nama_hari: string;
     /** 'kalender_kerja' = dari tabel kalender kerja | 'terhitung' = fallback */
     sumber: 'kalender_kerja' | 'terhitung';
     rentang_minggu: { mulai: string; akhir: string };
+    /**
+     * Sebaran siklus antar sales aktif, mis. { "2": 16, "4": 17 }.
+     *
+     * Siklus berbeda per sales secara sengaja, jadi tab "MINGGU 3/4" relevan
+     * untuk sebagian sales saja — UI tidak boleh meredupkannya berdasarkan satu
+     * angka global.
+     */
+    sebaran_siklus?: Record<string, number>;
 }
 
 export interface RecurringBulkData {
