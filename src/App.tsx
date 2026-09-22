@@ -13,6 +13,7 @@ import LoginPage from "./pages/LoginPage";
 import MainLayout from "./components/layout/MainLayout";
 import Dashboard from "./pages/Dashboard";
 import RutePage from "./pages/RutePage";
+import KirimanPage from "./pages/KirimanPage";
 import JadwalPage from "./pages/JadwalPage";
 import KunjunganPage from "./pages/KunjunganPage";
 import ProdukPage from "./pages/ProdukPage";
@@ -97,6 +98,7 @@ function App() {
                       <Route path="/jadwal" element={<JadwalPage />} />
                       <Route path="/kunjungan" element={<KunjunganPage />} />
                       <Route path="/rute" element={<RutePage />} />
+                      <Route path="/kiriman" element={<KirimanPage />} />
                       <Route path="/promo" element={<PromoPage />} />
                       <Route path="/pelanggan" element={<PelangganPage />} />
                       <Route path="/produk" element={<ProdukPage />} />

@@ -16,6 +16,7 @@ import {
   TrendingUp,
   Smartphone,
   Tag,
+  Truck,
 } from "lucide-react";
 import { useState, useEffect } from "react";
 import { NavLink } from "react-router-dom";
@@ -68,6 +69,7 @@ const Sidebar = () => {
         { icon: MapPin, label: "Monitoring Kunjungan", to: "/kunjungan" },
         { icon: FileText, label: "Informasi Kunjungan", to: "/informasi-kunjungan" },
         { icon: Map, label: "Rute", to: "/rute" },
+        { icon: Truck, label: "Rute Kiriman", to: "/kiriman" },
       ],
     },
     {
