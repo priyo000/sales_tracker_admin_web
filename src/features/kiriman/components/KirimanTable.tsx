@@ -4,7 +4,7 @@ import { Kiriman } from "../types";
 import { DataTable, type ColumnDef } from "@/components/ui/data-table";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import ExportCsvButton from "./ExportCsvButton";
+import ExportMenu from "./ExportMenu";
 
 interface KirimanTableProps {
   data: Kiriman[];
@@ -91,7 +91,7 @@ const KirimanTable: React.FC<KirimanTableProps> = ({
           >
             <Eye className="h-4 w-4" />
           </Button>
-          <ExportCsvButton tanggal={row.tanggal} kirimanId={row.id} />
+          <ExportMenu tanggal={row.tanggal} kirimanId={row.id} />
           <Button
             variant="ghost"
             size="icon"
