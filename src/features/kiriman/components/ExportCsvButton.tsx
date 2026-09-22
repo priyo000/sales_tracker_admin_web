@@ -69,16 +69,21 @@ const ExportCsvButton: React.FC<ExportCsvButtonProps> = ({
       setMemuat(false);
     }
     const baris: MyMapsCsvRow[] = [];
+    let urut = 0;
     for (const d of data) {
       const p = d.pelanggan;
       if (!p) continue;
       const adaKoordinat = p.latitude != null && p.longitude != null;
       if (!adaKoordinat && !sertakanTanpaKoordinat) continue;
+      urut++;
       baris.push({
+        No: String(urut),
         Nama: p.nama_toko || p.nama_pemilik || `Pelanggan ${p.id}`,
         Alamat: alamatLengkap(d),
-        Latitude: adaKoordinat ? (p.latitude as number) : 0,
-        Longitude: adaKoordinat ? (p.longitude as number) : 0,
+        // Kosong (bukan 0) bila tanpa koordinat — My Maps akan
+        // menawarkan geocode dari kolom alamat; 0,0 jatuh di laut.
+        Latitude: adaKoordinat ? String(p.latitude) : "",
+        Longitude: adaKoordinat ? String(p.longitude) : "",
         "Kode Pelanggan": p.kode_pelanggan ?? "",
         "No HP": p.no_hp_pribadi ?? "",
       });
@@ -145,7 +150,9 @@ const ExportCsvButton: React.FC<ExportCsvButtonProps> = ({
             >
               Google My Maps
             </a>{" "}
-            (Add layer → Import → pilih kolom Latitude &amp; Longitude).
+            (Add layer → Import). Di wizard, pilih kolom{" "}
+            <b>Latitude</b> lalu <b>Longitude</b> sebagai lokasi, dan kolom{" "}
+            <b>Nama</b> sebagai judul pin.
           </p>
           <p>2. Share peta: &ldquo;Anyone with the link can view&rdquo; → kirim link ke supir.</p>
           <p>
@@ -159,8 +166,9 @@ const ExportCsvButton: React.FC<ExportCsvButtonProps> = ({
                 onCheckedChange={(v) => setSertakanTanpaKoordinat(v === true)}
               />
               <span>
-                Sertakan {tanpaKoordinat} pelanggan tanpa koordinat (di-geocode
-                dari alamat)
+                Sertakan {tanpaKoordinat} pelanggan tanpa koordinat (kosongkan
+                Latitude/Longitude di CSV — My Maps meng-geocode dari kolom
+                Alamat)
               </span>
             </label>
           )}

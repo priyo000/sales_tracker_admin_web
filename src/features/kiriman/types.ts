@@ -44,12 +44,15 @@ export interface KirimanFormData {
   pelanggan_ids?: number[];
 }
 
-/** Payload export CSV kompatibel Google My Maps. */
+/** Baris CSV export — kompatibel wizard import Google My Maps
+ * (baris pertama header, kolom lokasi dipilih saat import: Latitude &
+ * Longitude, atau Alamat untuk geocode bila koordinat kosong). */
 export interface MyMapsCsvRow {
+  No: string;
   Nama: string;
   Alamat: string;
-  Latitude: number;
-  Longitude: number;
+  Latitude: string;
+  Longitude: string;
   "Kode Pelanggan": string;
   "No HP": string;
 }
