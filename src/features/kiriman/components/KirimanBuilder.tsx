@@ -12,7 +12,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import type { KirimanDetail } from "../types";
+import type { KirimanDetail, KirimanPelanggan } from "../types";
 import KirimanMap from "./KirimanMap";
 
 interface RuteOption {
@@ -31,17 +31,16 @@ interface PelangganOption {
 }
 
 interface KirimanBuilderProps {
-  /** Detail terbaru dari kiriman (sudah tersimpan di backend). */
+  /** Detail tersimpan di backend (kiriman yang sudah ada). */
   details: KirimanDetail[];
-  /** id rute yang sudah pernah ditambahkan (untuk badge di select). */
-  usedRuteIds: number[];
+  /** Entri belum-disimpan: dari rute yang diimpor / pelanggan manual. */
+  pendingDetails: KirimanDetail[];
   loading?: boolean;
-  /** Ditampilkan hanya saat membuat kiriman baru (belum tersimpan). */
-  pendingRuteIds: number[];
-  pendingPelangganIds: number[];
-  onTogglePendingRute: (id: number) => void;
-  onTogglePendingPelanggan: (id: number) => void;
-  /** aksi untuk kiriman yang SUDAH tersimpan. */
+  /** Mode buat-baru: kumpulkan entri pending (ditampilkan langsung di list+peta). */
+  onAddPendingRute: (ruteId: number, ruteNama: string, customers: KirimanPelanggan[]) => void;
+  onAddPendingPelanggan: (p: KirimanPelanggan) => void;
+  onRemovePending: (clientKey: number) => void;
+  /** Mode edit (kiriman tersimpan): aksi langsung ke backend. */
   onAddRute?: (idRute: number) => Promise<void>;
   onAddPelanggan?: (ids: number[]) => Promise<void>;
   onRemoveDetail?: (detailId: number) => Promise<void>;
@@ -53,12 +52,11 @@ interface KirimanBuilderProps {
  */
 const KirimanBuilder: React.FC<KirimanBuilderProps> = ({
   details,
-  usedRuteIds,
+  pendingDetails,
   loading,
-  pendingRuteIds,
-  pendingPelangganIds,
-  onTogglePendingRute,
-  onTogglePendingPelanggan,
+  onAddPendingRute,
+  onAddPendingPelanggan,
+  onRemovePending,
   onAddRute,
   onAddPelanggan,
   onRemoveDetail,
@@ -69,6 +67,7 @@ const KirimanBuilder: React.FC<KirimanBuilderProps> = ({
   const [pelangganSearch, setPelangganSearch] = useState("");
   const [focusDetailId, setFocusDetailId] = useState<number | null>(null);
   const [busy, setBusy] = useState(false);
+  const [memuatRute, setMemuatRute] = useState(false);
 
   useEffect(() => {
     let active = true;
@@ -112,13 +111,26 @@ const KirimanBuilder: React.FC<KirimanBuilderProps> = ({
     return base.slice(0, 60);
   }, [pelangganOptions, pelangganSearch]);
 
-  const inKirimanIds = useMemo(
-    () => new Set(details.map((d) => d.id_pelanggan)),
-    [details],
+  const sudahAdaIds = useMemo(
+    () =>
+      new Set<number>([
+        ...details.map((d) => d.id_pelanggan),
+        ...pendingDetails.map((d) => d.id_pelanggan),
+      ]),
+    [details, pendingDetails],
   );
-  const pendingIds = useMemo(
-    () => new Set(pendingPelangganIds),
-    [pendingPelangganIds],
+
+  const ruteDipakaiIds = useMemo(
+    () =>
+      new Set<number>([
+        ...details
+          .map((d) => d.id_rute_asal)
+          .filter((id): id is number => id != null),
+        ...pendingDetails
+          .map((d) => d.id_rute_asal)
+          .filter((id): id is number => id != null),
+      ]),
+    [details, pendingDetails],
   );
 
   const handleTambahRute = useCallback(async () => {
@@ -129,25 +141,52 @@ const KirimanBuilder: React.FC<KirimanBuilderProps> = ({
     const idRute = Number(selectedRute);
     setBusy(true);
     try {
-      // Kiriman baru: cukup tandai; tersimpan saat submit.
+      // Kiriman baru: ambil isi rute untuk pratinjau langsung di list+peta.
       if (!onAddRute) {
-        onTogglePendingRute(idRute);
+        setMemuatRute(true);
+        const res = await api.get(`/rute/${idRute}`);
+        const isiRute = res.data?.details ?? [];
+        const pelangganList: KirimanPelanggan[] = isiRute
+          .map((d: { pelanggan?: KirimanPelanggan | null }) => d.pelanggan)
+          .filter((p: KirimanPelanggan | null | undefined): p is KirimanPelanggan => !!p);
+        setMemuatRute(false);
+        if (pelangganList.length === 0) {
+          toast.error("Rute ini belum berisi pelanggan");
+          return;
+        }
+        const namaRute =
+          ruteOptions.find((r) => r.id === idRute)?.nama_rute ?? `Rute ${idRute}`;
+        onAddPendingRute(idRute, namaRute, pelangganList);
         setSelectedRute("");
         return;
       }
       await onAddRute(idRute);
       setSelectedRute("");
+    } catch {
+      setMemuatRute(false);
+      toast.error("Gagal mengambil isi rute");
     } finally {
       setBusy(false);
     }
-  }, [selectedRute, onAddRute, onTogglePendingRute]);
+  }, [selectedRute, onAddRute, onAddPendingRute, ruteOptions]);
 
   const handleTambahPelanggan = useCallback(
     async (pelanggan: PelangganOption) => {
       setBusy(true);
       try {
         if (!onAddPelanggan) {
-          onTogglePendingPelanggan(pelanggan.id);
+          onAddPendingPelanggan({
+            id: pelanggan.id,
+            kode_pelanggan: pelanggan.kode_pelanggan ?? null,
+            nama_toko: pelanggan.nama_toko,
+            nama_pemilik: null,
+            alamat_usaha: pelanggan.alamat_usaha ?? null,
+            kecamatan_usaha: null,
+            kota_usaha: null,
+            latitude: pelanggan.latitude,
+            longitude: pelanggan.longitude,
+            no_hp_pribadi: null,
+          });
           return;
         }
         await onAddPelanggan([pelanggan.id]);
@@ -155,11 +194,10 @@ const KirimanBuilder: React.FC<KirimanBuilderProps> = ({
         setBusy(false);
       }
     },
-    [onAddPelanggan, onTogglePendingPelanggan],
+    [onAddPelanggan, onAddPendingPelanggan],
   );
 
-  const sudahAda = (idPelanggan: number) =>
-    inKirimanIds.has(idPelanggan) || pendingIds.has(idPelanggan);
+  const sudahAda = (idPelanggan: number) => sudahAdaIds.has(idPelanggan);
 
   return (
     <div className="flex flex-col h-[75vh] border rounded-lg overflow-hidden bg-background">
@@ -179,8 +217,7 @@ const KirimanBuilder: React.FC<KirimanBuilderProps> = ({
                   </div>
                 )}
                 {ruteOptions.map((r) => {
-                  const dipakai =
-                    usedRuteIds.includes(r.id) || pendingRuteIds.includes(r.id);
+                  const dipakai = ruteDipakaiIds.has(r.id);
                   return (
                     <SelectItem key={r.id} value={String(r.id)}>
                       {r.nama_rute} ({r.details_count ?? 0} toko)
@@ -196,7 +233,7 @@ const KirimanBuilder: React.FC<KirimanBuilderProps> = ({
               disabled={!selectedRute || busy || loading}
               className="gap-2 h-9"
             >
-              {busy ? (
+              {busy || memuatRute ? (
                 <Loader2 className="h-4 w-4 animate-spin" />
               ) : (
                 <Plus className="h-4 w-4" />
@@ -268,9 +305,9 @@ const KirimanBuilder: React.FC<KirimanBuilderProps> = ({
           {/* Daftar pelanggan kiriman */}
           <div className="flex-1 overflow-y-auto p-2">
             <div className="text-[10px] font-bold uppercase text-muted-foreground mb-1.5">
-              Daftar Kiriman ({details.length + pendingPelangganIds.length})
+              Daftar Kiriman ({details.length + pendingDetails.length})
             </div>
-            {details.length === 0 && pendingPelangganIds.length === 0 ? (
+            {details.length === 0 && pendingDetails.length === 0 ? (
               <div className="flex flex-col items-center justify-center py-10 text-center">
                 <MapPin className="h-8 w-8 text-muted-foreground/40 mb-2" />
                 <p className="text-xs text-muted-foreground">
@@ -322,32 +359,49 @@ const KirimanBuilder: React.FC<KirimanBuilderProps> = ({
                     )}
                   </div>
                 ))}
-                {/* Pelanggan yang baru ditandai saat kiriman BELUM tersimpan */}
-                {pendingPelangganIds.map((id) => {
-                  const p = pelangganOptions.find((x) => x.id === id);
-                  return (
-                    <div
-                      key={`pending-${id}`}
-                      className="group flex items-start gap-2 px-2 py-1.5 rounded-md text-xs"
-                    >
-                      <span className="mt-0.5 flex h-5 w-5 shrink-0 items-center justify-center rounded-full bg-primary/60 text-white text-[10px] font-bold">
-                        +
-                      </span>
-                      <div className="flex-1 min-w-0">
-                        <div className="font-medium truncate">
-                          {p?.nama_toko ?? `Pelanggan #${id}`}
-                        </div>
+                {/* Entri belum-disimpan: rute yang diimpor / pelanggan manual */}
+                {pendingDetails.map((d, i) => (
+                  <div
+                    key={d.id}
+                    onClick={() => setFocusDetailId(d.id)}
+                    className={cn(
+                      "group flex items-start gap-2 px-2 py-1.5 rounded-md text-xs cursor-pointer hover:bg-muted transition-colors",
+                      focusDetailId === d.id && "bg-muted",
+                    )}
+                  >
+                    <span className="mt-0.5 flex h-5 w-5 shrink-0 items-center justify-center rounded-full bg-primary/70 text-white text-[10px] font-bold">
+                      {details.length + i + 1}
+                    </span>
+                    <div className="flex-1 min-w-0">
+                      <div className="font-medium truncate">
+                        {d.pelanggan?.nama_toko ?? `Pelanggan #${d.id_pelanggan}`}
                       </div>
-                      <button
-                        type="button"
-                        onClick={() => onTogglePendingPelanggan(id)}
-                        className="opacity-0 group-hover:opacity-100 hover:text-destructive"
-                      >
-                        <X className="h-3.5 w-3.5" />
-                      </button>
+                      <div className="text-[10px] text-muted-foreground truncate">
+                        {d.rute_asal
+                          ? `dari rute: ${d.rute_asal.nama_rute}`
+                          : (d.pelanggan?.alamat_usaha ?? "tambahan manual")}
+                      </div>
+                      {(d.pelanggan?.latitude == null ||
+                        d.pelanggan?.longitude == null) && (
+                        <span className="inline-block mt-0.5 px-1 rounded bg-gray-200 text-gray-600 text-[9px] font-semibold">
+                          tanpa koordinat
+                        </span>
+                      )}
                     </div>
-                  );
-                })}
+                    <button
+                      type="button"
+                      disabled={busy}
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        onRemovePending(d.id);
+                      }}
+                      className="opacity-0 group-hover:opacity-100 hover:text-destructive transition-opacity disabled:cursor-not-allowed"
+                      title="Keluarkan dari kiriman"
+                    >
+                      <X className="h-3.5 w-3.5" />
+                    </button>
+                  </div>
+                ))}
               </div>
             )}
           </div>
@@ -356,7 +410,7 @@ const KirimanBuilder: React.FC<KirimanBuilderProps> = ({
         {/* Peta */}
         <div className="flex-1 min-w-0">
           <KirimanMap
-            details={details}
+            details={[...details, ...pendingDetails]}
             focusDetailId={focusDetailId}
             onMarkerClick={(id) => setFocusDetailId(id)}
           />

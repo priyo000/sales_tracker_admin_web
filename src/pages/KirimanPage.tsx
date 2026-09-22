@@ -1,4 +1,4 @@
-import React, { useCallback, useEffect, useMemo, useState } from "react";
+import React, { useCallback, useEffect, useRef, useState } from "react";
 import { Truck, Plus, Loader2, Save } from "lucide-react";
 import toast from "react-hot-toast";
 import { useKiriman } from "../features/kiriman/hooks/useKiriman";
@@ -9,7 +9,11 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { FormField } from "@/components/ui/FormField";
 import { DatePicker } from "@/components/ui/date-picker";
-import type { Kiriman, KirimanDetail } from "../features/kiriman/types";
+import type {
+  Kiriman,
+  KirimanDetail,
+  KirimanPelanggan,
+} from "../features/kiriman/types";
 import { format } from "date-fns";
 
 const KirimanPage: React.FC = () => {
@@ -41,9 +45,73 @@ const KirimanPage: React.FC = () => {
   const [keterangan, setKeterangan] = useState("");
   const [details, setDetails] = useState<KirimanDetail[]>([]);
   const [saving, setSaving] = useState(false);
-  // Untuk kiriman BARU: pilihan rute/pelanggan menunggu disimpan
+  /**
+   * Entri belum-disimpan untuk kiriman BARU: pratinjau pelanggan dari rute
+   * yang diimpor + pelanggan manual. Ditampilkan langsung di list & peta.
+   * Saat Simpan, id_rute dikirim ke backend dan backend yang memetakan
+   * rute → pelanggan (sumber kebenaran tetap server).
+   */
+  const [pendingDetails, setPendingDetails] = useState<KirimanDetail[]>([]);
   const [pendingRuteIds, setPendingRuteIds] = useState<number[]>([]);
-  const [pendingPelangganIds, setPendingPelangganIds] = useState<number[]>([]);
+  const clientKeyRef = useRef(-1);
+
+  const tambahPendingRute = useCallback(
+    (ruteId: number, ruteNama: string, customers: KirimanPelanggan[]) => {
+      setPendingRuteIds((prev) =>
+        prev.includes(ruteId) ? prev : [...prev, ruteId],
+      );
+      setPendingDetails((prev) => {
+        const ada = new Set<number>([
+          ...prev.map((d) => d.id_pelanggan),
+        ]);
+        const baru: KirimanDetail[] = [];
+        for (const p of customers) {
+          if (ada.has(p.id)) continue;
+          ada.add(p.id);
+          baru.push({
+            id: clientKeyRef.current--, // id sementara (negatif) untuk key & X
+            id_kiriman: 0,
+            id_pelanggan: p.id,
+            id_rute_asal: ruteId,
+            rute_asal: { id: ruteId, nama_rute: ruteNama },
+            pelanggan: p,
+          });
+        }
+        if (baru.length === 0) {
+          toast.success("Semua pelanggan rute ini sudah ada di daftar");
+        } else {
+          toast.success(`${baru.length} pelanggan dari ${ruteNama} ditambahkan`);
+        }
+        return [...prev, ...baru];
+      });
+    },
+    [],
+  );
+
+  const tambahPendingPelanggan = useCallback((p: KirimanPelanggan) => {
+    setPendingDetails((prev) => {
+      if (prev.some((d) => d.id_pelanggan === p.id)) {
+        toast("Pelanggan sudah ada di daftar", { icon: "ℹ️" });
+        return prev;
+      }
+      toast.success(`${p.nama_toko} ditambahkan`);
+      return [
+        ...prev,
+        {
+          id: clientKeyRef.current--,
+          id_kiriman: 0,
+          id_pelanggan: p.id,
+          id_rute_asal: null,
+          rute_asal: null,
+          pelanggan: p,
+        },
+      ];
+    });
+  }, []);
+
+  const hapusPending = useCallback((clientKey: number) => {
+    setPendingDetails((prev) => prev.filter((d) => d.id !== clientKey));
+  }, []);
 
   useEffect(() => {
     const t = setTimeout(() => {
@@ -56,8 +124,8 @@ const KirimanPage: React.FC = () => {
     setTanggal(new Date());
     setKeterangan("");
     setDetails([]);
+    setPendingDetails([]);
     setPendingRuteIds([]);
-    setPendingPelangganIds([]);
     setEditing(null);
   }, []);
 
@@ -80,28 +148,10 @@ const KirimanPage: React.FC = () => {
     setMode("form");
   };
 
-  const usedRuteIds = useMemo(
-    () =>
-      Array.from(
-        new Set(
-          details
-            .map((d) => d.id_rute_asal)
-            .filter((id): id is number => id != null),
-        ),
-      ),
-    [details],
-  );
-
-  /** Tambah isi rute: kiriman baru → pending; yang tersimpan → langsung POST. */
+  /** Tambah isi rute: kiriman baru → pratinjau pending; tersimpan → langsung POST. */
   const handleAddRute = useCallback(
     async (idRute: number) => {
-      if (!editing) {
-        setPendingRuteIds((prev) =>
-          prev.includes(idRute) ? prev : [...prev, idRute],
-        );
-        toast.success("Rute ditandai (tersimpan saat Simpan)");
-        return;
-      }
+      if (!editing) return; // mode buat ditangani onAddPendingRute di builder
       const res = await addRute(editing.id, idRute);
       if (res.success && res.data) {
         setDetails(res.data.details ?? []);
@@ -115,13 +165,7 @@ const KirimanPage: React.FC = () => {
 
   const handleAddPelanggan = useCallback(
     async (ids: number[]) => {
-      if (!editing) {
-        setPendingPelangganIds((prev) =>
-          Array.from(new Set([...prev, ...ids])),
-        );
-        toast.success("Pelanggan ditandai (tersimpan saat Simpan)");
-        return;
-      }
+      if (!editing) return; // mode buat ditangani onAddPendingPelanggan di builder
       const res = await addPelanggan(editing.id, ids);
       if (res.success && res.data) {
         setDetails(res.data.details ?? []);
@@ -167,7 +211,11 @@ const KirimanPage: React.FC = () => {
           tanggal: format(tanggal, "yyyy-MM-dd"),
           keterangan: keterangan || null,
           rute_ids: pendingRuteIds,
-          pelanggan_ids: pendingPelangganIds,
+          // Pastikan pelanggan manual yang dicentang tapi rute-nya diimpor
+          // tetap terkirim; backend melewati yang sudah ada dari rute.
+          pelanggan_ids: pendingDetails
+            .filter((d) => d.id_rute_asal == null)
+            .map((d) => d.id_pelanggan),
         });
         if (res.success) {
           toast.success("Kiriman dibuat");
@@ -259,20 +307,11 @@ const KirimanPage: React.FC = () => {
 
         <KirimanBuilder
           details={details}
-          usedRuteIds={usedRuteIds}
+          pendingDetails={pendingDetails}
           loading={saving}
-          pendingRuteIds={pendingRuteIds}
-          pendingPelangganIds={pendingPelangganIds}
-          onTogglePendingRute={(id) =>
-            setPendingRuteIds((prev) =>
-              prev.includes(id) ? prev.filter((x) => x !== id) : [...prev, id],
-            )
-          }
-          onTogglePendingPelanggan={(id) =>
-            setPendingPelangganIds((prev) =>
-              prev.includes(id) ? prev.filter((x) => x !== id) : [...prev, id],
-            )
-          }
+          onAddPendingRute={tambahPendingRute}
+          onAddPendingPelanggan={tambahPendingPelanggan}
+          onRemovePending={hapusPending}
           onAddRute={handleAddRute}
           onAddPelanggan={handleAddPelanggan}
           onRemoveDetail={handleRemoveDetail}
