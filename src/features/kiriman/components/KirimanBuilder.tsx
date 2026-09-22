@@ -36,6 +36,8 @@ interface KirimanBuilderProps {
   /** Entri belum-disimpan: dari rute yang diimpor / pelanggan manual. */
   pendingDetails: KirimanDetail[];
   loading?: boolean;
+  /** Kiriman sudah tersimpan (mode edit)? false = mode buat baru. */
+  isSaved?: boolean;
   /** Mode buat-baru: kumpulkan entri pending (ditampilkan langsung di list+peta). */
   onAddPendingRute: (ruteId: number, ruteNama: string, customers: KirimanPelanggan[]) => void;
   onAddPendingPelanggan: (p: KirimanPelanggan) => void;
@@ -54,6 +56,7 @@ const KirimanBuilder: React.FC<KirimanBuilderProps> = ({
   details,
   pendingDetails,
   loading,
+  isSaved = false,
   onAddPendingRute,
   onAddPendingPelanggan,
   onRemovePending,
@@ -141,8 +144,10 @@ const KirimanBuilder: React.FC<KirimanBuilderProps> = ({
     const idRute = Number(selectedRute);
     setBusy(true);
     try {
-      // Kiriman baru: ambil isi rute untuk pratinjau langsung di list+peta.
-      if (!onAddRute) {
+      // Kiriman baru (belum tersimpan): ambil isi rute untuk pratinjau
+      // langsung di list+peta. Jangan andalkan kehadiran onAddRute —
+      // KirimanPage selalu mengirimnya; andalkan flag isSaved.
+      if (!isSaved) {
         setMemuatRute(true);
         const res = await api.get(`/rute/${idRute}`);
         const isiRute = res.data?.details ?? [];
@@ -160,7 +165,7 @@ const KirimanBuilder: React.FC<KirimanBuilderProps> = ({
         setSelectedRute("");
         return;
       }
-      await onAddRute(idRute);
+      await onAddRute?.(idRute);
       setSelectedRute("");
     } catch {
       setMemuatRute(false);
@@ -168,13 +173,13 @@ const KirimanBuilder: React.FC<KirimanBuilderProps> = ({
     } finally {
       setBusy(false);
     }
-  }, [selectedRute, onAddRute, onAddPendingRute, ruteOptions]);
+  }, [selectedRute, isSaved, onAddRute, onAddPendingRute, ruteOptions]);
 
   const handleTambahPelanggan = useCallback(
     async (pelanggan: PelangganOption) => {
       setBusy(true);
       try {
-        if (!onAddPelanggan) {
+        if (!isSaved) {
           onAddPendingPelanggan({
             id: pelanggan.id,
             kode_pelanggan: pelanggan.kode_pelanggan ?? null,
@@ -189,12 +194,12 @@ const KirimanBuilder: React.FC<KirimanBuilderProps> = ({
           });
           return;
         }
-        await onAddPelanggan([pelanggan.id]);
+        await onAddPelanggan?.([pelanggan.id]);
       } finally {
         setBusy(false);
       }
     },
-    [onAddPelanggan, onAddPendingPelanggan],
+    [isSaved, onAddPelanggan, onAddPendingPelanggan],
   );
 
   const sudahAda = (idPelanggan: number) => sudahAdaIds.has(idPelanggan);

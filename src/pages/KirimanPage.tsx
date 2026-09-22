@@ -309,6 +309,7 @@ const KirimanPage: React.FC = () => {
           details={details}
           pendingDetails={pendingDetails}
           loading={saving}
+          isSaved={!!editing}
           onAddPendingRute={tambahPendingRute}
           onAddPendingPelanggan={tambahPendingPelanggan}
           onRemovePending={hapusPending}
