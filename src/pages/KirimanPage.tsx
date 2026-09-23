@@ -28,6 +28,7 @@ const KirimanPage: React.FC = () => {
     addRute,
     addPelanggan,
     removeDetail,
+    setUrutan,
     pagination,
   } = useKiriman();
 
@@ -112,6 +113,43 @@ const KirimanPage: React.FC = () => {
   const hapusPending = useCallback((clientKey: number) => {
     setPendingDetails((prev) => prev.filter((d) => d.id !== clientKey));
   }, []);
+
+  /** Susun ulang urutan gabungan (tersimpan + pending) hasil drag-drop. */
+  const reorderGabungan = useCallback(
+    async (urutanId: number[]) => {
+      const semua = [...details, ...pendingDetails];
+      const peta = new Map(semua.map((d) => [d.id, d]));
+      const tersimpan = urutanId
+        .map((id) => peta.get(id))
+        .filter((d): d is KirimanDetail => !!d && d.id_kiriman !== 0);
+      const pending = urutanId
+        .map((id) => peta.get(id))
+        .filter((d): d is KirimanDetail => !!d && d.id_kiriman === 0);
+
+      if (!editing) {
+        // Mode buat: cukup susun ulang state lokal.
+        setPendingDetails(pending);
+        return;
+      }
+
+      // Optimistik: urutkan tampilan dulu, lalu simpan ke backend.
+      setDetails(tersimpan);
+      setPendingDetails(pending);
+      const res = await setUrutan(
+        editing.id,
+        tersimpan.map((d) => d.id),
+      );
+      if (res.success && res.data) {
+        setDetails(res.data.details ?? []);
+      } else {
+        toast.error(res.message || "Gagal menyimpan urutan");
+        // Kembalikan urutan lama bila gagal
+        setDetails(details);
+        setPendingDetails(pendingDetails);
+      }
+    },
+    [details, pendingDetails, editing, setUrutan],
+  );
 
   useEffect(() => {
     const t = setTimeout(() => {
@@ -310,6 +348,8 @@ const KirimanPage: React.FC = () => {
           pendingDetails={pendingDetails}
           loading={saving}
           isSaved={!!editing}
+          onReorder={reorderGabungan}
+          onReorderPending={reorderGabungan}
           onAddPendingRute={tambahPendingRute}
           onAddPendingPelanggan={tambahPendingPelanggan}
           onRemovePending={hapusPending}
