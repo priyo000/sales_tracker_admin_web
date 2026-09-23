@@ -31,6 +31,10 @@ import {
 import type { KirimanDetail, KirimanPelanggan } from "../types";
 import KirimanMap from "./KirimanMap";
 import SortableDetailRow from "./SortableDetailRow";
+import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
+import { Calendar as CalendarIcon, ShoppingCart, Plus as PlusIcon } from "lucide-react";
+import { format } from "date-fns";
+import { Calendar } from "@/components/ui/calendar";
 
 interface RuteOption {
   id: number;
@@ -47,6 +51,11 @@ interface PelangganOption {
   longitude: number | null;
 }
 
+interface SalesOption {
+  id: number;
+  nama_lengkap: string;
+}
+
 interface KirimanBuilderProps {
   /** Detail tersimpan di backend (kiriman yang sudah ada). */
   details: KirimanDetail[];
@@ -59,6 +68,8 @@ interface KirimanBuilderProps {
   onReorder?: (detailIds: number[]) => Promise<void>;
   /** Susun ulang entri pending (mode buat) — terima urutan id gabungan. */
   onReorderPending?: (urutanIdGabungan: number[]) => void;
+  /** Tambah pelanggan dari sumber pesanan sales (mode buat) — sudah terurut jam pesan. */
+  onAddPendingPesanan: (customers: KirimanPelanggan[]) => void;
   /** Mode buat-baru: kumpulkan entri pending (ditampilkan langsung di list+peta). */
   onAddPendingRute: (ruteId: number, ruteNama: string, customers: KirimanPelanggan[]) => void;
   onAddPendingPelanggan: (p: KirimanPelanggan) => void;
@@ -80,6 +91,7 @@ const KirimanBuilder: React.FC<KirimanBuilderProps> = ({
   isSaved = false,
   onReorder,
   onReorderPending,
+  onAddPendingPesanan,
   onAddPendingRute,
   onAddPendingPelanggan,
   onRemovePending,
@@ -94,6 +106,67 @@ const KirimanBuilder: React.FC<KirimanBuilderProps> = ({
   const [focusDetailId, setFocusDetailId] = useState<number | null>(null);
   const [busy, setBusy] = useState(false);
   const [memuatRute, setMemuatRute] = useState(false);
+
+  // ── Sumber Pesanan Sales ──
+  const [salesOptions, setSalesOptions] = useState<SalesOption[]>([]);
+  const [selectedSales, setSelectedSales] = useState<string>("");
+  const [tanggalPesanan, setTanggalPesanan] = useState<Date[]>([]);
+  const [memuatPesanan, setMemuatPesanan] = useState(false);
+
+  useEffect(() => {
+    let active = true;
+    // Sales yang punya akun (pemesan = user mobile)
+    api
+      .get("/karyawan", { params: { has_user: true, role: "sales", all: true } })
+      .then((res) => {
+        if (active) setSalesOptions(res.data?.data ?? []);
+      })
+      .catch(() => {
+        /* pilihan sales kosong — fitur sumber pesanan tetap tersedia bila ada data */
+      });
+    return () => {
+      active = false;
+    };
+  }, []);
+
+  const handleTambahDariPesanan = useCallback(async () => {
+    if (!selectedSales) {
+      toast.error("Pilih sales dulu");
+      return;
+    }
+    if (tanggalPesanan.length === 0) {
+      toast.error("Pilih minimal satu tanggal pesanan");
+      return;
+    }
+    setBusy(true);
+    setMemuatPesanan(true);
+    try {
+      const res = await api.get("/kiriman-sumber/pesanan", {
+        params: {
+          id_karyawan: Number(selectedSales),
+          tanggal: tanggalPesanan.map((d) => format(d, "yyyy-MM-dd")),
+        },
+      });
+      const list: KirimanPelanggan[] = res.data?.data ?? [];
+      if (list.length === 0) {
+        toast.error("Tidak ada pesanan untuk sales & tanggal itu");
+        return;
+      }
+      if (!isSaved) {
+        onAddPendingPesanan(list);
+      } else {
+        await onAddPelanggan?.(list.map((p) => p.id));
+      }
+      // Reset pilihan agar admin bisa sumber berikutnya
+      setSelectedSales("");
+      setTanggalPesanan([]);
+    } catch {
+      toast.error("Gagal mengambil data pesanan");
+    } finally {
+      setMemuatPesanan(false);
+      setBusy(false);
+    }
+  }, [selectedSales, tanggalPesanan, isSaved, onAddPendingPesanan, onAddPelanggan]);
 
   // Drag-drop urutan: sensor pointer dengan delay agar scroll list tidak
   // ikut menyeret baris; keyboard untuk aksesibilitas.
@@ -309,6 +382,71 @@ const KirimanBuilder: React.FC<KirimanBuilderProps> = ({
         <p className="text-[11px] text-muted-foreground">
           Bisa tambah lebih dari satu rute — pelanggan dari tiap rute masuk ke
           daftar (yang sudah ada dilewati).
+        </p>
+
+        {/* Sumber Pesanan Sales */}
+        <div className="flex items-center gap-2 pt-2 border-t border-border/60">
+          <ShoppingCart className="h-4 w-4 text-muted-foreground shrink-0" />
+          <div className="flex-1 grid grid-cols-2 sm:grid-cols-[1fr_1fr_auto] gap-2">
+            <Select value={selectedSales} onValueChange={setSelectedSales}>
+              <SelectTrigger className="h-9">
+                <SelectValue placeholder="Pesanan sales…" />
+              </SelectTrigger>
+              <SelectContent>
+                {salesOptions.length === 0 && (
+                  <div className="px-3 py-2 text-sm text-muted-foreground">
+                    Tidak ada sales
+                  </div>
+                )}
+                {salesOptions.map((s) => (
+                  <SelectItem key={s.id} value={String(s.id)}>
+                    {s.nama_lengkap}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+            <Popover>
+              <PopoverTrigger asChild>
+                <Button
+                  type="button"
+                  variant="outline"
+                  className="justify-start text-left font-normal h-9"
+                >
+                  <CalendarIcon className="mr-1.5 h-3.5 w-3.5 shrink-0" />
+                  {tanggalPesanan.length === 0
+                    ? "Tanggal pesanan…"
+                    : tanggalPesanan.length === 1
+                      ? format(tanggalPesanan[0], "dd MMM yyyy")
+                      : `${tanggalPesanan.length} tanggal`}
+                </Button>
+              </PopoverTrigger>
+              <PopoverContent className="w-auto p-0" align="start">
+                <Calendar
+                  mode="multiple"
+                  selected={tanggalPesanan}
+                  onSelect={(d) => setTanggalPesanan(d ?? [])}
+                  initialFocus
+                />
+              </PopoverContent>
+            </Popover>
+            <Button
+              type="button"
+              onClick={handleTambahDariPesanan}
+              disabled={!selectedSales || tanggalPesanan.length === 0 || busy || loading}
+              className="gap-2 h-9"
+            >
+              {memuatPesanan ? (
+                <Loader2 className="h-4 w-4 animate-spin" />
+              ) : (
+                <PlusIcon className="h-4 w-4" />
+              )}
+              Tambahkan
+            </Button>
+          </div>
+        </div>
+        <p className="text-[11px] text-muted-foreground">
+          Toko-toko dari pesanan sales di tanggal terpilih masuk ke daftar,
+          <b> urut jam pesan</b> — yang pertama kali pesan jadi urutan 1.
         </p>
       </div>
 

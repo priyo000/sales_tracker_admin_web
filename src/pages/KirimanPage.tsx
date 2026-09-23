@@ -110,6 +110,34 @@ const KirimanPage: React.FC = () => {
     });
   }, []);
 
+  /** Tambah pelanggan dari sumber pesanan sales — list sudah terurut jam pesan. */
+  const tambahPendingPesanan = useCallback((customers: KirimanPelanggan[]) => {
+    setPendingDetails((prev) => {
+      const ada = new Set([
+        ...prev.map((d) => d.id_pelanggan),
+      ]);
+      const baru: KirimanDetail[] = [];
+      for (const p of customers) {
+        if (ada.has(p.id)) continue; // duplikat antar sumber dilewati
+        ada.add(p.id);
+        baru.push({
+          id: clientKeyRef.current--,
+          id_kiriman: 0,
+          id_pelanggan: p.id,
+          id_rute_asal: null,
+          rute_asal: null,
+          pelanggan: p,
+        });
+      }
+      if (baru.length === 0) {
+        toast("Semua toko dari pesanan itu sudah ada di daftar", { icon: "ℹ️" });
+      } else {
+        toast.success(`${baru.length} toko dari pesanan ditambahkan (urut jam pesan)`);
+      }
+      return [...prev, ...baru];
+    });
+  }, []);
+
   const hapusPending = useCallback((clientKey: number) => {
     setPendingDetails((prev) => prev.filter((d) => d.id !== clientKey));
   }, []);
@@ -350,6 +378,7 @@ const KirimanPage: React.FC = () => {
           isSaved={!!editing}
           onReorder={reorderGabungan}
           onReorderPending={reorderGabungan}
+          onAddPendingPesanan={tambahPendingPesanan}
           onAddPendingRute={tambahPendingRute}
           onAddPendingPelanggan={tambahPendingPelanggan}
           onRemovePending={hapusPending}
