@@ -420,17 +420,6 @@ const MasterSchedule: React.FC<MasterScheduleProps> = ({
             bulan ini ({weekContext.minggu_ke % 2 === 1 ? "ganjil" : "genap"})
           </div>
 
-          <Badge
-            className="text-[10px] font-bold py-0 h-5 px-2"
-            title={`Untuk sales bersiklus ${weekContext.panjang_siklus} minggu. Sales dengan siklus lain bisa berada di slot berbeda.`}
-          >
-            AKTIF: MINGGU {weekContext.slot_pola}
-            {weekContext.sebaran_siklus &&
-            Object.keys(weekContext.sebaran_siklus).length > 1
-              ? ` (siklus ${weekContext.panjang_siklus})`
-              : ""}
-          </Badge>
-
           <span className="text-[10px] text-muted-foreground">
             {weekContext.rentang_minggu.mulai} s/d{" "}
             {weekContext.rentang_minggu.akhir}
