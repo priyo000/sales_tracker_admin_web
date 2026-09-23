@@ -86,7 +86,7 @@ const KirimanTable: React.FC<KirimanTableProps> = ({
           <Button
             variant="ghost"
             size="icon"
-            title="Buka / susun ulang"
+            title="Edit / susun ulang"
             onClick={() => onOpen(row)}
           >
             <Eye className="h-4 w-4" />

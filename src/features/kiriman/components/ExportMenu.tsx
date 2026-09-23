@@ -1,5 +1,5 @@
 import React, { useMemo, useState } from "react";
-import { FileDown, FileSpreadsheet, Loader2, MoreVertical, FileText } from "lucide-react";
+import { FileDown, FileSpreadsheet, Loader2, FileText } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import {
   DropdownMenu,
@@ -167,26 +167,26 @@ const ExportMenu: React.FC<ExportMenuProps> = ({
             {memuat ? (
               <Loader2 className="h-4 w-4 animate-spin" />
             ) : (
-              <MoreVertical className="h-4 w-4" />
+              <FileSpreadsheet className="h-4 w-4" />
             )}
           </Button>
         </DropdownMenuTrigger>
         <DropdownMenuContent align="end" className="w-56">
-          <DropdownMenuItem onClick={handleExportCsv}>
-            <FileText className="h-4 w-4 mr-2" />
-            <div className="flex flex-col">
-              <span>Export CSV</span>
-              <span className="text-[10px] text-muted-foreground">
-                untuk Google My Maps{detailsProp ? ` (${jumlahKoordinat} pin)` : ""}
-              </span>
-            </div>
-          </DropdownMenuItem>
           <DropdownMenuItem onClick={handleExportXlsx} disabled={!kirimanId}>
             <FileSpreadsheet className="h-4 w-4 mr-2" />
             <div className="flex flex-col">
-              <span>Export Excel</span>
+              <span>Excel</span>
               <span className="text-[10px] text-muted-foreground">
                 daftar + rute asal
+              </span>
+            </div>
+          </DropdownMenuItem>
+          <DropdownMenuItem onClick={handleExportCsv}>
+            <FileText className="h-4 w-4 mr-2" />
+            <div className="flex flex-col">
+              <span>CSV</span>
+              <span className="text-[10px] text-muted-foreground">
+                untuk Google My Maps{detailsProp ? ` (${jumlahKoordinat} pin)` : ""}
               </span>
             </div>
           </DropdownMenuItem>
