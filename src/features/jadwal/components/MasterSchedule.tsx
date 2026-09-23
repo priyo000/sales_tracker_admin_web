@@ -445,18 +445,13 @@ const MasterSchedule: React.FC<MasterScheduleProps> = ({
                         .reduce((n, [, jml]) => n + jml, 0)
                     : null;
 
-                  const sedangBerjalan = weekContext?.slot_pola === w;
-
                   return (
                     <button
                       key={w}
                       onClick={() => setSelectedWeek(w)}
                       title={
                         salesPakaiSlot !== null
-                          ? `${salesPakaiSlot} sales memakai slot MINGGU ${w}` +
-                            (sedangBerjalan
-                              ? " — dan ini pola yang sedang berjalan"
-                              : "")
+                          ? `${salesPakaiSlot} sales memakai slot MINGGU ${w}`
                           : undefined
                       }
                       className={cn(
@@ -468,14 +463,6 @@ const MasterSchedule: React.FC<MasterScheduleProps> = ({
                       )}
                     >
                       MINGGU {w}
-                      {sedangBerjalan && (
-                        <span
-                          className={cn(
-                            "absolute top-1 right-1.5 h-1.5 w-1.5 rounded-full",
-                            selectedWeek === w ? "bg-white" : "bg-primary",
-                          )}
-                        />
-                      )}
                     </button>
                   );
                 })}
