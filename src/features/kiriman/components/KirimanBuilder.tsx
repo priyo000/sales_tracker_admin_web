@@ -1,6 +1,22 @@
 import React, { useState, useEffect, useMemo, useCallback } from "react";
-import { Plus, Search, MapPin, X, Loader2, Truck } from "lucide-react";
+import { Plus, Search, MapPin, Loader2, Truck } from "lucide-react";
 import toast from "react-hot-toast";
+import {
+  DndContext,
+  closestCenter,
+  PointerSensor,
+  KeyboardSensor,
+  useSensor,
+  useSensors,
+  type DragEndEvent,
+} from "@dnd-kit/core";
+import {
+  SortableContext,
+  verticalListSortingStrategy,
+  sortableKeyboardCoordinates,
+  arrayMove,
+} from "@dnd-kit/sortable";
+import { restrictToVerticalAxis } from "@dnd-kit/modifiers";
 import api from "@/services/api";
 import { cn } from "@/lib/utils";
 import { Input } from "@/components/ui/input";
@@ -14,6 +30,7 @@ import {
 } from "@/components/ui/select";
 import type { KirimanDetail, KirimanPelanggan } from "../types";
 import KirimanMap from "./KirimanMap";
+import SortableDetailRow from "./SortableDetailRow";
 
 interface RuteOption {
   id: number;
@@ -38,6 +55,10 @@ interface KirimanBuilderProps {
   loading?: boolean;
   /** Kiriman sudah tersimpan (mode edit)? false = mode buat baru. */
   isSaved?: boolean;
+  /** Simpan urutan baru ke backend (mode edit). */
+  onReorder?: (detailIds: number[]) => Promise<void>;
+  /** Susun ulang entri pending (mode buat) — terima urutan id gabungan. */
+  onReorderPending?: (urutanIdGabungan: number[]) => void;
   /** Mode buat-baru: kumpulkan entri pending (ditampilkan langsung di list+peta). */
   onAddPendingRute: (ruteId: number, ruteNama: string, customers: KirimanPelanggan[]) => void;
   onAddPendingPelanggan: (p: KirimanPelanggan) => void;
@@ -57,6 +78,8 @@ const KirimanBuilder: React.FC<KirimanBuilderProps> = ({
   pendingDetails,
   loading,
   isSaved = false,
+  onReorder,
+  onReorderPending,
   onAddPendingRute,
   onAddPendingPelanggan,
   onRemovePending,
@@ -71,6 +94,42 @@ const KirimanBuilder: React.FC<KirimanBuilderProps> = ({
   const [focusDetailId, setFocusDetailId] = useState<number | null>(null);
   const [busy, setBusy] = useState(false);
   const [memuatRute, setMemuatRute] = useState(false);
+
+  // Drag-drop urutan: sensor pointer dengan delay agar scroll list tidak
+  // ikut menyeret baris; keyboard untuk aksesibilitas.
+  const sensors = useSensors(
+    useSensor(PointerSensor, { activationConstraint: { distance: 6 } }),
+    useSensor(KeyboardSensor, { coordinateGetter: sortableKeyboardCoordinates }),
+  );
+
+  const daftarGabung = useMemo(
+    () => [...details, ...pendingDetails],
+    [details, pendingDetails],
+  );
+
+  const handleDragEnd = useCallback(
+    (event: DragEndEvent) => {
+      const { active, over } = event;
+      if (!over || active.id === over.id) return;
+
+      // Urutan baru dihitung atas gabungan tersimpan + pending.
+      const idsLama = daftarGabung.map((d) => d.id);
+      const from = idsLama.indexOf(Number(active.id));
+      const to = idsLama.indexOf(Number(over.id));
+      if (from === -1 || to === -1) return;
+      const idsBaru = arrayMove(idsLama, from, to);
+
+      if (!isSaved) {
+        // Mode buat: gabungkan list di parent lewat callback pending.
+        onReorderPending?.(idsBaru);
+        return;
+      }
+
+      // Mode edit: optimistik simpan ke backend.
+      onReorder?.(idsBaru);
+    },
+    [daftarGabung, isSaved, onReorder, onReorderPending],
+  );
 
   useEffect(() => {
     let active = true;
@@ -321,93 +380,37 @@ const KirimanBuilder: React.FC<KirimanBuilderProps> = ({
                 </p>
               </div>
             ) : (
-              <div className="space-y-0.5">
-                {details.map((d, i) => (
-                  <div
-                    key={d.id}
-                    onClick={() => setFocusDetailId(d.id)}
-                    className={cn(
-                      "group flex items-start gap-2 px-2 py-1.5 rounded-md text-xs cursor-pointer hover:bg-muted transition-colors",
-                      focusDetailId === d.id && "bg-muted",
-                    )}
-                  >
-                    <span className="mt-0.5 flex h-5 w-5 shrink-0 items-center justify-center rounded-full bg-primary text-white text-[10px] font-bold">
-                      {i + 1}
-                    </span>
-                    <div className="flex-1 min-w-0">
-                      <div className="font-medium truncate">
-                        {d.pelanggan?.nama_toko ?? `Pelanggan #${d.id_pelanggan}`}
-                      </div>
-                      <div className="text-[10px] text-muted-foreground truncate">
-                        {d.pelanggan?.alamat_usaha ?? "—"}
-                      </div>
-                      {(d.pelanggan?.latitude == null ||
-                        d.pelanggan?.longitude == null) && (
-                        <span className="inline-block mt-0.5 px-1 rounded bg-gray-200 text-gray-600 text-[9px] font-semibold">
-                          tanpa koordinat
-                        </span>
-                      )}
-                    </div>
-                    {onRemoveDetail && (
-                      <button
-                        type="button"
-                        disabled={busy || loading}
-                        onClick={(e) => {
-                          e.stopPropagation();
-                          onRemoveDetail(d.id);
-                        }}
-                        className="opacity-0 group-hover:opacity-100 hover:text-destructive transition-opacity disabled:cursor-not-allowed"
-                        title="Keluarkan dari kiriman"
-                      >
-                        <X className="h-3.5 w-3.5" />
-                      </button>
-                    )}
+              <DndContext
+                sensors={sensors}
+                collisionDetection={closestCenter}
+                modifiers={[restrictToVerticalAxis]}
+                onDragEnd={handleDragEnd}
+              >
+                <SortableContext
+                  items={daftarGabung.map((d) => d.id)}
+                  strategy={verticalListSortingStrategy}
+                >
+                  <div className="space-y-0.5">
+                    {daftarGabung.map((d, i) => (
+                      <SortableDetailRow
+                        key={d.id}
+                        detail={d}
+                        nomor={i + 1}
+                        pending={i >= details.length}
+                        isFocused={focusDetailId === d.id}
+                        onFocus={() => setFocusDetailId(d.id)}
+                        onRemove={
+                          i < details.length
+                            ? onRemoveDetail && !busy && !loading
+                              ? () => onRemoveDetail(d.id)
+                              : undefined
+                            : () => onRemovePending(d.id)
+                        }
+                      />
+                    ))}
                   </div>
-                ))}
-                {/* Entri belum-disimpan: rute yang diimpor / pelanggan manual */}
-                {pendingDetails.map((d, i) => (
-                  <div
-                    key={d.id}
-                    onClick={() => setFocusDetailId(d.id)}
-                    className={cn(
-                      "group flex items-start gap-2 px-2 py-1.5 rounded-md text-xs cursor-pointer hover:bg-muted transition-colors",
-                      focusDetailId === d.id && "bg-muted",
-                    )}
-                  >
-                    <span className="mt-0.5 flex h-5 w-5 shrink-0 items-center justify-center rounded-full bg-primary/70 text-white text-[10px] font-bold">
-                      {details.length + i + 1}
-                    </span>
-                    <div className="flex-1 min-w-0">
-                      <div className="font-medium truncate">
-                        {d.pelanggan?.nama_toko ?? `Pelanggan #${d.id_pelanggan}`}
-                      </div>
-                      <div className="text-[10px] text-muted-foreground truncate">
-                        {d.rute_asal
-                          ? `dari rute: ${d.rute_asal.nama_rute}`
-                          : (d.pelanggan?.alamat_usaha ?? "tambahan manual")}
-                      </div>
-                      {(d.pelanggan?.latitude == null ||
-                        d.pelanggan?.longitude == null) && (
-                        <span className="inline-block mt-0.5 px-1 rounded bg-gray-200 text-gray-600 text-[9px] font-semibold">
-                          tanpa koordinat
-                        </span>
-                      )}
-                    </div>
-                    <button
-                      type="button"
-                      disabled={busy}
-                      onClick={(e) => {
-                        e.stopPropagation();
-                        onRemovePending(d.id);
-                      }}
-                      className="opacity-0 group-hover:opacity-100 hover:text-destructive transition-opacity disabled:cursor-not-allowed"
-                      title="Keluarkan dari kiriman"
-                    >
-                      <X className="h-3.5 w-3.5" />
-                    </button>
-                  </div>
-                ))}
-              </div>
+                </SortableContext>
+              </DndContext>
             )}
           </div>
         </div>

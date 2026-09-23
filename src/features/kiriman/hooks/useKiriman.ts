@@ -140,6 +140,21 @@ export const useKiriman = () => {
     [],
   );
 
+  /** Simpan urutan kunjungan hasil drag-drop (urutan lengkap). */
+  const setUrutan = useCallback(
+    async (id: number, detailIds: number[]): Promise<{ success: boolean; message?: string; data?: Kiriman }> => {
+      try {
+        const response = await api.post(`/kiriman/${id}/urutan`, {
+          detail_ids: detailIds,
+        });
+        return { success: true, data: response.data };
+      } catch (err) {
+        return handleApiError(err, "Gagal menyimpan urutan.");
+      }
+    },
+    [],
+  );
+
   return {
     kirimans,
     loading,
@@ -153,6 +168,7 @@ export const useKiriman = () => {
     addRute,
     addPelanggan,
     removeDetail,
+    setUrutan,
     setPagination,
   };
 };
