@@ -6,6 +6,7 @@ import MarkerClusterGroup from "react-leaflet-cluster";
 import "leaflet.markercluster/dist/MarkerCluster.css";
 import "leaflet.markercluster/dist/MarkerCluster.Default.css";
 import type { KirimanDetail } from "../types";
+import { koordinat } from "../types";
 
 interface KirimanMapProps {
   details: KirimanDetail[];
@@ -60,39 +61,21 @@ const KirimanMap: React.FC<KirimanMapProps> = ({
   const validDetails = useMemo(
     () =>
       details
-        .map((d, index) => ({ detail: d, urut: index + 1 }))
-        .filter(
-          ({ detail }) =>
-            detail.pelanggan?.latitude != null &&
-            detail.pelanggan?.longitude != null,
-        ),
+        .map((detail) => ({ detail, urut: 0, koord: koordinat(detail.pelanggan ?? { latitude: null, longitude: null }) }))
+        .filter(({ koord }) => koord !== null)
+        .map(({ detail }, i) => ({ detail, urut: i + 1, koord: koordinat(detail.pelanggan!)! })),
     [details],
   );
 
   const center: [number, number] = useMemo(() => {
     if (validDetails.length === 0) return [-6.2, 106.816666]; // default Jakarta
-    const lat =
-      validDetails.reduce(
-        (sum, { detail }) => sum + (detail.pelanggan?.latitude ?? 0),
-        0,
-      ) / validDetails.length;
-    const lng =
-      validDetails.reduce(
-        (sum, { detail }) => sum + (detail.pelanggan?.longitude ?? 0),
-        0,
-      ) / validDetails.length;
+    const lat = validDetails.reduce((sum, { koord }) => sum + koord.lat, 0) / validDetails.length;
+    const lng = validDetails.reduce((sum, { koord }) => sum + koord.lng, 0) / validDetails.length;
     return [lat, lng];
   }, [validDetails]);
 
   const locations = useMemo(
-    () =>
-      validDetails.map(
-        ({ detail }) =>
-          [detail.pelanggan!.latitude!, detail.pelanggan!.longitude!] as [
-            number,
-            number,
-          ],
-      ),
+    () => validDetails.map(({ koord }) => [koord.lat, koord.lng] as [number, number]),
     [validDetails],
   );
 
@@ -100,11 +83,7 @@ const KirimanMap: React.FC<KirimanMapProps> = ({
     if (!focusDetailId) return null;
     const found = validDetails.find(({ detail }) => detail.id === focusDetailId);
     if (!found) return null;
-    return {
-      lat: found.detail.pelanggan!.latitude!,
-      lng: found.detail.pelanggan!.longitude!,
-      timestamp: Date.now(),
-    };
+    return { lat: found.koord.lat, lng: found.koord.lng, timestamp: Date.now() };
   }, [focusDetailId, validDetails]);
 
   const createIcon = (urut: number, isFocused: boolean) =>
@@ -139,13 +118,10 @@ const KirimanMap: React.FC<KirimanMapProps> = ({
         <MapFocusUpdater target={focusTarget} />
 
         <MarkerClusterGroup chunkedLoading maxClusterRadius={50}>
-          {validDetails.map(({ detail, urut }) => (
+          {validDetails.map(({ detail, urut, koord }) => (
             <Marker
               key={detail.id}
-              position={[
-                detail.pelanggan!.latitude!,
-                detail.pelanggan!.longitude!,
-              ]}
+              position={[koord.lat, koord.lng]}
               icon={createIcon(urut, detail.id === focusDetailId)}
               eventHandlers={{ click: () => onMarkerClick?.(detail.id) }}
             >

@@ -11,10 +11,26 @@ export interface KirimanPelanggan {
   alamat_usaha?: string | null;
   kecamatan_usaha?: string | null;
   kota_usaha?: string | null;
-  latitude: number | null;
-  longitude: number | null;
+  /**
+   * Postgres decimal tiba sebagai string via JSON ("−7.727…"), jadi
+   * JANGAN menjumlah/membandingkan langsung — selalu Number() dulu.
+   */
+  latitude: number | string | null;
+  longitude: number | string | null;
   no_hp_pribadi?: string | null;
 }
+
+/** Koordinat ter-normalisasi number (null bila tidak valid). */
+export const koordinat = (
+  p: { latitude: number | string | null; longitude: number | string | null },
+): { lat: number; lng: number } | null => {
+  const lat = typeof p.latitude === "string" ? Number(p.latitude) : p.latitude;
+  const lng =
+    typeof p.longitude === "string" ? Number(p.longitude) : p.longitude;
+  if (lat == null || lng == null || Number.isNaN(lat) || Number.isNaN(lng))
+    return null;
+  return { lat, lng };
+};
 
 export interface KirimanDetail {
   id: number;

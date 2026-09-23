@@ -16,6 +16,7 @@ import {
 } from "@/components/ui/dialog";
 import api from "@/services/api";
 import type { KirimanDetail, MyMapsCsvRow } from "../types";
+import { koordinat } from "../types";
 
 interface ExportMenuProps {
   tanggal: string;
@@ -51,15 +52,15 @@ const barisCsv = (data: KirimanDetail[]): MyMapsCsvRow[] => {
     const p = d.pelanggan;
     if (!p) continue;
     urut++;
-    const adaKoordinat = p.latitude != null && p.longitude != null;
+    const koord = koordinat(p);
     baris.push({
       No: String(urut),
       Nama: p.nama_toko || p.nama_pemilik || `Pelanggan ${p.id}`,
       Alamat: alamatLengkap(d),
       // Kosong (bukan 0) bila tanpa koordinat — 0,0 jatuh di laut;
       // kosong membuat My Maps menawarkan geocode dari kolom Alamat.
-      Latitude: adaKoordinat ? String(p.latitude) : "",
-      Longitude: adaKoordinat ? String(p.longitude) : "",
+      Latitude: koord ? String(koord.lat) : "",
+      Longitude: koord ? String(koord.lng) : "",
       "Kode Pelanggan": p.kode_pelanggan ?? "",
       "No HP": p.no_hp_pribadi ?? "",
     });
@@ -103,10 +104,7 @@ const ExportMenu: React.FC<ExportMenuProps> = ({
   const details = detailsProp ?? [];
 
   const jumlahKoordinat = useMemo(
-    () =>
-      details.filter(
-        (d) => d.pelanggan?.latitude != null && d.pelanggan?.longitude != null,
-      ).length,
+    () => details.filter((d) => d.pelanggan && koordinat(d.pelanggan) !== null).length,
     [details],
   );
 
